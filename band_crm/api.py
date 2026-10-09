@@ -3,6 +3,7 @@ from frappe import _
 
 DIRECTORY_DOCTYPES = ("Festival", "Venue", "Promoter", "Band")
 EMAIL_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
+COMMENT_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 # Frappe roots a thread linked to no record on its first Communication, so that Communication is a thread too.
 THREAD_DOCTYPES = (*EMAIL_DOCTYPES, "Communication")
 EMAIL_FIELDS = [
@@ -79,6 +80,21 @@ def get_emails(doctype: str, name: str) -> list[dict]:
 	for email in emails:
 		email.attachments = [file for file in attachments if file.attached_to_name == email.name]
 	return emails
+
+
+@frappe.whitelist()
+def get_comments(doctype: str, name: str) -> list[dict]:
+	"""Members are website users, who can't list Comment themselves, so the record grants access."""
+	if doctype not in COMMENT_DOCTYPES:
+		frappe.throw(_("Comments can only be listed for {0}, not {1}").format(", ".join(COMMENT_DOCTYPES), doctype))
+	frappe.get_doc(doctype, name).check_permission("read")
+
+	return frappe.get_all(
+		"Comment",
+		filters={"comment_type": "Comment", "reference_doctype": doctype, "reference_name": name},
+		fields=["name", "content", "comment_email", "comment_by", "creation"],
+		order_by="creation asc",
+	)
 
 
 @frappe.whitelist()

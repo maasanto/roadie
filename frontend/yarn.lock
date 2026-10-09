@@ -1035,10 +1035,10 @@
     "@tiptap/extensions" "3.31.4"
     "@tiptap/pm" "3.31.4"
 
-"@tiptap/suggestion@^3.26.0":
-  version "3.31.4"
-  resolved "https://registry.yarnpkg.com/@tiptap/suggestion/-/suggestion-3.31.4.tgz#be76129b673cd24c9b58d416e76e6eb05d13fde3"
-  integrity sha512-J9WWMQDAzZOlF9VSdLohpxgrwlB1NscqvNhOPoS3WjwrzQqLj+FAvcchfJQcnybF5mYOtftFZexpOzOt1MqjUA==
+"@tiptap/suggestion@3.26.1", "@tiptap/suggestion@^3.26.0":
+  version "3.26.1"
+  resolved "https://registry.yarnpkg.com/@tiptap/suggestion/-/suggestion-3.26.1.tgz#d93be8c9e2e73ed8d70b1ba2f370cee239dc8ea7"
+  integrity sha512-Bg8IyuDC92InSPzcHvCT3+ZDCJSMJIEINdFg513RPQzwZTw1dsrU0K00XYcDT6lOhZwLM2IVTiE6sZl2GY25Rg==
 
 "@tiptap/vue-3@^3.26.0":
   version "3.31.4"

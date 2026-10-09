@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { Button } from "frappe-ui";
+import CommentThread from "./CommentThread.vue";
 import EmailThread from "./EmailThread.vue";
 import EntryForm from "./EntryForm.vue";
 import GigAttachments from "./GigAttachments.vue";
@@ -29,6 +30,7 @@ const entryForm = ref(null);
 				<template #default="{ entryName }">
 					<GigTasks :gig="entryName" />
 					<GigAttachments :gig="entryName" />
+					<CommentThread doctype="Gig" :name="entryName" />
 					<EmailThread doctype="Gig" :name="entryName" />
 				</template>
 			</EntryForm>
