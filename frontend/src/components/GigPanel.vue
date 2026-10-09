@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { Button } from "frappe-ui";
 import EntryForm from "./EntryForm.vue";
 import GigAttachments from "./GigAttachments.vue";
+import GigTasks from "./GigTasks.vue";
 
 defineProps({
 	name: { type: String, default: null },
@@ -24,7 +25,10 @@ const entryForm = ref(null);
 		</header>
 		<div class="flex-1 overflow-y-auto px-5 pb-10 pt-5">
 			<EntryForm :key="name" ref="entryForm" doctype="Gig" :name="name" :fields="fields" @saved="emit('saved')">
-				<template #default="{ entryName }"><GigAttachments :gig="entryName" /></template>
+				<template #default="{ entryName }">
+					<GigTasks :gig="entryName" />
+					<GigAttachments :gig="entryName" />
+				</template>
 			</EntryForm>
 		</div>
 	</aside>
