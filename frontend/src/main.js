@@ -7,6 +7,7 @@ const router = createRouter({
 	history: createWebHistory("/band"),
 	routes: [
 		{ path: "/", name: "Pipeline", component: () => import("./pages/PipelineScreen.vue") },
+		{ path: "/planning", name: "Planning", component: () => import("./pages/PlanningScreen.vue") },
 		{ path: "/tasks", name: "MyTasks", component: () => import("./pages/MyTasksScreen.vue") },
 		{ path: "/directory", name: "Directory", component: () => import("./pages/DirectoryScreen.vue") },
 	],

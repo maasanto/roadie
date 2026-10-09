@@ -34,6 +34,49 @@ def get_attachments(gig: str) -> list[dict]:
 
 
 @frappe.whitelist()
+def get_planning() -> list[dict]:
+	"""Gantt bars in lanes: one per live gig ordered by its first date, then "Other" for tasks without a gig."""
+	gigs = frappe.get_list(
+		"Gig",
+		filters={"status": ["not in", ("Declined", "Dropped")]},
+		fields=["name", "title", "gig_date", "application_opens", "application_closes"],
+		limit_page_length=0,
+	)
+	tasks = frappe.get_list(
+		"Band Task",
+		fields=["name", "title", "done", "gig", "start_date", "due_date"],
+		limit_page_length=0,
+	)
+
+	lanes = {gig.name: [] for gig in gigs}
+	for gig in gigs:
+		if gig.application_opens or gig.application_closes:
+			lanes[gig.name].append(
+				_bar(f"{gig.name}-window", gig.title, _("Application window"), gig.application_opens, gig.application_closes, "window")
+			)
+		if gig.gig_date:
+			lanes[gig.name].append(_bar(f"{gig.name}-date", gig.title, _("Gig"), gig.gig_date, gig.gig_date, "gig"))
+
+	gig_titles = {gig.name: gig.title for gig in gigs}
+	other_lane = []
+	dated_tasks = [task for task in tasks if task.start_date or task.due_date]
+	for task in sorted(dated_tasks, key=lambda task: task.start_date or task.due_date):
+		if task.gig and task.gig not in lanes:
+			continue
+		lane = lanes[task.gig] if task.gig else other_lane
+		lane_title = gig_titles[task.gig] if task.gig else _("Other")
+		kind = "done" if task.done else "task"
+		lane.append(_bar(task.name, lane_title, task.title, task.start_date, task.due_date, kind))
+
+	gig_lanes = sorted(filter(None, lanes.values()), key=lambda lane: min(bar["start"] for bar in lane))
+	return [bar for lane in [*gig_lanes, other_lane] for bar in lane]
+
+
+def _bar(bar_id, lane, label, start, end, kind):
+	return {"id": bar_id, "lane": lane, "label": label, "start": str(start or end), "end": str(end or start), "kind": kind}
+
+
+@frappe.whitelist()
 def get_members() -> list[dict]:
 	frappe.only_for(("Band Member", "System Manager"))
 

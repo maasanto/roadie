@@ -11,6 +11,7 @@ const accountMenu = [{ label: "Log out", icon: "lucide-log-out", onClick: () => 
 			<Sidebar disable-collapse>
 				<SidebarHeader title="Band CRM" :subtitle="currentUser" :menu-items="accountMenu" />
 				<SidebarItem label="Pipeline" icon="lucide-kanban" to="/" />
+				<SidebarItem label="Planning" icon="lucide-chart-gantt" to="/planning" />
 				<SidebarItem label="My tasks" icon="lucide-list-checks" to="/tasks" />
 				<SidebarItem label="Directory" icon="lucide-book-user" to="/directory" />
 			</Sidebar>
