@@ -1,8 +1,8 @@
 <script setup>
 import { computed, ref } from "vue";
 import { Button, ErrorMessage, LoadingText, useCall, useList } from "frappe-ui";
-import EntryDialog from "../components/EntryDialog.vue";
 import GigCard from "../components/GigCard.vue";
+import GigPanel from "../components/GigPanel.vue";
 import { gigFields, pipelineColumns } from "../gig";
 
 // ponytail: the whole pipeline in one unpaged fetch, page per column if a band ever tracks hundreds of gigs
@@ -55,12 +55,12 @@ async function dropGig(column) {
 	if (gigs.setValue.error) gig.status = previousStatus;
 }
 
-const dialogOpen = ref(false);
-const editingName = ref(null);
+const panelOpen = ref(false);
+const openedName = ref(null);
 
 function openGig(name = null) {
-	editingName.value = name;
-	dialogOpen.value = true;
+	openedName.value = name;
+	panelOpen.value = true;
 }
 </script>
 
@@ -119,6 +119,12 @@ function openGig(name = null) {
 				</section>
 			</div>
 		</template>
-		<EntryDialog v-model:open="dialogOpen" doctype="Gig" :name="editingName" :fields="fields" @saved="gigs.reload()" />
+		<GigPanel
+			v-if="panelOpen"
+			:name="openedName"
+			:fields="fields"
+			@close="panelOpen = false"
+			@saved="gigs.reload()"
+		/>
 	</div>
 </template>

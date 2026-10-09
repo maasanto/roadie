@@ -1,19 +1,35 @@
+from io import BytesIO
+
 import frappe
 from frappe.tests import IntegrationTestCase
+from pypdf import PdfWriter
 
-from band_crm.api import get_members
+from band_crm.api import get_attachments, get_members
 from band_crm.www import band
 
 MEMBER = "john@example.com"
+OTHER_MEMBER = "jane@example.com"
+
+
+def make_member(email, first_name):
+	if not frappe.db.exists("User", email):
+		frappe.get_doc(
+			{"doctype": "User", "email": email, "first_name": first_name, "last_name": "Doe", "send_welcome_email": 0}
+		).insert(ignore_permissions=True)
+	frappe.get_doc("User", email).add_roles("Band Member")
+
+
+def blank_pdf():
+	writer = PdfWriter()
+	writer.add_blank_page(width=595, height=842)
+	buffer = BytesIO()
+	writer.write(buffer)
+	return buffer.getvalue()
 
 
 class TestGig(IntegrationTestCase):
 	def setUp(self):
-		if not frappe.db.exists("User", MEMBER):
-			frappe.get_doc(
-				{"doctype": "User", "email": MEMBER, "first_name": "John", "last_name": "Doe", "send_welcome_email": 0}
-			).insert(ignore_permissions=True)
-		frappe.get_doc("User", MEMBER).add_roles("Band Member")
+		make_member(MEMBER, "John")
 
 	def tearDown(self):
 		frappe.set_user("Administrator")
@@ -54,6 +70,27 @@ class TestGig(IntegrationTestCase):
 
 		self.assertIn(MEMBER, members)
 		self.assertNotIn("Administrator", members)
+
+	def test_rider_attached_by_one_member_opens_for_another(self):
+		make_member(OTHER_MEMBER, "Jane")
+		frappe.set_user(OTHER_MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Festival 2027"}).insert()
+		frappe.get_doc(
+			{
+				"doctype": "File",
+				"file_name": "rider.pdf",
+				"content": blank_pdf(),
+				"is_private": 1,
+				"attached_to_doctype": "Gig",
+				"attached_to_name": gig.name,
+			}
+		).insert()
+
+		frappe.set_user(MEMBER)
+		attachments = get_attachments(gig.name)
+
+		self.assertEqual([file.file_name for file in attachments], ["rider.pdf"])
+		self.assertTrue(frappe.get_doc("File", attachments[0].name).is_downloadable())
 
 	def test_guest_is_sent_to_login(self):
 		frappe.set_user("Guest")
