@@ -1,7 +1,8 @@
 <script setup>
 import { computed, ref } from "vue";
 import { Badge, Dropdown, ErrorMessage, LoadingText, TabButtons, TextInput, useList } from "frappe-ui";
-import DirectoryEntryDialog from "../components/DirectoryEntryDialog.vue";
+import EntryContacts from "../components/EntryContacts.vue";
+import EntryDialog from "../components/EntryDialog.vue";
 import { directoryTypes } from "../directory";
 
 // ponytail: one unpaged fetch per type, page server-side if the directory outgrows a few hundred entries
@@ -66,11 +67,16 @@ const newOptions = directoryTypes.map(({ doctype }) => ({ label: doctype, onClic
 				</button>
 			</li>
 		</ul>
-		<DirectoryEntryDialog
+		<EntryDialog
 			v-model:open="dialogOpen"
 			:doctype="editing.doctype"
 			:name="editing.name"
+			:fields="directoryTypes.find((type) => type.doctype === editing.doctype).fields"
 			@saved="lists[editing.doctype].reload()"
-		/>
+		>
+			<template #default="{ entryName }">
+				<EntryContacts :doctype="editing.doctype" :name="entryName" />
+			</template>
+		</EntryDialog>
 	</div>
 </template>

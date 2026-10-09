@@ -18,3 +18,16 @@ def get_contacts(doctype: str, name: str) -> list[dict]:
 		fields=["name", "full_name", "email_id", "phone", "mobile_no"],
 		order_by="creation asc",
 	)
+
+
+@frappe.whitelist()
+def get_members() -> list[dict]:
+	frappe.only_for(("Band Member", "System Manager"))
+
+	return frappe.get_all(
+		"User",
+		filters=[["Has Role", "role", "=", "Band Member"], ["enabled", "=", 1]],
+		fields=["name", "full_name", "user_image"],
+		order_by="full_name asc",
+		distinct=True,
+	)

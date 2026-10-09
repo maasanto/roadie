@@ -6,7 +6,16 @@
  "engine": "InnoDB",
  "field_order": [
   "title",
-  "status"
+  "status",
+  "gig_owner",
+  "gig_date",
+  "festival",
+  "venue",
+  "promoter",
+  "application_opens",
+  "application_closes",
+  "fee",
+  "notes"
  ],
  "fields": [
   {
@@ -25,10 +34,65 @@
    "label": "Status",
    "options": "Idea\nContacted\nApplied\nNegotiating\nBooked\nPlayed\nDeclined\nDropped",
    "reqd": 1
+  },
+  {
+   "default": "__user",
+   "fieldname": "gig_owner",
+   "fieldtype": "Link",
+   "label": "Owner",
+   "options": "User"
+  },
+  {
+   "fieldname": "gig_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Gig Date"
+  },
+  {
+   "fieldname": "festival",
+   "fieldtype": "Link",
+   "label": "Festival",
+   "options": "Festival"
+  },
+  {
+   "fieldname": "venue",
+   "fieldtype": "Link",
+   "label": "Venue",
+   "options": "Venue"
+  },
+  {
+   "fieldname": "promoter",
+   "fieldtype": "Link",
+   "label": "Promoter",
+   "options": "Promoter"
+  },
+  {
+   "fetch_from": "festival.application_opens",
+   "fetch_if_empty": 1,
+   "fieldname": "application_opens",
+   "fieldtype": "Date",
+   "label": "Application Opens"
+  },
+  {
+   "fetch_from": "festival.application_closes",
+   "fetch_if_empty": 1,
+   "fieldname": "application_closes",
+   "fieldtype": "Date",
+   "label": "Application Closes"
+  },
+  {
+   "fieldname": "fee",
+   "fieldtype": "Currency",
+   "label": "Fee"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
   }
  ],
  "links": [],
- "modified": "2026-10-09 12:00:00.000000",
+ "modified": "2026-10-09 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Band CRM",
  "name": "Gig",

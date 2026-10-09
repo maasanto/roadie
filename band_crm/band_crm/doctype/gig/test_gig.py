@@ -1,6 +1,7 @@
 import frappe
 from frappe.tests import IntegrationTestCase
 
+from band_crm.api import get_members
 from band_crm.www import band
 
 MEMBER = "john@example.com"
@@ -25,6 +26,34 @@ class TestGig(IntegrationTestCase):
 		self.assertEqual(gig.status, "Idea")
 		self.assertIn(gig.name, [row.name for row in frappe.get_list("Gig")])
 		self.assertEqual(band.get_context().boot["user"], MEMBER)
+
+	def test_gig_takes_the_festival_window_unless_already_set(self):
+		festival = frappe.get_doc(
+			{
+				"doctype": "Festival",
+				"title": "Acme Festival",
+				"application_opens": "2027-01-10",
+				"application_closes": "2027-02-15",
+			}
+		).insert()
+
+		frappe.set_user(MEMBER)
+		copied = frappe.get_doc({"doctype": "Gig", "title": "Acme 2027", "festival": festival.name}).insert()
+		edited = frappe.get_doc(
+			{"doctype": "Gig", "title": "Acme 2027 late", "festival": festival.name, "application_closes": "2027-03-01"}
+		).insert()
+
+		self.assertEqual(str(copied.application_opens), "2027-01-10")
+		self.assertEqual(str(copied.application_closes), "2027-02-15")
+		self.assertEqual(str(edited.application_closes), "2027-03-01")
+		self.assertEqual(copied.gig_owner, MEMBER)
+
+	def test_members_lists_only_band_members(self):
+		frappe.set_user(MEMBER)
+		members = [member.name for member in get_members()]
+
+		self.assertIn(MEMBER, members)
+		self.assertNotIn("Administrator", members)
 
 	def test_guest_is_sent_to_login(self):
 		frappe.set_user("Guest")
