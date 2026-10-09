@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { Badge, Dropdown, ErrorMessage, LoadingText, TabButtons, TextInput, useList } from "frappe-ui";
+import EmailThread from "../components/EmailThread.vue";
 import EntryContacts from "../components/EntryContacts.vue";
 import EntryDialog from "../components/EntryDialog.vue";
 import { directoryTypes } from "../directory";
@@ -76,6 +77,7 @@ const newOptions = directoryTypes.map(({ doctype }) => ({ label: doctype, onClic
 		>
 			<template #default="{ entryName }">
 				<EntryContacts :doctype="editing.doctype" :name="entryName" />
+				<EmailThread :doctype="editing.doctype" :name="entryName" />
 			</template>
 		</EntryDialog>
 	</div>

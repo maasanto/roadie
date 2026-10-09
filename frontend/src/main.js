@@ -10,6 +10,8 @@ const router = createRouter({
 		{ path: "/planning", name: "Planning", component: () => import("./pages/PlanningScreen.vue") },
 		{ path: "/tasks", name: "MyTasks", component: () => import("./pages/MyTasksScreen.vue") },
 		{ path: "/directory", name: "Directory", component: () => import("./pages/DirectoryScreen.vue") },
+		{ path: "/inbox", name: "Inbox", component: () => import("./pages/MailboxScreen.vue"), props: { sentOrReceived: "Received" } },
+		{ path: "/outbox", name: "Outbox", component: () => import("./pages/MailboxScreen.vue"), props: { sentOrReceived: "Sent" } },
 	],
 });
 

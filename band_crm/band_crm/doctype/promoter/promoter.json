@@ -43,7 +43,7 @@
   }
  ],
  "links": [],
- "modified": "2026-10-09 15:00:00.000000",
+ "modified": "2026-10-09 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Band CRM",
  "name": "Promoter",
@@ -52,6 +52,7 @@
   {
    "create": 1,
    "delete": 1,
+   "email": 1,
    "read": 1,
    "role": "Band Member",
    "write": 1
@@ -59,6 +60,7 @@
   {
    "create": 1,
    "delete": 1,
+   "email": 1,
    "read": 1,
    "role": "System Manager",
    "write": 1

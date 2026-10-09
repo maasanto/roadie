@@ -14,6 +14,8 @@ const accountMenu = [{ label: "Log out", icon: "lucide-log-out", onClick: () => 
 				<SidebarItem label="Planning" icon="lucide-chart-gantt" to="/planning" />
 				<SidebarItem label="My tasks" icon="lucide-list-checks" to="/tasks" />
 				<SidebarItem label="Directory" icon="lucide-book-user" to="/directory" />
+				<SidebarItem label="Inbox" icon="lucide-inbox" to="/inbox" />
+				<SidebarItem label="Outbox" icon="lucide-send" to="/outbox" />
 			</Sidebar>
 			<main class="min-w-0 flex-1 overflow-auto">
 				<router-view />

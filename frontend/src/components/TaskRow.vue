@@ -1,5 +1,7 @@
 <script setup>
-import { Avatar, Checkbox } from "frappe-ui";
+import { ref } from "vue";
+import { Avatar, Checkbox, Dialog } from "frappe-ui";
+import EmailThread from "./EmailThread.vue";
 import { daysUntil, formatDate } from "../gig";
 
 defineProps({
@@ -10,13 +12,21 @@ defineProps({
 const emit = defineEmits(["update:done"]);
 
 const isOverdue = (task) => !task.done && task.due_date && daysUntil(task.due_date) < 0;
+const showEmails = ref(false);
 </script>
 
 <template>
 	<li class="flex items-center gap-3 px-3 py-2">
 		<Checkbox :model-value="Boolean(task.done)" :aria-label="`Done: ${task.title}`" @update:model-value="emit('update:done', $event)" />
 		<div class="min-w-0 flex-1">
-			<p class="truncate text-base" :class="task.done ? 'text-ink-gray-5 line-through' : 'text-ink-gray-8'">{{ task.title }}</p>
+			<button
+				type="button"
+				class="block max-w-full truncate text-left text-base hover:underline"
+				:class="task.done ? 'text-ink-gray-5 line-through' : 'text-ink-gray-8'"
+				@click="showEmails = true"
+			>
+				{{ task.title }}
+			</button>
 			<p v-if="context" class="truncate text-sm text-ink-gray-5">{{ context }}</p>
 		</div>
 		<span
@@ -27,5 +37,8 @@ const isOverdue = (task) => !task.done && task.due_date && daysUntil(task.due_da
 			<span class="lucide-calendar-check size-3.5" aria-hidden="true" />{{ formatDate(task.due_date) }}
 		</span>
 		<Avatar v-if="assignee" :label="assignee.full_name" :image="assignee.user_image" size="sm" :title="assignee.full_name" />
+		<Dialog v-model:open="showEmails" :title="task.title" size="2xl">
+			<EmailThread doctype="Band Task" :name="task.name" />
+		</Dialog>
 	</li>
 </template>

@@ -2,7 +2,21 @@ import frappe
 from frappe import _
 
 DIRECTORY_DOCTYPES = ("Festival", "Venue", "Promoter", "Band")
-EMAIL_DOCTYPES = ("Gig",)
+EMAIL_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
+# Frappe roots a thread linked to no record on its first Communication, so that Communication is a thread too.
+THREAD_DOCTYPES = (*EMAIL_DOCTYPES, "Communication")
+EMAIL_FIELDS = [
+	"name",
+	"subject",
+	"content",
+	"sender",
+	"sender_full_name",
+	"recipients",
+	"cc",
+	"sent_or_received",
+	"delivery_status",
+	"communication_date",
+]
 
 
 @frappe.whitelist()
@@ -36,26 +50,24 @@ def get_attachments(gig: str) -> list[dict]:
 
 @frappe.whitelist()
 def get_emails(doctype: str, name: str) -> list[dict]:
-	"""Members only see Communications through the record they belong to, oldest first like a thread."""
-	if doctype not in EMAIL_DOCTYPES:
-		frappe.throw(_("Emails can only be listed for {0}, not {1}").format(", ".join(EMAIL_DOCTYPES), doctype))
+	"""A record's thread, oldest first: emails written from it, plus those Frappe linked to it through a contact."""
+	if doctype not in THREAD_DOCTYPES:
+		frappe.throw(_("Emails can only be listed for {0}, not {1}").format(", ".join(THREAD_DOCTYPES), doctype))
 	frappe.get_doc(doctype, name).check_permission("read")
 
+	referencing = frappe.get_all(
+		"Communication", filters={"reference_doctype": doctype, "reference_name": name}, pluck="name"
+	)
+	linked = frappe.get_all(
+		"Communication Link",
+		filters={"parenttype": "Communication", "link_doctype": doctype, "link_name": name},
+		pluck="parent",
+	)
+	thread_root = [name] if doctype == "Communication" else []
 	emails = frappe.get_all(
 		"Communication",
-		filters={"communication_medium": "Email", "reference_doctype": doctype, "reference_name": name},
-		fields=[
-			"name",
-			"subject",
-			"content",
-			"sender",
-			"sender_full_name",
-			"recipients",
-			"cc",
-			"sent_or_received",
-			"delivery_status",
-			"communication_date",
-		],
+		filters={"communication_medium": "Email", "name": ["in", [*thread_root, *referencing, *linked]]},
+		fields=EMAIL_FIELDS,
 		order_by="communication_date asc",
 	)
 	attachments = frappe.get_all(
@@ -67,6 +79,56 @@ def get_emails(doctype: str, name: str) -> list[dict]:
 	for email in emails:
 		email.attachments = [file for file in attachments if file.attached_to_name == email.name]
 	return emails
+
+
+@frappe.whitelist()
+def get_mailbox(sent_or_received: str) -> list[dict]:
+	"""The shared account's mail, newest first, each with the record whose thread it belongs to."""
+	frappe.only_for(("Band Member", "System Manager"))
+	if sent_or_received not in ("Sent", "Received"):
+		frappe.throw(_("Mailbox is either Sent or Received, not {0}").format(sent_or_received))
+
+	# ponytail: last 200 emails of every account, page and filter by Email Account if the band adds a second mailbox
+	emails = frappe.get_all(
+		"Communication",
+		filters={
+			"communication_medium": "Email",
+			"communication_type": "Communication",
+			"sent_or_received": sent_or_received,
+		},
+		fields=[*EMAIL_FIELDS, "seen", "reference_doctype", "reference_name"],
+		order_by="communication_date desc",
+		limit=200,
+	)
+	links = frappe.get_all(
+		"Communication Link",
+		filters={
+			"parenttype": "Communication",
+			"parent": ["in", [email.name for email in emails]],
+			"link_doctype": ["in", DIRECTORY_DOCTYPES],
+		},
+		fields=["parent", "link_doctype", "link_name"],
+		order_by="idx asc",
+	)
+	for email in emails:
+		email.thread = _thread_of(email, [link for link in links if link.parent == email.name])
+	return emails
+
+
+def _thread_of(email, directory_links):
+	if email.reference_doctype in THREAD_DOCTYPES:
+		return {"doctype": email.reference_doctype, "name": email.reference_name}
+	if directory_links:
+		return {"doctype": directory_links[0].link_doctype, "name": directory_links[0].link_name}
+	return {"doctype": "Communication", "name": email.name}
+
+
+@frappe.whitelist(methods=["POST"])
+def mark_seen(name: str) -> None:
+	"""Frappe only marks mail seen when it was fetched over IMAP, so opening it in the Inbox does it here."""
+	email = frappe.get_doc("Communication", name)
+	email.check_permission("read")
+	email.db_set("seen", 1, update_modified=False)
 
 
 @frappe.whitelist()
