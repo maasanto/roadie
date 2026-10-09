@@ -1,3 +1,4 @@
+import { __ } from "./translation";
 import { createApp } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 import App from "./App.vue";
@@ -15,4 +16,8 @@ const router = createRouter({
 	],
 });
 
-createApp(App).use(router).mount("#app");
+document.documentElement.lang = window.lang;
+
+const app = createApp(App).use(router);
+app.config.globalProperties.__ = __;
+app.mount("#app");

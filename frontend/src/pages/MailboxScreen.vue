@@ -32,10 +32,10 @@ function open(email) {
 
 <template>
 	<div class="p-6">
-		<h1 class="text-2xl-semibold">{{ isInbox ? "Inbox" : "Outbox" }}</h1>
+		<h1 class="text-2xl-semibold">{{ isInbox ? __("Inbox") : __("Outbox") }}</h1>
 		<LoadingText v-if="mailbox.loading && !mailbox.data" class="mt-4" />
 		<ErrorMessage v-else-if="mailbox.error" class="mt-4" :message="mailbox.error" />
-		<p v-else-if="!mailbox.data?.length" class="mt-4 text-p-base text-ink-gray-5">No emails yet.</p>
+		<p v-else-if="!mailbox.data?.length" class="mt-4 text-p-base text-ink-gray-5">{{ __("No emails yet.") }}</p>
 		<ul v-else class="mt-4 divide-y divide-outline-gray-1 rounded-6 border">
 			<li v-for="email in mailbox.data" :key="email.name">
 				<button
@@ -46,14 +46,14 @@ function open(email) {
 					<span
 						class="size-2 shrink-0 rounded-full"
 						:class="isInbox && !email.seen ? 'bg-surface-blue-7' : 'bg-transparent'"
-						:aria-label="isInbox && !email.seen ? 'Unread' : undefined"
+						:aria-label="isInbox && !email.seen ? __('Unread') : undefined"
 					/>
 					<Avatar :label="isInbox ? email.sender_full_name || email.sender : email.recipients" size="md" />
 					<span
 						class="w-48 shrink-0 truncate text-base"
 						:class="isInbox && !email.seen ? 'font-semibold text-ink-gray-9' : 'text-ink-gray-8'"
 					>
-						{{ isInbox ? email.sender_full_name || email.sender : `To ${email.recipients}` }}
+						{{ isInbox ? email.sender_full_name || email.sender : __("To {0}", [email.recipients]) }}
 					</span>
 					<span class="min-w-0 flex-1 truncate text-base" :class="isInbox && !email.seen ? 'font-semibold text-ink-gray-9' : 'text-ink-gray-7'">
 						{{ email.subject }}
@@ -70,8 +70,8 @@ function open(email) {
 		>
 			<header class="flex min-h-12 items-center justify-between gap-2 border-b px-5">
 				<h2 class="truncate text-lg-semibold">{{ openEmail.subject }}</h2>
-				<Badge v-if="openEmail.thread.doctype !== 'Communication'" :label="openEmail.thread.doctype" />
-				<Button class="ml-auto" icon="lucide-x" variant="ghost" label="Close" @click="openEmail = null" />
+				<Badge v-if="openEmail.thread.doctype !== 'Communication'" :label="__(openEmail.thread.doctype)" />
+				<Button class="ml-auto" icon="lucide-x" variant="ghost" :label="__('Close')" @click="openEmail = null" />
 			</header>
 			<div class="flex-1 overflow-y-auto px-5 pb-10 pt-5">
 				<EmailThread

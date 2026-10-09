@@ -51,24 +51,24 @@ function submit() {
 <template>
 	<form class="rounded-6 border border-outline-gray-2 px-3 pb-3" @submit.prevent="submit">
 		<div class="flex items-start gap-2">
-			<EmailRecipients v-model="email.to" class="flex-1" label="To" :suggestions="suggestions" />
-			<Button v-if="!showCopies" class="mt-1.5" variant="ghost" label="Cc / Bcc" @click="showCopies = true" />
+			<EmailRecipients v-model="email.to" class="flex-1" :label="__('To')" :suggestions="suggestions" />
+			<Button v-if="!showCopies" class="mt-1.5" variant="ghost" :label="__('Cc / Bcc')" @click="showCopies = true" />
 		</div>
 		<template v-if="showCopies">
-			<EmailRecipients v-model="email.cc" label="Cc" :suggestions="suggestions" />
-			<EmailRecipients v-model="email.bcc" label="Bcc" :suggestions="suggestions" />
+			<EmailRecipients v-model="email.cc" :label="__('Cc')" :suggestions="suggestions" />
+			<EmailRecipients v-model="email.bcc" :label="__('Bcc')" :suggestions="suggestions" />
 		</template>
 		<input
 			v-model="email.subject"
 			class="w-full border-x-0 border-b border-t-0 border-outline-gray-1 bg-transparent px-0 py-2 text-base text-ink-gray-8 focus:border-outline-gray-3 focus:ring-0"
-			placeholder="Subject"
+			:placeholder="__('Subject')"
 			required
 		/>
 		<TextEditor
 			class="mt-2"
 			:content="email.content"
 			:fixed-menu="EDITOR_BUTTONS"
-			placeholder="Write your email…"
+			:placeholder="__('Write your email…')"
 			editor-class="prose-sm max-w-none min-h-40 max-h-96 overflow-y-auto py-2"
 			@change="email.content = $event"
 		/>
@@ -79,7 +79,7 @@ function submit() {
 				<button
 					type="button"
 					class="lucide-x size-3.5 text-ink-gray-5 hover:text-ink-gray-8"
-					:aria-label="`Remove ${file.file_name}`"
+					:aria-label="__('Remove {0}', [file.file_name])"
 					@click="attachments = attachments.filter((entry) => entry.name !== file.name)"
 				/>
 			</li>
@@ -88,12 +88,12 @@ function submit() {
 		<div class="mt-3 flex items-center justify-between">
 			<FileUploader :upload-args="{ doctype, docname: name, private: true }" @success="attachments.push($event)">
 				<template #default="{ openFileSelector, uploading, progress }">
-					<Button icon-left="lucide-paperclip" variant="ghost" :label="uploading ? `Uploading ${progress}%` : 'Attach'" :loading="uploading" @click="openFileSelector" />
+					<Button icon-left="lucide-paperclip" variant="ghost" :label="uploading ? __('Uploading {0}%', [progress]) : __('Attach')" :loading="uploading" @click="openFileSelector" />
 				</template>
 			</FileUploader>
 			<div class="flex gap-2">
-				<Button label="Discard" variant="ghost" @click="emit('discard')" />
-				<Button type="submit" variant="solid" icon-left="lucide-send" label="Send" :loading="send.loading" :disabled="!email.to.length" />
+				<Button :label="__('Discard')" variant="ghost" @click="emit('discard')" />
+				<Button type="submit" variant="solid" icon-left="lucide-send" :label="__('Send')":loading="send.loading" :disabled="!email.to.length" />
 			</div>
 		</div>
 	</form>

@@ -29,20 +29,20 @@ async function addTask() {
 
 <template>
 	<section>
-		<h2 class="text-lg-semibold">Tasks</h2>
+		<h2 class="text-lg-semibold">{{ __("Tasks") }}</h2>
 		<ul v-if="tasks.data?.length" class="mt-3 divide-y divide-outline-gray-1 rounded-6 border">
 			<TaskRow v-for="task in tasks.data" :key="task.name" :task="task" :assignee="memberOf(task)" @update:done="setDone(tasks, task, $event)" />
 		</ul>
-		<p v-else-if="tasks.isFinished" class="mt-3 text-p-sm text-ink-gray-5">No tasks yet.</p>
+		<p v-else-if="tasks.isFinished" class="mt-3 text-p-sm text-ink-gray-5">{{ __("No tasks yet.") }}</p>
 		<ErrorMessage class="mt-2" :message="tasks.error || tasks.setValue.error" />
 		<form class="mt-3 grid grid-cols-2 gap-3" @submit.prevent="addTask">
-			<FormControl v-model="newTask.title" class="col-span-2" type="text" placeholder="New task" required />
-			<FormControl v-model="newTask.assignee" class="col-span-2" type="combobox" label="Assignee" :options="memberOptions" />
-			<FormControl v-model="newTask.start_date" type="date" label="Start date" />
-			<FormControl v-model="newTask.due_date" type="date" label="Due date" />
+			<FormControl v-model="newTask.title" class="col-span-2" type="text" :placeholder="__('New task')" required />
+			<FormControl v-model="newTask.assignee" class="col-span-2" type="combobox" :label="__('Assignee')" :options="memberOptions" />
+			<FormControl v-model="newTask.start_date" type="date" :label="__('Start date')" />
+			<FormControl v-model="newTask.due_date" type="date" :label="__('Due date')" />
 			<ErrorMessage class="col-span-2" :message="tasks.insert.error" />
 			<div class="col-span-2 flex justify-end">
-				<Button type="submit" icon-left="lucide-plus" label="Add task" :loading="tasks.insert.loading" />
+				<Button type="submit" icon-left="lucide-plus" :label="__('Add task')":loading="tasks.insert.loading" />
 			</div>
 		</form>
 	</section>

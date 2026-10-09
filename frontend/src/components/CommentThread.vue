@@ -44,8 +44,8 @@ function submit() {
 
 <template>
 	<section>
-		<h2 class="text-lg-semibold">Comments</h2>
-		<p class="text-p-sm text-ink-gray-5">Internal to the band, never emailed. Type @ to mention a bandmate.</p>
+		<h2 class="text-lg-semibold">{{ __("Comments") }}</h2>
+		<p class="text-p-sm text-ink-gray-5">{{ __("Internal to the band, never emailed. Type @ to mention a bandmate.") }}</p>
 		<ul v-if="comments.data?.length" class="mt-3 space-y-3">
 			<li v-for="comment in comments.data" :key="comment.name" class="flex items-start gap-2">
 				<Avatar
@@ -62,20 +62,20 @@ function submit() {
 				</div>
 			</li>
 		</ul>
-		<p v-else-if="comments.isFinished" class="mt-3 text-p-sm text-ink-gray-5">No comments yet.</p>
+		<p v-else-if="comments.isFinished" class="mt-3 text-p-sm text-ink-gray-5">{{ __("No comments yet.") }}</p>
 		<ErrorMessage class="mt-2" :message="comments.error" />
 		<form v-if="members.data" class="mt-3 rounded-6 border border-outline-gray-2 px-3 pb-2" @submit.prevent="submit">
 			<TextEditor
 				:key="editorKey"
 				:content="draft"
 				:mentions="mentions"
-				placeholder="Write a comment…"
+				:placeholder="__('Write a comment…')"
 				editor-class="prose-sm max-w-none min-h-16 py-2"
 				@change="draft = $event"
 			/>
 			<ErrorMessage class="mt-1" :message="post.error" />
 			<div class="flex justify-end">
-				<Button type="submit" variant="solid" label="Comment" :loading="post.loading" :disabled="isDraftEmpty" />
+				<Button type="submit" variant="solid" :label="__('Comment')" :loading="post.loading" :disabled="isDraftEmpty" />
 			</div>
 		</form>
 	</section>

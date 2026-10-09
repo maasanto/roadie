@@ -22,8 +22,8 @@ const entryForm = ref(null);
 		@keydown.esc="emit('close')"
 	>
 		<header class="flex min-h-12 items-center justify-between gap-2 border-b px-5">
-			<h2 class="truncate text-lg-semibold">{{ entryForm?.entryName ? entryForm.form.title || "Gig" : "New gig" }}</h2>
-			<Button icon="lucide-x" variant="ghost" label="Close" @click="emit('close')" />
+			<h2 class="truncate text-lg-semibold">{{ entryForm?.entryName ? entryForm.form.title || __("Gig") : __("New gig") }}</h2>
+			<Button icon="lucide-x" variant="ghost" :label="__('Close')" @click="emit('close')" />
 		</header>
 		<div class="flex-1 overflow-y-auto px-5 pb-10 pt-5">
 			<EntryForm :key="name" ref="entryForm" doctype="Gig" :name="name" :fields="fields" @saved="emit('saved')">

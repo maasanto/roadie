@@ -63,7 +63,7 @@ defineExpose({ form, entryName });
 			/>
 			<ErrorMessage class="col-span-2" :message="saveCall.error" />
 			<div class="col-span-2 flex justify-end">
-				<Button type="submit" variant="solid" :loading="saveCall.loading" :label="entryName ? 'Save' : 'Create'" />
+				<Button type="submit" variant="solid" :loading="saveCall.loading" :label="entryName ? __('Save') : __('Create')" />
 			</div>
 		</form>
 		<slot v-if="entryName" :entry-name="entryName" />

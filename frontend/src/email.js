@@ -10,13 +10,13 @@ const FAILED_STATUSES = ["Bounced", "Soft-Bounced", "Rejected", "Error", "Expire
 const QUEUED_STATUSES = ["", "Sending", "Scheduled", "Delayed"];
 
 export function deliveryState(status) {
-	if (FAILED_STATUSES.includes(status)) return { label: "Error", theme: "red" };
-	if (QUEUED_STATUSES.includes(status || "")) return { label: "Queued", theme: "orange" };
-	return { label: "Sent", theme: "green" };
+	if (FAILED_STATUSES.includes(status)) return { label: __("Error"), theme: "red" };
+	if (QUEUED_STATUSES.includes(status || "")) return { label: __("Queued"), theme: "orange" };
+	return { label: __("Sent"), theme: "green" };
 }
 
 export const formatDateTime =(value) =>
-	new Date(value.replace(" ", "T")).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+	new Date(value.replace(" ", "T")).toLocaleString(window.lang, { dateStyle: "medium", timeStyle: "short" });
 
 // Plain-text emails are stored as escaped text with every CRLF doubled, which the rich-text renderer would collapse.
 export function asHtml(content) {
@@ -27,7 +27,8 @@ export function asHtml(content) {
 
 function quote(email) {
 	const author = email.sender_full_name || email.sender;
-	return `<p></p><p>On ${formatDateTime(email.communication_date)}, ${author} wrote:</p><blockquote>${asHtml(email.content)}</blockquote>`;
+	const attribution = __("On {0}, {1} wrote:", [formatDateTime(email.communication_date), author]);
+	return `<p></p><p>${attribution}</p><blockquote>${asHtml(email.content)}</blockquote>`;
 }
 
 export function replyDraft(email, mode) {

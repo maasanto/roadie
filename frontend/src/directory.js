@@ -1,34 +1,36 @@
+import { translatedOptions } from "./translation";
+
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 const headFields = [
-	{ fieldname: "title", label: "Name", type: "text", required: true },
-	{ fieldname: "city", label: "City", type: "text" },
-	{ fieldname: "website", label: "Website", type: "url" },
-	{ fieldname: "instagram", label: "Instagram", type: "text" },
+	{ fieldname: "title", label: __("Name"), type: "text", required: true },
+	{ fieldname: "city", label: __("City"), type: "text" },
+	{ fieldname: "website", label: __("Website"), type: "url" },
+	{ fieldname: "instagram", label: __("Instagram"), type: "text" },
 ];
-const notesField = { fieldname: "notes", label: "Notes", type: "textarea" };
+const notesField = { fieldname: "notes", label: __("Notes"), type: "textarea" };
 
 const withCommonFields = (extraFields) => [...headFields, ...extraFields, notesField];
 
 export const directoryTypes = [
 	{
 		doctype: "Festival",
-		plural: "Festivals",
+		plural: __("Festivals"),
 		fields: withCommonFields([
-			{ fieldname: "usual_month", label: "Usual month", type: "select", options: MONTHS },
-			{ fieldname: "application_url", label: "Application URL", type: "url" },
-			{ fieldname: "application_opens", label: "Usual application opens", type: "date" },
-			{ fieldname: "application_closes", label: "Usual application closes", type: "date" },
+			{ fieldname: "usual_month", label: __("Usual month"), type: "select", options: translatedOptions(MONTHS) },
+			{ fieldname: "application_url", label: __("Application URL"), type: "url" },
+			{ fieldname: "application_opens", label: __("Usual application opens"), type: "date" },
+			{ fieldname: "application_closes", label: __("Usual application closes"), type: "date" },
 		]),
 	},
 	{
 		doctype: "Venue",
-		plural: "Venues",
+		plural: __("Venues"),
 		fields: withCommonFields([
-			{ fieldname: "capacity", label: "Capacity", type: "number" },
-			{ fieldname: "address", label: "Address", type: "textarea" },
+			{ fieldname: "capacity", label: __("Capacity"), type: "number" },
+			{ fieldname: "address", label: __("Address"), type: "textarea" },
 		]),
 	},
-	{ doctype: "Promoter", plural: "Promoters", fields: withCommonFields([]) },
-	{ doctype: "Band", plural: "Bands", fields: withCommonFields([{ fieldname: "genre", label: "Genre", type: "text" }]) },
+	{ doctype: "Promoter", plural: __("Promoters"), fields: withCommonFields([]) },
+	{ doctype: "Band", plural: __("Bands"), fields: withCommonFields([{ fieldname: "genre", label: __("Genre"), type: "text" }]) },
 ];

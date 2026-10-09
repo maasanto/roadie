@@ -67,8 +67,8 @@ function openGig(name = null) {
 <template>
 	<div class="p-6">
 		<div class="flex items-center justify-between">
-			<h1 class="text-2xl-semibold">Pipeline</h1>
-			<Button variant="solid" icon-left="lucide-plus" label="New gig" @click="openGig()" />
+			<h1 class="text-2xl-semibold">{{ __("Pipeline") }}</h1>
+			<Button variant="solid" icon-left="lucide-plus" :label="__('New gig')" @click="openGig()" />
 		</div>
 		<LoadingText v-if="gigs.loading && !gigs.data" class="mt-4" />
 		<ErrorMessage v-else-if="gigs.error" class="mt-4" :message="gigs.error" />
@@ -103,7 +103,7 @@ function openGig(name = null) {
 				</section>
 			</div>
 			<div class="mt-4 space-y-6 md:hidden">
-				<p v-if="!gigs.data?.length" class="text-p-base text-ink-gray-5">No gigs yet.</p>
+				<p v-if="!gigs.data?.length" class="text-p-base text-ink-gray-5">{{ __("No gigs yet.") }}</p>
 				<section v-for="column in columns.filter((column) => column.gigs.length)" :key="column.label">
 					<h2 class="pb-2 text-sm-medium text-ink-gray-7">{{ column.label }} · {{ column.gigs.length }}</h2>
 					<div class="space-y-2">

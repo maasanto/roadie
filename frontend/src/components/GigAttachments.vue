@@ -8,18 +8,19 @@ const attachments = useCall({
 	params: () => ({ gig: props.gig }),
 });
 
-const formatSize = (bytes) => (bytes < 1024 * 1024 ? `${Math.ceil(bytes / 1024)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`);
+const formatSize = (bytes) =>
+	bytes < 1024 * 1024 ? __("{0} KB", [Math.ceil(bytes / 1024)]) : __("{0} MB", [(bytes / 1024 / 1024).toFixed(1)]);
 </script>
 
 <template>
 	<section>
 		<div class="flex items-center justify-between">
-			<h2 class="text-lg-semibold">Attachments</h2>
+			<h2 class="text-lg-semibold">{{ __("Attachments") }}</h2>
 			<FileUploader :upload-args="{ doctype: 'Gig', docname: gig, private: true }" @success="attachments.reload()">
 				<template #default="{ openFileSelector, uploading, progress, error }">
 					<Button
 						icon-left="lucide-paperclip"
-						:label="uploading ? `Uploading ${progress}%` : 'Attach'"
+						:label="uploading ? __('Uploading {0}%', [progress]) : __('Attach')"
 						:loading="uploading"
 						@click="openFileSelector"
 					/>
@@ -36,7 +37,7 @@ const formatSize = (bytes) => (bytes < 1024 * 1024 ? `${Math.ceil(bytes / 1024)}
 				</a>
 			</li>
 		</ul>
-		<p v-else-if="attachments.isFinished" class="mt-3 text-p-sm text-ink-gray-5">No attachments yet.</p>
+		<p v-else-if="attachments.isFinished" class="mt-3 text-p-sm text-ink-gray-5">{{ __("No attachments yet.") }}</p>
 		<ErrorMessage class="mt-2" :message="attachments.error" />
 	</section>
 </template>

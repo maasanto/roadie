@@ -7,11 +7,28 @@ import { formatDate } from "../gig";
 const planning = useCall({ url: "/api/v2/method/band_crm.api.get_planning" });
 
 const legend = [
-	{ kind: "window", label: "Application window" },
-	{ kind: "gig", label: "Gig" },
-	{ kind: "task", label: "Task" },
-	{ kind: "done", label: "Done" },
+	{ kind: "window", label: __("Application window") },
+	{ kind: "gig", label: __("Gig") },
+	{ kind: "task", label: __("Task") },
+	{ kind: "done", label: __("Done") },
 ];
+
+// frappe-gantt hard-codes its header controls in English and rebuilds them on every view change.
+const GANTT_CONTROL_LABELS = {
+	Mode: __("Mode"),
+	Hour: __("Hour"),
+	"Quarter Day": __("Quarter Day"),
+	"Half Day": __("Half Day"),
+	Day: __("Day"),
+	Week: __("Week"),
+	Month: __("Month"),
+	Year: __("Year"),
+};
+
+function translateGanttControls() {
+	for (const option of chart.value.querySelectorAll(".viewmode-select option")) option.textContent = GANTT_CONTROL_LABELS[option.value] || option.textContent;
+	chart.value.querySelector(".today-button").textContent = __("Today");
+}
 
 const lanes = computed(() => {
 	const lanes = [];
@@ -40,7 +57,14 @@ watch([chart, () => planning.data], ([element, bars]) => {
 			progress: 0,
 			custom_class: `bar-${bar.kind}`,
 		})),
-		{ readonly: true, view_mode: "Week", view_mode_select: true, auto_move_label: true },
+		{
+			readonly: true,
+			view_mode: "Week",
+			view_mode_select: true,
+			auto_move_label: true,
+			language: window.lang,
+			on_view_change: translateGanttControls,
+		},
 	);
 });
 </script>
@@ -48,7 +72,7 @@ watch([chart, () => planning.data], ([element, bars]) => {
 <template>
 	<div class="p-6">
 		<div class="flex flex-wrap items-center justify-between gap-3">
-			<h1 class="text-2xl-semibold">Planning</h1>
+			<h1 class="text-2xl-semibold">{{ __("Planning") }}</h1>
 			<ul class="flex flex-wrap gap-3 text-sm text-ink-gray-6">
 				<li v-for="item in legend" :key="item.kind" class="flex items-center gap-1.5">
 					<span class="planning-swatch size-3 rounded-sm" :class="`bar-${item.kind}`" />{{ item.label }}
@@ -58,7 +82,7 @@ watch([chart, () => planning.data], ([element, bars]) => {
 		<LoadingText v-if="planning.loading && !planning.data" class="mt-4" />
 		<ErrorMessage v-else-if="planning.error" class="mt-4" :message="planning.error" />
 		<p v-else-if="!planning.data?.length" class="mt-4 text-p-base text-ink-gray-5">
-			Nothing dated yet. Give a gig a date or an application window, or a task a due date.
+			{{ __("Nothing dated yet. Give a gig a date or an application window, or a task a due date.") }}
 		</p>
 		<template v-else>
 			<div ref="chart" class="mt-4 hidden overflow-hidden rounded-6 border md:block" />

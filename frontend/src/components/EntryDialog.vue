@@ -17,7 +17,7 @@ const entryForm = ref(null);
 <template>
 	<Dialog
 		v-model:open="open"
-		:title="entryForm?.entryName ? entryForm.form.title || doctype : `New ${doctype}`"
+		:title="entryForm?.entryName ? entryForm.form.title || __(doctype) : __('New {0}', [__(doctype)])"
 		size="2xl"
 	>
 		<EntryForm ref="entryForm" :doctype="doctype" :name="name" :fields="fields" @saved="emit('saved')">
