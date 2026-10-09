@@ -5,7 +5,7 @@ import App from "./App.vue";
 import "./style.css";
 
 const router = createRouter({
-	history: createWebHistory("/band"),
+	history: createWebHistory("/roadie"),
 	routes: [
 		{ path: "/", name: "Pipeline", component: () => import("./pages/PipelineScreen.vue") },
 		{ path: "/planning", name: "Planning", component: () => import("./pages/PlanningScreen.vue") },

@@ -1,0 +1,86 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-10-09 23:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "done",
+  "assignee",
+  "gig",
+  "start_date",
+  "due_date"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "done",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Done"
+  },
+  {
+   "fieldname": "assignee",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Assignee",
+   "options": "User"
+  },
+  {
+   "fieldname": "gig",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Gig",
+   "options": "Gig"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Due Date"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-09 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Roadie",
+ "name": "Band Task",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "read": 1,
+   "role": "Band Member",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title",
+ "track_changes": 1
+}

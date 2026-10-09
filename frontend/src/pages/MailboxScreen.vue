@@ -10,12 +10,12 @@ const props = defineProps({
 const isInbox = computed(() => props.sentOrReceived === "Received");
 
 const mailbox = useCall({
-	url: "/api/v2/method/band_crm.api.get_mailbox",
+	url: "/api/v2/method/roadie.api.get_mailbox",
 	params: () => ({ sent_or_received: props.sentOrReceived }),
 	refetch: true,
 });
 const markSeen = useCall({
-	url: "/api/v2/method/band_crm.api.mark_seen",
+	url: "/api/v2/method/roadie.api.mark_seen",
 	method: "POST",
 	immediate: false,
 	onSuccess: () => mailbox.reload(),

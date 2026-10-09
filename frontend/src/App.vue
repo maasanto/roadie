@@ -11,7 +11,7 @@ const accountMenu = [{ label: __("Log out"), icon: "lucide-log-out", onClick: ()
 	<FrappeUIProvider>
 		<div class="flex h-screen bg-surface-base text-ink-gray-8">
 			<Sidebar disable-collapse>
-				<SidebarHeader title="Band CRM" logo="/assets/band_crm/logo.svg" :subtitle="currentUser" :menu-items="accountMenu" />
+				<SidebarHeader title="Roadie" logo="/assets/roadie/logo.svg" :subtitle="currentUser" :menu-items="accountMenu" />
 				<SidebarItem :label="__('Pipeline')" icon="lucide-kanban" to="/" />
 				<SidebarItem :label="__('Planning')" icon="lucide-chart-gantt" to="/planning" />
 				<SidebarItem :label="__('My tasks')" icon="lucide-list-checks" to="/tasks" />

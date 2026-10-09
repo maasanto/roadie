@@ -1,4 +1,4 @@
-// The page boot carries the catalogue inline (www/band.py), so it is ready before any module builds a label.
+// The page boot carries the catalogue inline (www/roadie.py), so it is ready before any module builds a label.
 const messages = window.translations || {};
 
 export function __(message, replacements = []) {

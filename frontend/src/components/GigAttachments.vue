@@ -4,7 +4,7 @@ import { Button, ErrorMessage, FileUploader, useCall } from "frappe-ui";
 const props = defineProps({ gig: { type: String, required: true } });
 
 const attachments = useCall({
-	url: "/api/v2/method/band_crm.api.get_attachments",
+	url: "/api/v2/method/roadie.api.get_attachments",
 	params: () => ({ gig: props.gig }),
 });
 

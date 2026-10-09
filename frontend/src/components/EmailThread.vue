@@ -10,7 +10,7 @@ const props = defineProps({
 });
 
 const emails = useCall({
-	url: "/api/v2/method/band_crm.api.get_emails",
+	url: "/api/v2/method/roadie.api.get_emails",
 	params: () => ({ doctype: props.doctype, name: props.name }),
 });
 

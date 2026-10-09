@@ -13,7 +13,7 @@ const tasks = useList({
 	orderBy: "creation asc",
 	limit: 500,
 });
-const members = useCall({ url: "/api/v2/method/band_crm.api.get_members" });
+const members = useCall({ url: "/api/v2/method/roadie.api.get_members" });
 const memberOptions = computed(() => (members.data || []).map((member) => ({ label: member.full_name, value: member.name })));
 const memberOf = (task) => members.data?.find((member) => member.name === task.assignee);
 

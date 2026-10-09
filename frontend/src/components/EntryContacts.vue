@@ -5,7 +5,7 @@ import { Avatar, Button, ErrorMessage, FormControl, useCall } from "frappe-ui";
 const props = defineProps({ doctype: { type: String, required: true }, name: { type: String, required: true } });
 
 const contacts = useCall({
-	url: "/api/v2/method/band_crm.api.get_contacts",
+	url: "/api/v2/method/roadie.api.get_contacts",
 	params: () => ({ doctype: props.doctype, name: props.name }),
 });
 const createContact = useCall({ url: "/api/v2/document/Contact", method: "POST", immediate: false });

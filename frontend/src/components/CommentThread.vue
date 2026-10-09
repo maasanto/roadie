@@ -9,10 +9,10 @@ const props = defineProps({
 });
 
 const comments = useCall({
-	url: "/api/v2/method/band_crm.api.get_comments",
+	url: "/api/v2/method/roadie.api.get_comments",
 	params: () => ({ doctype: props.doctype, name: props.name }),
 });
-const members = useCall({ url: "/api/v2/method/band_crm.api.get_members" });
+const members = useCall({ url: "/api/v2/method/roadie.api.get_members" });
 const membersByEmail = computed(() => Object.fromEntries((members.data || []).map((member) => [member.name, member])));
 const mentions = computed(() => (members.data || []).map((member) => ({ label: member.full_name, value: member.name })));
 

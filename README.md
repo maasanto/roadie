@@ -1,4 +1,4 @@
-### Band CRM
+### Roadie
 
 Track the people, places and deadlines that get the band booked
 
@@ -9,7 +9,7 @@ You can install this app using the [bench](https://github.com/frappe/bench) CLI:
 ```bash
 cd $PATH_TO_YOUR_BENCH
 bench get-app $URL_OF_THIS_REPO --branch N
-bench install-app band_crm
+bench install-app roadie
 ```
 
 ### Contributing
@@ -17,7 +17,7 @@ bench install-app band_crm
 This app uses `pre-commit` for code formatting and linting. Please [install pre-commit](https://pre-commit.com/#installation) and enable it for this repository:
 
 ```bash
-cd apps/band_crm
+cd apps/roadie
 pre-commit install
 ```
 

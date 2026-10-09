@@ -1,5 +1,5 @@
 [project]
-name = "band_crm"
+name = "roadie"
 authors = [
     { name = "Antoine Maas", email = "antoine.maas@gmail.com"}
 ]

@@ -18,7 +18,7 @@ const linkLists = Object.fromEntries(
 		useList({ doctype, fields: ["name", "title"], orderBy: "title asc", limit: 500 }),
 	]),
 );
-const members = useCall({ url: "/api/v2/method/band_crm.api.get_members" });
+const members = useCall({ url: "/api/v2/method/roadie.api.get_members" });
 
 const titleOf = (doctype, name) => linkLists[doctype].data?.find((row) => row.name === name)?.title;
 const linkedTitles = (gig) =>

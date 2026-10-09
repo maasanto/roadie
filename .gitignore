@@ -49,8 +49,9 @@ jspm_packages/
 *debug.log
 
 # Built SPA
-band_crm/public/frontend/
-band_crm/www/band.html
+roadie/public/frontend/
+roadie/www/roadie.html
+roadie/public/node_modules
 frontend/auto-imports.d.ts
 frontend/components.d.ts
 

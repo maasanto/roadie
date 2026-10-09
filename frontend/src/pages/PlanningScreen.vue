@@ -4,7 +4,7 @@ import Gantt from "frappe-gantt";
 import { ErrorMessage, LoadingText, useCall } from "frappe-ui";
 import { formatDate } from "../gig";
 
-const planning = useCall({ url: "/api/v2/method/band_crm.api.get_planning" });
+const planning = useCall({ url: "/api/v2/method/roadie.api.get_planning" });
 
 const legend = [
 	{ kind: "window", label: __("Application window") },
