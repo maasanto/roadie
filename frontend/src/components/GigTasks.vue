@@ -37,13 +37,15 @@ async function addTask() {
 		<ErrorMessage class="mt-2" :message="tasks.error || tasks.setValue.error" />
 		<form class="mt-3 grid grid-cols-2 gap-3" @submit.prevent="addTask">
 			<FormControl v-model="newTask.title" class="col-span-2" type="text" :placeholder="__('New task')" required />
-			<FormControl v-model="newTask.assignee" class="col-span-2" type="combobox" :label="__('Assignee')" :options="memberOptions" />
-			<FormControl v-model="newTask.start_date" type="date" :label="__('Start date')" />
-			<FormControl v-model="newTask.due_date" type="date" :label="__('Due date')" />
+			<template v-if="newTask.title">
+				<FormControl v-model="newTask.assignee" class="col-span-2" type="combobox" :label="__('Assignee')" :options="memberOptions" />
+				<FormControl v-model="newTask.start_date" type="date" :label="__('Start date')" />
+				<FormControl v-model="newTask.due_date" type="date" :label="__('Due date')" />
+				<div class="col-span-2 flex justify-end">
+					<Button type="submit" icon-left="lucide-plus" :label="__('Add task')" :loading="tasks.insert.loading" />
+				</div>
+			</template>
 			<ErrorMessage class="col-span-2" :message="tasks.insert.error" />
-			<div class="col-span-2 flex justify-end">
-				<Button type="submit" icon-left="lucide-plus" :label="__('Add task')":loading="tasks.insert.loading" />
-			</div>
 		</form>
 	</section>
 </template>

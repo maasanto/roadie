@@ -1,6 +1,8 @@
 <script setup>
 import { computed } from "vue";
-import { ErrorMessage, LoadingText, useList } from "frappe-ui";
+import { Button, ErrorMessage, useList } from "frappe-ui";
+import EmptyState from "../components/EmptyState.vue";
+import ListSkeleton from "../components/ListSkeleton.vue";
 import TaskRow from "../components/TaskRow.vue";
 import { TASK_FIELDS, byDueDate, setDone } from "../task";
 
@@ -24,11 +26,19 @@ const sections = computed(() => {
 <template>
 	<div class="max-w-3xl p-6">
 		<h1 class="text-2xl-semibold">{{ __("My tasks") }}</h1>
-		<LoadingText v-if="tasks.loading && !tasks.data" class="mt-4" />
+		<ListSkeleton v-if="tasks.loading && !tasks.data" class="mt-6" />
 		<ErrorMessage v-else-if="tasks.error" class="mt-4" :message="tasks.error" />
 		<template v-else>
 			<ErrorMessage class="mt-4" :message="tasks.setValue.error" />
-			<p v-if="!tasks.data?.length" class="mt-4 text-p-base text-ink-gray-5">{{ __("Nothing assigned to you.") }}</p>
+			<EmptyState
+				v-if="!tasks.data?.length"
+				class="mt-6"
+				icon="lucide-list-checks"
+				:title="__('Nothing assigned to you')"
+				:description="__('Open a gig and add a task to its checklist. Whatever is assigned to you shows up here, overdue first.')"
+			>
+				<Button :label="__('Open the pipeline')" route="/" />
+			</EmptyState>
 			<section v-for="section in sections.filter((section) => section.tasks.length)" :key="section.label" class="mt-6">
 				<h2 class="pb-2 text-sm-medium text-ink-gray-7">{{ section.label }} · {{ section.tasks.length }}</h2>
 				<ul class="divide-y divide-outline-gray-1 rounded-6 border">

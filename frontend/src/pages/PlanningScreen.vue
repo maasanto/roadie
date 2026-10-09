@@ -1,7 +1,9 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 import Gantt from "frappe-gantt";
-import { ErrorMessage, LoadingText, useCall } from "frappe-ui";
+import { Button, ErrorMessage, useCall } from "frappe-ui";
+import EmptyState from "../components/EmptyState.vue";
+import ListSkeleton from "../components/ListSkeleton.vue";
 import { formatDate } from "../gig";
 
 const planning = useCall({ url: "/api/v2/method/roadie.api.get_planning" });
@@ -79,11 +81,17 @@ watch([chart, () => planning.data], ([element, bars]) => {
 				</li>
 			</ul>
 		</div>
-		<LoadingText v-if="planning.loading && !planning.data" class="mt-4" />
+		<ListSkeleton v-if="planning.loading && !planning.data" class="mt-4" :rows="6" />
 		<ErrorMessage v-else-if="planning.error" class="mt-4" :message="planning.error" />
-		<p v-else-if="!planning.data?.length" class="mt-4 text-p-base text-ink-gray-5">
-			{{ __("Nothing dated yet. Give a gig a date or an application window, or a task a due date.") }}
-		</p>
+		<EmptyState
+			v-else-if="!planning.data?.length"
+			class="mt-4"
+			icon="lucide-calendar-range"
+			:title="__('Nothing on the calendar yet')"
+			:description="__('Nothing dated yet. Give a gig a date or an application window, or a task a due date.')"
+		>
+			<Button :label="__('Open the pipeline')" route="/" />
+		</EmptyState>
 		<template v-else>
 			<div ref="chart" class="mt-4 hidden overflow-hidden rounded-6 border md:block" />
 			<div class="mt-4 space-y-6 md:hidden">

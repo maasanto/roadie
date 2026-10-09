@@ -1,6 +1,7 @@
 <script setup>
-import { reactive } from "vue";
-import { Avatar, Button, ErrorMessage, FormControl, useCall } from "frappe-ui";
+import { computed, reactive, ref } from "vue";
+import { Avatar, Button, ErrorMessage, FormControl, toast, useCall } from "frappe-ui";
+import { UNDO_WINDOW_MS } from "../undo";
 
 const props = defineProps({ doctype: { type: String, required: true }, name: { type: String, required: true } });
 
@@ -26,22 +27,37 @@ async function addContact() {
 	contacts.reload();
 }
 
-async function removeContact(contactName) {
+// A removed contact only disappears from view until its toast closes, so Undo needs no server round trip.
+const removedContacts = ref(new Set());
+const visibleContacts = computed(() => (contacts.data || []).filter((contact) => !removedContacts.value.has(contact.name)));
+
+async function deleteForGood(contactName) {
 	await deleteContact.submit({ doctype: "Contact", name: contactName });
+	removedContacts.value.delete(contactName);
 	contacts.reload();
+}
+
+function removeContact(contact) {
+	removedContacts.value.add(contact.name);
+	toast(__("Removed {0}", [contact.full_name]), {
+		action: { label: __("Undo"), onClick: () => removedContacts.value.delete(contact.name) },
+		duration: UNDO_WINDOW_MS,
+		onAutoClose: () => deleteForGood(contact.name),
+		onDismiss: () => deleteForGood(contact.name),
+	});
 }
 </script>
 
 <template>
 	<section>
 		<h2 class="text-lg-semibold">{{ __("Contacts") }}</h2>
-		<ul v-if="contacts.data?.length" class="mt-3 divide-y divide-outline-gray-1 rounded-6 border">
-			<li v-for="contact in contacts.data" :key="contact.name" class="flex items-center gap-3 px-3 py-2">
+		<ul v-if="visibleContacts.length" class="mt-3 divide-y divide-outline-gray-1 rounded-6 border">
+			<li v-for="contact in visibleContacts" :key="contact.name" class="flex items-center gap-3 px-3 py-2">
 				<Avatar :label="contact.full_name" size="sm" />
 				<span class="min-w-0 flex-1 truncate text-base">{{ contact.full_name }}</span>
 				<a v-if="contact.email_id" :href="`mailto:${contact.email_id}`" class="text-sm text-ink-blue-link">{{ contact.email_id }}</a>
 				<span class="w-32 truncate text-sm text-ink-gray-5">{{ contact.phone || contact.mobile_no }}</span>
-				<Button icon="lucide-trash-2" variant="ghost" :label="__('Remove contact')"@click="removeContact(contact.name)" />
+				<Button icon="lucide-trash-2" variant="ghost" :label="__('Remove contact')" @click="removeContact(contact)" />
 			</li>
 		</ul>
 		<p v-else-if="contacts.isFinished" class="mt-3 text-p-sm text-ink-gray-5">{{ __("No contacts yet.") }}</p>
@@ -51,7 +67,7 @@ async function removeContact(contactName) {
 			<FormControl v-model="draft.last_name" :label="__('Last name')" />
 			<FormControl v-model="draft.email" type="email" :label="__('Email')" />
 			<FormControl v-model="draft.phone" type="tel" :label="__('Phone')" />
-			<Button type="submit" icon-left="lucide-plus" :label="__('Add')":loading="createContact.loading" />
+			<Button type="submit" icon-left="lucide-plus" :label="__('Add')" :loading="createContact.loading" />
 		</form>
 		<ErrorMessage class="mt-2" :message="createContact.error" />
 	</section>

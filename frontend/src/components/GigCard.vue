@@ -14,7 +14,12 @@ const hasOpenDeadline = computed(() => props.gig.application_closes && daysUntil
 </script>
 
 <template>
-	<div class="space-y-1.5 rounded-4 border border-outline-gray-1 bg-surface-elevation-1 p-3 shadow-sm">
+	<div
+		role="button"
+		tabindex="0"
+		class="space-y-1.5 rounded-4 border border-outline-gray-1 bg-surface-elevation-1 p-3 shadow-sm hover:border-outline-gray-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-4"
+		@keydown.enter.prevent="$event.currentTarget.click()"
+	>
 		<div class="flex items-start gap-2">
 			<span class="min-w-0 flex-1 text-base-medium text-ink-gray-8">{{ gig.title }}</span>
 			<Avatar v-if="owner" :label="owner.full_name" :image="owner.user_image" size="sm" :title="owner.full_name" />

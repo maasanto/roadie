@@ -1,4 +1,4 @@
-import { translatedOptions } from "./translation";
+import { translatedOptions } from "./translation.js";
 
 export const GIG_STATUSES = ["Idea", "Contacted", "Applied", "Negotiating", "Booked", "Played", "Declined", "Dropped"];
 
@@ -18,8 +18,11 @@ export function daysUntil(isoDate) {
 
 export const isDeadlineClose = (isoDate) => daysUntil(isoDate) <= DEADLINE_WARNING_DAYS;
 
-export const formatDate = (isoDate) =>
-	new Date(`${isoDate}T00:00:00`).toLocaleDateString(window.lang, { day: "numeric", month: "short", year: "numeric" });
+export function formatDate(isoDate) {
+	const date = new Date(`${isoDate}T00:00:00`);
+	const isThisYear = date.getFullYear() === new Date().getFullYear();
+	return date.toLocaleDateString(window.lang, { day: "numeric", month: "short", year: isThisYear ? undefined : "numeric" });
+}
 
 const toOptions = (rows, labelField) => (rows || []).map((row) => ({ label: row[labelField], value: row.name }));
 

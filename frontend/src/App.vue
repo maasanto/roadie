@@ -1,30 +1,74 @@
 <script setup>
-import { FrappeUIProvider, Sidebar, SidebarHeader, SidebarItem } from "frappe-ui";
+import { Dropdown, FrappeUIProvider, Sidebar, SidebarHeader, SidebarItem } from "frappe-ui";
+import { onMounted } from "vue";
+import { useRoute } from "vue-router";
 
+const route = useRoute();
+
+// An open Dialog treats any pointerdown or focus elsewhere as "outside" and closes, so Undo on a toast would close it too.
+onMounted(() => {
+	const toaster = document.querySelector('section[aria-label^="Notifications"]');
+	for (const eventType of ["pointerdown", "focusin"]) toaster.addEventListener(eventType, (event) => event.stopPropagation());
+});
+const logoUrl = "/assets/roadie/logo.svg";
 const currentUser = window.user;
 const driveUrl = window.drive_url;
 const openDrive = () => window.open(driveUrl, "_blank", "noopener");
-const accountMenu = [{ label: __("Log out"), icon: "lucide-log-out", onClick: () => (window.location.href = "/?cmd=web_logout") }];
+const logOut = { label: __("Log out"), icon: "lucide-log-out", onClick: () => (window.location.href = "/?cmd=web_logout") };
+const accountMenu = [logOut];
+const phoneMenu = [...(driveUrl ? [{ label: __("Drive"), icon: "lucide-hard-drive", onClick: openDrive }] : []), logOut];
+
+const screens = [
+	{ name: "Pipeline", label: __("Pipeline"), shortLabel: __("Pipeline"), icon: "lucide-kanban", to: "/" },
+	{ name: "Planning", label: __("Planning"), shortLabel: __("Planning"), icon: "lucide-chart-gantt", to: "/planning" },
+	{ name: "MyTasks", label: __("My tasks"), shortLabel: __("Tasks"), icon: "lucide-list-checks", to: "/tasks" },
+	{ name: "Directory", label: __("Directory"), shortLabel: __("Directory"), icon: "lucide-book-user", to: "/directory" },
+	{ name: "Inbox", label: __("Inbox"), shortLabel: __("Received"), icon: "lucide-inbox", to: "/inbox" },
+	{ name: "Outbox", label: __("Outbox"), shortLabel: __("Outgoing"), icon: "lucide-send", to: "/outbox" },
+];
 </script>
 
 <template>
 	<FrappeUIProvider>
-		<div class="flex h-screen bg-surface-base text-ink-gray-8">
-			<Sidebar disable-collapse>
-				<SidebarHeader title="Roadie" logo="/assets/roadie/logo.svg" :subtitle="currentUser" :menu-items="accountMenu" />
-				<SidebarItem :label="__('Pipeline')" icon="lucide-kanban" to="/" />
-				<SidebarItem :label="__('Planning')" icon="lucide-chart-gantt" to="/planning" />
-				<SidebarItem :label="__('My tasks')" icon="lucide-list-checks" to="/tasks" />
-				<SidebarItem :label="__('Directory')" icon="lucide-book-user" to="/directory" />
-				<SidebarItem :label="__('Inbox')" icon="lucide-inbox" to="/inbox" />
-				<SidebarItem :label="__('Outbox')" icon="lucide-send" to="/outbox" />
-				<SidebarItem v-if="driveUrl" :label="__('Drive')" icon="lucide-hard-drive" @click="openDrive">
-					<template #suffix><span class="lucide-external-link mr-2 size-3.5 text-ink-gray-4" aria-hidden="true" /></template>
-				</SidebarItem>
-			</Sidebar>
+		<div class="flex h-screen flex-col bg-surface-base text-ink-gray-8 md:flex-row">
+			<!-- frappe-ui casts SidebarItem's absent `active` prop to false, so route matching is passed explicitly. -->
+			<div class="hidden md:flex">
+				<Sidebar disable-collapse>
+					<SidebarHeader title="Roadie" :logo="logoUrl" :subtitle="currentUser" :menu-items="accountMenu" />
+					<SidebarItem
+						v-for="screen in screens"
+						:key="screen.name"
+						:label="screen.label"
+						:icon="screen.icon"
+						:to="screen.to"
+						:active="route.name === screen.name"
+					/>
+					<SidebarItem v-if="driveUrl" :label="__('Drive')" icon="lucide-hard-drive" @click="openDrive">
+						<template #suffix><span class="lucide-external-link mr-2 size-3.5 text-ink-gray-4" aria-hidden="true" /></template>
+					</SidebarItem>
+				</Sidebar>
+			</div>
+			<header class="flex items-center gap-2 border-b px-4 py-2 md:hidden">
+				<img :src="logoUrl" alt="" class="size-7" />
+				<span class="flex-1 text-base-semibold">Roadie</span>
+				<Dropdown :options="phoneMenu" align="end" :button="{ icon: 'lucide-menu', variant: 'ghost', label: __('Menu') }" />
+			</header>
 			<main class="min-w-0 flex-1 overflow-auto">
 				<router-view />
 			</main>
+			<nav class="flex border-t bg-surface-base md:hidden" :aria-label="__('Screens')">
+				<router-link
+					v-for="screen in screens"
+					:key="screen.name"
+					:to="screen.to"
+					class="flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-3"
+					:class="route.name === screen.name ? 'text-ink-gray-9' : 'text-ink-gray-5'"
+					:aria-current="route.name === screen.name ? 'page' : undefined"
+				>
+					<span class="size-5" :class="screen.icon" aria-hidden="true" />
+					<span class="max-w-full truncate">{{ screen.shortLabel }}</span>
+				</router-link>
+			</nav>
 		</div>
 	</FrappeUIProvider>
 </template>

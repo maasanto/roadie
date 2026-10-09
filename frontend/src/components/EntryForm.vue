@@ -1,6 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
-import { Button, ErrorMessage, FormControl, LoadingText, useCall } from "frappe-ui";
+import { Button, ErrorMessage, FormControl, Skeleton, toast, useCall } from "frappe-ui";
 
 const props = defineProps({
 	doctype: { type: String, required: true },
@@ -41,6 +41,7 @@ async function save() {
 	if (call.error) return;
 	entryName.value = call.data.name;
 	fillForm(call.data);
+	toast.success(__("Saved"));
 	emit("saved");
 }
 
@@ -48,7 +49,9 @@ defineExpose({ form, entryName });
 </script>
 
 <template>
-	<LoadingText v-if="loadEntry.loading" />
+	<div v-if="loadEntry.loading" class="grid grid-cols-2 gap-4" aria-busy="true" :aria-label="__('Loading')">
+		<Skeleton v-for="field in fields" :key="field.fieldname" class="h-14 rounded" :class="field.type === 'textarea' ? 'col-span-2' : ''" />
+	</div>
 	<div v-else class="space-y-6">
 		<form class="grid grid-cols-2 gap-4" @submit.prevent="save">
 			<FormControl
