@@ -17,4 +17,7 @@ after_install = "band_crm.install.after_install"
 
 doc_events = {"Comment": {"after_insert": "band_crm.mentions.notify_mentioned_members"}}
 
-fixtures =[{"dt": "Role", "filters": [["name", "=", "Band Member"]]}]
+fixtures =[
+	{"dt": "Role", "filters": [["name", "=", "Band Member"]]},
+	{"dt": "Notification", "filters": [["module", "=", "Band CRM"]]},
+]

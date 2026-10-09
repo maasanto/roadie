@@ -1,0 +1,50 @@
+[
+ {
+  "channel": "Email",
+  "condition": "doc.status in (\"Idea\", \"Contacted\")",
+  "condition_type": "Python",
+  "date_changed": "application_closes",
+  "days_in_advance": 7,
+  "docstatus": 0,
+  "doctype": "Notification",
+  "document_type": "Gig",
+  "enabled": 1,
+  "event": "Days Before",
+  "is_standard": 0,
+  "message": "<p>The application for <b>{{ doc.title }}</b> closes on {{ frappe.utils.format_date(doc.application_closes) }}, in 7 days, and the gig is still at {{ doc.status }}.</p>\n<p><a href=\"{{ frappe.utils.get_url('/band') }}\">Open the pipeline</a></p>",
+  "message_type": "HTML",
+  "module": "Band CRM",
+  "name": "Gig Application Closes in 7 Days",
+  "recipients": [
+   {
+    "doctype": "Notification Recipient",
+    "receiver_by_document_field": "gig_owner"
+   }
+  ],
+  "subject": "Application for {{ doc.title }} closes in 7 days"
+ },
+ {
+  "channel": "Email",
+  "condition": "not doc.done",
+  "condition_type": "Python",
+  "date_changed": "due_date",
+  "days_in_advance": 0,
+  "docstatus": 0,
+  "doctype": "Notification",
+  "document_type": "Band Task",
+  "enabled": 1,
+  "event": "Days Before",
+  "is_standard": 0,
+  "message": "<p><b>{{ doc.title }}</b> is due today.</p>\n<p><a href=\"{{ frappe.utils.get_url('/band/tasks') }}\">Open my tasks</a></p>",
+  "message_type": "HTML",
+  "module": "Band CRM",
+  "name": "Band Task Due Today",
+  "recipients": [
+   {
+    "doctype": "Notification Recipient",
+    "receiver_by_document_field": "assignee"
+   }
+  ],
+  "subject": "Due today: {{ doc.title }}"
+ }
+]
