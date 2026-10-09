@@ -6,6 +6,7 @@ ROLE = "Band Member"
 
 def after_install():
 	grant_contact_access()
+	grant_communication_access()
 
 
 def grant_contact_access():
@@ -15,3 +16,10 @@ def grant_contact_access():
 	add_permission("Contact", ROLE)
 	for ptype in ("write", "create", "delete"):
 		update_permission_property("Contact", ROLE, 0, ptype, 1)
+
+
+def grant_communication_access():
+	"""Read only: Communication's own check then defers to the linked record, so members can open received attachments."""
+	if frappe.db.exists("Custom DocPerm", {"parent": "Communication", "role": ROLE, "permlevel": 0}):
+		return
+	add_permission("Communication", ROLE)

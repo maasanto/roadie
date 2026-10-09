@@ -2,6 +2,7 @@ import frappe
 from frappe import _
 
 DIRECTORY_DOCTYPES = ("Festival", "Venue", "Promoter", "Band")
+EMAIL_DOCTYPES = ("Gig",)
 
 
 @frappe.whitelist()
@@ -31,6 +32,41 @@ def get_attachments(gig: str) -> list[dict]:
 		fields=["name", "file_name", "file_url", "file_size", "owner", "creation"],
 		order_by="creation asc",
 	)
+
+
+@frappe.whitelist()
+def get_emails(doctype: str, name: str) -> list[dict]:
+	"""Members only see Communications through the record they belong to, oldest first like a thread."""
+	if doctype not in EMAIL_DOCTYPES:
+		frappe.throw(_("Emails can only be listed for {0}, not {1}").format(", ".join(EMAIL_DOCTYPES), doctype))
+	frappe.get_doc(doctype, name).check_permission("read")
+
+	emails = frappe.get_all(
+		"Communication",
+		filters={"communication_medium": "Email", "reference_doctype": doctype, "reference_name": name},
+		fields=[
+			"name",
+			"subject",
+			"content",
+			"sender",
+			"sender_full_name",
+			"recipients",
+			"cc",
+			"sent_or_received",
+			"delivery_status",
+			"communication_date",
+		],
+		order_by="communication_date asc",
+	)
+	attachments = frappe.get_all(
+		"File",
+		filters={"attached_to_doctype": "Communication", "attached_to_name": ["in", [email.name for email in emails]]},
+		fields=["name", "file_name", "file_url", "attached_to_name"],
+		order_by="creation asc",
+	)
+	for email in emails:
+		email.attachments = [file for file in attachments if file.attached_to_name == email.name]
+	return emails
 
 
 @frappe.whitelist()
