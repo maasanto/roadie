@@ -5,7 +5,10 @@ import "./style.css";
 
 const router = createRouter({
 	history: createWebHistory("/band"),
-	routes: [{ path: "/", name: "Pipeline", component: () => import("./pages/PipelineScreen.vue") }],
+	routes: [
+		{ path: "/", name: "Pipeline", component: () => import("./pages/PipelineScreen.vue") },
+		{ path: "/directory", name: "Directory", component: () => import("./pages/DirectoryScreen.vue") },
+	],
 });
 
 createApp(App).use(router).mount("#app");

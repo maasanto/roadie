@@ -13,4 +13,6 @@ website_route_rules = [{"from_route": "/band/<path:app_path>", "to_route": "band
 # Members are website users: logging in lands them on the SPA, never on Desk
 role_home_page = {"Band Member": "band"}
 
-fixtures = [{"dt": "Role", "filters": [["name", "=", "Band Member"]]}]
+after_install = "band_crm.install.after_install"
+
+fixtures =[{"dt": "Role", "filters": [["name", "=", "Band Member"]]}]
