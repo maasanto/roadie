@@ -48,6 +48,12 @@ jspm_packages/
 .wnf-lang-status
 *debug.log
 
+# Built SPA
+band_crm/public/frontend/
+band_crm/www/band.html
+frontend/auto-imports.d.ts
+frontend/components.d.ts
+
 # Helix Editor
 .helix/
 
