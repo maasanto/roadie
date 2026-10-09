@@ -201,3 +201,7 @@ def get_members() -> list[dict]:
 		order_by="full_name asc",
 		distinct=True,
 	)
+
+
+def has_app_permission() -> bool:
+	return frappe.has_permission("Gig", "read")

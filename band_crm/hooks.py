@@ -4,6 +4,17 @@ app_publisher = "Antoine Maas"
 app_description = "Track the people, places and deadlines that get the band booked"
 app_email = "antoine.maas@gmail.com"
 app_license = "mit"
+app_logo_url = "/assets/band_crm/logo.svg"
+
+add_to_apps_screen = [
+	{
+		"name": app_name,
+		"logo": app_logo_url,
+		"title": app_title,
+		"route": "/band",
+		"has_permission": "band_crm.api.has_app_permission",
+	}
+]
 
 use_json_request_body = True
 require_type_annotated_api_methods = True
