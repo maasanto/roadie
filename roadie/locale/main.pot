@@ -405,6 +405,10 @@ msgstr ""
 msgid "Gig date"
 msgstr ""
 
+#: frontend/src/search.js:8
+msgid "Gigs"
+msgstr ""
+
 #. Genre option for the Band genre multiselect
 #: frontend/src/directory.js:29
 msgid "Gospel"
@@ -880,12 +884,28 @@ msgstr ""
 msgid "Screens"
 msgstr ""
 
+#: frontend/src/App.vue:74 frontend/src/App.vue:102
+msgid "Search"
+msgstr ""
+
 #: frontend/src/pages/DirectoryScreen.vue:74
 msgid "Search by name or city"
 msgstr ""
 
+#: frontend/src/components/SearchPalette.vue
+msgid "Search gigs, venues, promoters, bands and tasks"
+msgstr ""
+
+#: roadie/api.py:34
+msgid "Search is limited to {0} characters, not {1}"
+msgstr ""
+
 #: frontend/src/pages/DirectoryScreen.vue:96
 msgid "Search looks at names and cities. Try a shorter word, or add the entry."
+msgstr ""
+
+#: frontend/src/components/SearchPalette.vue
+msgid "Search results"
 msgstr ""
 
 #: frontend/src/components/EmailComposer.vue:173

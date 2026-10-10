@@ -27,6 +27,45 @@ EMAIL_SUMMARY_FIELDS = [
 ]
 
 
+SEARCH_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
+SEARCH_RESULTS_PER_TYPE = 5
+SEARCH_QUERY_MAX_LENGTH = 100
+
+
+@frappe.whitelist()
+def search(query: str) -> list[dict]:
+	"""Grouped, permission-checked matches for the command palette, a handful per type at most."""
+	query = (query or "").strip()
+	if not query:
+		return []
+	if len(query) > SEARCH_QUERY_MAX_LENGTH:
+		frappe.throw(
+			_("Search is limited to {0} characters, not {1}").format(SEARCH_QUERY_MAX_LENGTH, len(query))
+		)
+
+	needle = f"%{query}%"
+	groups = []
+	for doctype in SEARCH_DOCTYPES:
+		# get_list throws rather than return nothing when the caller cannot read the DocType.
+		if not frappe.has_permission(doctype, "read"):
+			continue
+		or_filters = [["title", "like", needle]]
+		fields = ["name", "title"]
+		if doctype in DIRECTORY_DOCTYPES:
+			or_filters.append(["city", "like", needle])
+			fields.append("city")
+		matches = frappe.get_list(
+			doctype,
+			or_filters=or_filters,
+			fields=fields,
+			order_by="title asc",
+			limit_page_length=SEARCH_RESULTS_PER_TYPE,
+		)
+		if matches:
+			groups.append({"doctype": doctype, "results": matches})
+	return groups
+
+
 @frappe.whitelist()
 def get_contacts(doctype: str, name: str) -> list[dict]:
 	if doctype not in DIRECTORY_DOCTYPES:

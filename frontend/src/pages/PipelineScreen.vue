@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { Button, ErrorMessage, Skeleton, toast, useList } from "frappe-ui";
 import EmptyState from "../components/EmptyState.vue";
 import GigCard from "../components/GigCard.vue";
@@ -89,6 +90,19 @@ function openGig(name = null) {
 	openedName.value = name;
 	isPanelOpen.value = true;
 }
+
+// The search palette sends a gig name through the query, and it is cleared once the panel has it.
+const route = useRoute();
+const router = useRouter();
+watch(
+	() => route.query.gig,
+	(name) => {
+		if (!name || route.name !== "Pipeline") return;
+		openGig(name);
+		router.replace({ query: { ...route.query, gig: undefined } });
+	},
+	{ immediate: true }
+);
 </script>
 
 <template>
