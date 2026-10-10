@@ -36,6 +36,16 @@ def get_contacts(doctype: str, name: str) -> list[dict]:
 	)
 
 
+@frappe.whitelist(methods=["POST"])
+def unlink_contact(contact: str, doctype: str, name: str) -> None:
+	"""A contact can belong to several records, so removing it from one only drops that link."""
+	contact_doc = frappe.get_doc("Contact", contact)
+	contact_doc.links = [
+		link for link in contact_doc.links if (link.link_doctype, link.link_name) != (doctype, name)
+	]
+	contact_doc.save()
+
+
 @frappe.whitelist()
 def get_attachments(gig: str) -> list[dict]:
 	"""Members are website users, and File only lists those to the uploader, so the gig grants access."""
@@ -67,7 +77,11 @@ def get_emails(doctype: str, name: str) -> list[dict]:
 	thread_root = [name] if doctype == "Communication" else []
 	emails = frappe.get_all(
 		"Communication",
-		filters={"communication_medium": "Email", "name": ["in", [*thread_root, *referencing, *linked]]},
+		filters={
+			"communication_medium": "Email",
+			"communication_type": "Communication",
+			"name": ["in", [*thread_root, *referencing, *linked]],
+		},
 		fields=EMAIL_FIELDS,
 		order_by="communication_date asc",
 	)
@@ -112,7 +126,7 @@ def get_mailbox(sent_or_received: str) -> list[dict]:
 			"communication_type": "Communication",
 			"sent_or_received": sent_or_received,
 		},
-		fields=[*EMAIL_FIELDS, "seen", "reference_doctype", "reference_name"],
+		fields=[*[field for field in EMAIL_FIELDS if field != "content"], "seen", "reference_doctype", "reference_name"],
 		order_by="communication_date desc",
 		limit=200,
 	)

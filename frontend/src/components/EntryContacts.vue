@@ -10,7 +10,7 @@ const contacts = useCall({
 	params: () => ({ doctype: props.doctype, name: props.name }),
 });
 const createContact = useCall({ url: "/api/v2/document/Contact", method: "POST", immediate: false });
-const deleteContact = useCall({ url: "/api/v2/method/frappe.client.delete", method: "POST", immediate: false });
+const unlinkContact = useCall({ url: "/api/v2/method/roadie.api.unlink_contact", method: "POST", immediate: false });
 
 const draft = reactive({ first_name: "", last_name: "", email: "", phone: "" });
 
@@ -31,8 +31,8 @@ async function addContact() {
 const removedContacts = ref(new Set());
 const visibleContacts = computed(() => (contacts.data || []).filter((contact) => !removedContacts.value.has(contact.name)));
 
-async function deleteForGood(contactName) {
-	await deleteContact.submit({ doctype: "Contact", name: contactName });
+async function unlinkForGood(contactName) {
+	await unlinkContact.submit({ contact: contactName, doctype: props.doctype, name: props.name });
 	removedContacts.value.delete(contactName);
 	contacts.reload();
 }
@@ -42,8 +42,8 @@ function removeContact(contact) {
 	toast(__("Removed {0}", [contact.full_name]), {
 		action: { label: __("Undo"), onClick: () => removedContacts.value.delete(contact.name) },
 		duration: UNDO_WINDOW_MS,
-		onAutoClose: () => deleteForGood(contact.name),
-		onDismiss: () => deleteForGood(contact.name),
+		onAutoClose: () => unlinkForGood(contact.name),
+		onDismiss: () => unlinkForGood(contact.name),
 	});
 }
 </script>
@@ -61,7 +61,7 @@ function removeContact(contact) {
 			</li>
 		</ul>
 		<p v-else-if="contacts.isFinished" class="mt-3 text-p-sm text-ink-gray-5">{{ __("No contacts yet.") }}</p>
-		<ErrorMessage class="mt-2" :message="contacts.error || deleteContact.error" />
+		<ErrorMessage class="mt-2" :message="contacts.error || unlinkContact.error" />
 		<form class="mt-3 grid grid-cols-[1fr_1fr_1.4fr_1fr_auto] items-end gap-2" @submit.prevent="addContact">
 			<FormControl v-model="draft.first_name" :label="__('First name')" required />
 			<FormControl v-model="draft.last_name" :label="__('Last name')" />

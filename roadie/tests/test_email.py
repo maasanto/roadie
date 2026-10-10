@@ -145,6 +145,24 @@ class TestEmail(IntegrationTestCase):
 			[email.name for email in get_emails("Communication", received.name)], [received.name, reply["name"]]
 		)
 
+	def test_reminders_stay_out_of_the_gig_thread(self):
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Festival 2027"}).insert()
+		frappe.get_doc(
+			{
+				"doctype": "Communication",
+				"communication_medium": "Email",
+				"communication_type": "Automated Message",
+				"sent_or_received": "Sent",
+				"subject": "Acme Festival 2027 application closes in 7 days",
+				"recipients": MEMBER,
+				"reference_doctype": "Gig",
+				"reference_name": gig.name,
+			}
+		).insert(ignore_permissions=True)
+
+		self.assertEqual(get_emails("Gig", gig.name), [])
+
 	def test_emails_are_only_listed_for_email_doctypes(self):
 		frappe.set_user(MEMBER)
 		with self.assertRaises(frappe.ValidationError):

@@ -1,10 +1,9 @@
 import frappe
 from frappe.tests import IntegrationTestCase
 
-from roadie.api import get_contacts
+from roadie.api import get_contacts, unlink_contact
 from roadie.install import grant_contact_access
-
-MEMBER = "john@example.com"
+from roadie.roadie.doctype.gig.test_gig import MEMBER, make_member
 
 
 def make_contact(first_name, email, festival):
@@ -21,11 +20,7 @@ def make_contact(first_name, email, festival):
 class TestDirectory(IntegrationTestCase):
 	def setUp(self):
 		grant_contact_access()
-		if not frappe.db.exists("User", MEMBER):
-			frappe.get_doc(
-				{"doctype": "User", "email": MEMBER, "first_name": "John", "last_name": "Doe", "send_welcome_email": 0}
-			).insert(ignore_permissions=True)
-		frappe.get_doc("User", MEMBER).add_roles("Band Member")
+		make_member(MEMBER, "John")
 
 	def tearDown(self):
 		frappe.set_user("Administrator")
@@ -47,6 +42,26 @@ class TestDirectory(IntegrationTestCase):
 		bob = frappe.get_doc("Contact", contacts[1].name)
 		bob.first_name = "Robert"
 		bob.save()
+
+	def test_removing_a_contact_from_a_venue_keeps_it_on_its_promoter(self):
+		frappe.set_user(MEMBER)
+		venue = frappe.get_doc({"doctype": "Venue", "title": "Le Petit Club"}).insert()
+		promoter = frappe.get_doc({"doctype": "Promoter", "title": "Acme Live"}).insert()
+		bob = frappe.get_doc(
+			{
+				"doctype": "Contact",
+				"first_name": "Bob",
+				"links": [
+					{"link_doctype": "Venue", "link_name": venue.name},
+					{"link_doctype": "Promoter", "link_name": promoter.name},
+				],
+			}
+		).insert()
+
+		unlink_contact(bob.name, "Venue", venue.name)
+
+		self.assertEqual(get_contacts("Venue", venue.name), [])
+		self.assertEqual([contact.name for contact in get_contacts("Promoter", promoter.name)], [bob.name])
 
 	def test_contacts_are_only_listed_for_directory_doctypes(self):
 		frappe.set_user(MEMBER)
