@@ -40,40 +40,13 @@ export function formatDate(isoDate) {
 const toOptions = (rows, labelField) =>
 	(rows || []).map((row) => ({ label: row[labelField], value: row.name }));
 
-export function gigFields({ festivals, venues, promoters, members }) {
-	return [
-		{ fieldname: "title", label: __("Title"), type: "text", required: true },
-		{
-			fieldname: "status",
-			label: __("Status"),
-			type: "select",
-			options: translatedOptions(GIG_STATUSES),
-			default: "Idea",
-		},
-		{
-			fieldname: "gig_owner",
-			label: __("Owner"),
-			type: "combobox",
-			options: toOptions(members, "full_name"),
-			default: window.user,
-		},
-		{ fieldname: "gig_date", label: __("Gig date"), type: "date" },
-		{
-			fieldname: "festival",
-			label: __("Festival"),
-			type: "combobox",
-			options: toOptions(festivals, "title"),
-		},
-		{ fieldname: "venue", label: __("Venue"), type: "combobox", options: toOptions(venues, "title") },
-		{
-			fieldname: "promoter",
-			label: __("Promoter"),
-			type: "combobox",
-			options: toOptions(promoters, "title"),
-		},
-		{ fieldname: "fee", label: __("Fee"), type: "number" },
-		{ fieldname: "application_opens", label: __("Application opens"), type: "date" },
-		{ fieldname: "application_closes", label: __("Application closes"), type: "date" },
-		{ fieldname: "notes", label: __("Notes"), type: "textarea" },
-	];
+export function gigControls({ festivals, venues, promoters, members }) {
+	return {
+		// The pipeline has one column per status it knows, so a status added in Desk would hide its gigs.
+		status: { options: translatedOptions(GIG_STATUSES) },
+		gig_owner: { type: "combobox", options: toOptions(members, "full_name"), default: window.user },
+		festival: { type: "combobox", options: toOptions(festivals, "title") },
+		venue: { type: "combobox", options: toOptions(venues, "title") },
+		promoter: { type: "combobox", options: toOptions(promoters, "title") },
+	};
 }

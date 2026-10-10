@@ -1,9 +1,9 @@
 import { computed } from "vue";
 import { useCall, useList } from "frappe-ui";
-import { gigFields } from "./gig";
+import { gigControls } from "./gig";
 
-// The gig panel's form, with the festivals, venues, promoters and members its pickers offer.
-export function useGigFields() {
+// The gig panel's pickers, with the festivals, venues, promoters and members they offer.
+export function useGigControls() {
 	const linkLists = Object.fromEntries(
 		["Festival", "Venue", "Promoter"].map((doctype) => [
 			doctype,
@@ -11,13 +11,13 @@ export function useGigFields() {
 		])
 	);
 	const members = useCall({ url: "/api/v2/method/roadie.api.get_members" });
-	const fields = computed(() =>
-		gigFields({
+	const controls = computed(() =>
+		gigControls({
 			festivals: linkLists.Festival.data,
 			venues: linkLists.Venue.data,
 			promoters: linkLists.Promoter.data,
 			members: members.data,
 		})
 	);
-	return { linkLists, members, fields };
+	return { linkLists, members, controls };
 }

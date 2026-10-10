@@ -7,11 +7,11 @@ import EmptyState from "../components/EmptyState.vue";
 import GigPanel from "../components/GigPanel.vue";
 import ListSkeleton from "../components/ListSkeleton.vue";
 import { formatDate } from "../gig";
-import { useGigFields } from "../gigFields";
+import { useGigControls } from "../gigControls";
 import { UNDO_WINDOW_MS } from "../undo";
 
 const planning = useCall({ url: "/api/v2/method/roadie.api.get_planning" });
-const { members, fields } = useGigFields();
+const { members, controls } = useGigControls();
 
 const legend = [
 	{ kind: "window", label: __("Application window") },
@@ -221,7 +221,7 @@ watch([chart, () => planning.data], ([element, bars]) => {
 		<GigPanel
 			v-if="isPanelOpen"
 			:name="openedGig"
-			:fields="fields"
+			:controls="controls"
 			@close="isPanelOpen = false"
 			@saved="planning.reload()"
 		/>
