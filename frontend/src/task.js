@@ -17,7 +17,7 @@ export async function setDone(tasks, task, isDone) {
 		});
 	} catch (error) {
 		tasks.updateRow({ name: task.name, done: done ? 0 : 1 });
-		toast.error(error.messages.join("\n"));
+		toast.error(error.messages?.join("\n") || error.message);
 	}
 }
 
