@@ -2,7 +2,7 @@ app_name = "roadie"
 app_title = "Roadie"
 app_publisher = "Antoine Maas"
 app_description = "Track the people, places and deadlines that get the band booked"
-app_email = "antoine.maas@gmail.com"
+app_email = "antoine.maas@okte.io"
 app_license = "agpl-3.0"
 app_logo_url = "/assets/roadie/logo.svg"
 

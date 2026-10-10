@@ -1,7 +1,7 @@
 [project]
 name = "roadie"
 authors = [
-    { name = "Antoine Maas", email = "antoine.maas@gmail.com"}
+    { name = "Antoine Maas", email = "antoine.maas@okte.io"}
 ]
 description = "Track the people, places and deadlines that get the band booked"
 requires-python = ">=3.14"
