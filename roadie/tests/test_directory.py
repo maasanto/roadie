@@ -79,3 +79,17 @@ class TestDirectory(IntegrationTestCase):
 		frappe.set_user(MEMBER)
 		with self.assertRaises(frappe.ValidationError):
 			get_contacts("User", MEMBER)
+
+	def test_band_keeps_several_genres_including_a_list_longer_than_a_data_field(self):
+		frappe.set_user(MEMBER)
+		band = frappe.get_doc(
+			{"doctype": "Band", "title": "Acme Band", "genre": "Alternative, Rock, Punk"}
+		).insert()
+		self.assertEqual(frappe.db.get_value("Band", band.name, "genre"), "Alternative, Rock, Punk")
+
+		long_list = ", ".join(f"Genre {index:02d}" for index in range(20))
+		self.assertGreater(len(long_list), 140)
+		band.genre = long_list
+		band.save()
+		band.reload()
+		self.assertEqual(band.genre, long_list)

@@ -2,6 +2,7 @@
 import { computed, reactive, ref, watch } from "vue";
 import { Button, ErrorMessage, FormControl, Skeleton, toast, useCall } from "frappe-ui";
 import FormCustomiser from "./FormCustomiser.vue";
+import { joinList, splitList } from "../directory";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
 
@@ -33,11 +34,23 @@ const updateEntry = useCall({ url: documentUrl, method: "PUT", immediate: false 
 let loadedForm = {};
 let loadedDoc = null;
 
+// A multiselect round-trips: an array in the form, one comma-separated string in the database.
+const toFormValue = (field, value) => (field.type === "multiselect" ? splitList(value) : value ?? "");
+
+const toStoredValue = (field, value) => (field.type === "multiselect" ? joinList(value) : value);
+
+// Two multiselections holding the same genres are unchanged, so they cannot be compared by reference.
+const sameValue = (a, b) =>
+	Array.isArray(a) && Array.isArray(b)
+		? a.length === b.length && a.every((item, index) => item === b[index])
+		: a === b;
+
 function fillFields(newFields) {
-	for (const { fieldname, type, default: defaultValue } of newFields) {
+	for (const field of newFields) {
+		const { fieldname, type, default: defaultValue } = field;
 		const value = loadedDoc ? loadedDoc[fieldname] ?? "" : defaultValue ?? "";
 		// A checkbox emits booleans, so a stored 0 must load as false for an untouched box to read as unchanged.
-		form[fieldname] = type === "checkbox" ? Boolean(Number(value)) : value;
+		form[fieldname] = type === "checkbox" ? Boolean(Number(value)) : toFormValue(field, value);
 		loadedForm[fieldname] = form[fieldname];
 	}
 }
@@ -48,7 +61,9 @@ function fillForm(doc) {
 }
 
 const changedFields = () =>
-	Object.fromEntries(Object.entries(form).filter(([fieldname, value]) => value !== loadedForm[fieldname]));
+	Object.fromEntries(
+		Object.entries(form).filter(([fieldname, value]) => !sameValue(value, loadedForm[fieldname]))
+	);
 
 // Leaving a blank or hidden field out lets the server apply its default, e.g. "Today" or the current user.
 const filledFields = () =>
@@ -57,6 +72,14 @@ const filledFields = () =>
 			.map(({ fieldname }) => [fieldname, form[fieldname]])
 			.filter(([, value]) => value !== "")
 	);
+
+// The form holds what the control shows; the database takes the string it stores.
+const storedFields = (values) => {
+	const byName = Object.fromEntries(fields.value.map((field) => [field.fieldname, field]));
+	return Object.fromEntries(
+		Object.entries(values).map(([fieldname, value]) => [fieldname, toStoredValue(byName[fieldname], value)])
+	);
+};
 
 // The meta may land after the record: fill only the newcomers, so it never overwrites what the member typed.
 watch(fields, (newFields) => fillFields(newFields.filter(({ fieldname }) => !(fieldname in loadedForm))));
@@ -77,7 +100,7 @@ const saveCall = computed(() => (entryName.value ? updateEntry : createEntry));
 
 async function save() {
 	const call = saveCall.value;
-	await call.submit(entryName.value ? changedFields() : filledFields());
+	await call.submit(storedFields(entryName.value ? changedFields() : filledFields()));
 	if (call.error) return;
 	entryName.value = call.data.name;
 	fillForm(call.data);

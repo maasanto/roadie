@@ -8,7 +8,7 @@ import EmptyState from "../components/EmptyState.vue";
 import EntryContacts from "../components/EntryContacts.vue";
 import EntryDialog from "../components/EntryDialog.vue";
 import ListSkeleton from "../components/ListSkeleton.vue";
-import { directoryTypes } from "../directory";
+import { directoryControls, directoryTypes } from "../directory";
 import { onKey } from "../keyboard";
 
 // ponytail: one unpaged fetch per type, page server-side if the directory outgrows a few hundred entries
@@ -145,6 +145,7 @@ const newOptions = directoryTypes.map(({ doctype }) => ({
 			v-model:open="isDialogOpen"
 			:doctype="editing.doctype"
 			:name="editing.name"
+			:controls="directoryControls[editing.doctype]"
 			@saved="lists[editing.doctype].reload()"
 		>
 			<template #default="{ entryName }">

@@ -26,7 +26,7 @@ Records are named by a random hash, so always look a record up by `title` first 
 - **Festival** — `title`, `city`, `website`, `instagram`, `usual_month`, `application_url`, `application_opens`, `application_closes`, `notes`.
 - **Venue** — `title`, `city`, `website`, `instagram`, `capacity`, `address`, `notes`.
 - **Promoter** — `title`, `city`, `website`, `instagram`, `notes`.
-- **Band** — `title`, `city`, `website`, `instagram`, `genre`, `notes`.
+- **Band** — `title`, `city`, `website`, `instagram`, `genre` (a comma-separated list of genres), `notes`.
 - **Band Task** — `title`, `assignee` (User), `gig`, `start_date`, `due_date`, `done`.
 
 Gig statuses, in pipeline order: `Idea`, `Contacted`, `Applied`, `Negotiating`, `Booked`, `Played`, `Declined`, `Dropped`.
