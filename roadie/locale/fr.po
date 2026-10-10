@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roadie VERSION\n"
 "Report-Msgid-Bugs-To: antoine.maas@okte.io\n"
-"POT-Creation-Date: 2026-10-10 01:48+0009\n"
+"POT-Creation-Date: 2026-10-10 11:01+0009\n"
 "PO-Revision-Date: 2026-10-09 23:47+0009\n"
 "Last-Translator: antoine.maas@okte.io\n"
 "Language: fr\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
 
-#: frontend/src/components/EntryContacts.vue:68
+#: frontend/src/components/EntryContacts.vue:70
 msgid "Add"
 msgstr "Ajouter"
 
@@ -26,15 +26,15 @@ msgstr "Ajouter"
 msgid "Add task"
 msgstr "Ajouter la tâche"
 
-#: frontend/src/pages/DirectoryScreen.vue:77
+#: frontend/src/pages/DirectoryScreen.vue:79
 msgid "Add the festivals, venues, promoters and bands you deal with, and the people to talk to at each."
 msgstr "Ajoutez les festivals, lieux, organisateurs et groupes avec qui vous travaillez, et les bonnes personnes à contacter chez chacun."
 
-#: frontend/src/pages/PipelineScreen.vue:108
+#: frontend/src/pages/PipelineScreen.vue:109
 msgid "Add the first gig you are chasing, even if it is only an idea. Drag it from column to column as things move."
 msgstr "Ajoutez le premier concert que vous visez, même si ce n'est qu'une idée. Faites-le glisser de colonne en colonne au fil de l'avancement."
 
-#: frontend/src/pages/DirectoryScreen.vue:79
+#: frontend/src/pages/DirectoryScreen.vue:81
 msgid "Add the first one"
 msgstr "Ajouter la première fiche"
 
@@ -70,7 +70,11 @@ msgstr "Clôture des candidatures"
 msgid "Application opens"
 msgstr "Ouverture des candidatures"
 
-#: frontend/src/pages/PlanningScreen.vue:12 roadie/api.py:169
+#: roadie/roadie/doctype/gig/gig.py:15
+msgid "Application opens {0} after it closes {1}"
+msgstr "Les candidatures ouvrent le {0}, après leur clôture le {1}"
+
+#: frontend/src/pages/PlanningScreen.vue:12 roadie/api.py:183
 msgid "Application window"
 msgstr "Période de candidature"
 
@@ -178,7 +182,7 @@ msgstr "Commenter"
 msgid "Comments"
 msgstr "Commentaires"
 
-#: roadie/api.py:89
+#: roadie/api.py:103
 msgid "Comments can only be listed for {0}, not {1}"
 msgstr "Les commentaires ne peuvent être listés que pour {0}, pas pour {1}"
 
@@ -187,7 +191,7 @@ msgstr "Les commentaires ne peuvent être listés que pour {0}, pas pour {1}"
 msgid "Contacted"
 msgstr "Contacté"
 
-#: frontend/src/components/EntryContacts.vue:51
+#: frontend/src/components/EntryContacts.vue:53
 msgid "Contacts"
 msgstr "Contacts"
 
@@ -195,7 +199,7 @@ msgstr "Contacts"
 msgid "Contacts can only be listed for {0}, not {1}"
 msgstr "Les contacts ne peuvent être listés que pour {0}, pas pour {1}"
 
-#: frontend/src/components/EntryForm.vue:69
+#: frontend/src/components/EntryForm.vue:74
 msgid "Create"
 msgstr "Créer"
 
@@ -217,11 +221,11 @@ msgstr "Refusé"
 msgid "Declined / Dropped"
 msgstr "Refusé / Abandonné"
 
-#: frontend/src/App.vue:18 frontend/src/pages/DirectoryScreen.vue:53
+#: frontend/src/App.vue:25 frontend/src/pages/DirectoryScreen.vue:53
 msgid "Directory"
 msgstr "Annuaire"
 
-#: frontend/src/components/EmailComposer.vue:95
+#: frontend/src/components/EmailComposer.vue:96
 msgid "Discard"
 msgstr "Abandonner"
 
@@ -236,7 +240,7 @@ msgstr "Fait"
 msgid "Done: {0}"
 msgstr "Fait : {0}"
 
-#: frontend/src/App.vue:12 frontend/src/App.vue:39
+#: frontend/src/App.vue:19 frontend/src/App.vue:46
 msgid "Drive"
 msgstr "Drive"
 
@@ -254,7 +258,7 @@ msgstr "Échéance"
 msgid "Due date"
 msgstr "Échéance"
 
-#: frontend/src/components/EntryContacts.vue:66
+#: frontend/src/components/EntryContacts.vue:68
 msgid "Email"
 msgstr "E-mail"
 
@@ -262,7 +266,7 @@ msgstr "E-mail"
 msgid "Emails"
 msgstr "E-mails"
 
-#: roadie/api.py:56
+#: roadie/api.py:66
 msgid "Emails can only be listed for {0}, not {1}"
 msgstr "Les e-mails ne peuvent être listés que pour {0}, pas pour {1}"
 
@@ -291,7 +295,7 @@ msgstr "Festival"
 msgid "Festivals"
 msgstr "Festivals"
 
-#: frontend/src/components/EntryContacts.vue:64
+#: frontend/src/components/EntryContacts.vue:66
 msgid "First name"
 msgstr "Prénom"
 
@@ -303,7 +307,7 @@ msgstr "Genre"
 #. Label of the gig (Link) field in DocType 'Band Task'
 #. Name of a DocType
 #: frontend/src/components/GigPanel.vue:24
-#: frontend/src/pages/PlanningScreen.vue:13 roadie/api.py:172
+#: frontend/src/pages/PlanningScreen.vue:13 roadie/api.py:186
 #: roadie/roadie/doctype/band_task/band_task.json
 #: roadie/roadie/doctype/gig/gig.json
 msgid "Gig"
@@ -332,7 +336,7 @@ msgstr "Heure"
 msgid "Idea"
 msgstr "Idée"
 
-#: frontend/src/App.vue:19 frontend/src/pages/MailboxScreen.vue:39
+#: frontend/src/App.vue:26 frontend/src/pages/MailboxScreen.vue:39
 msgid "Inbox"
 msgstr "Boîte de réception"
 
@@ -352,6 +356,7 @@ msgid "Internal to the band, never emailed. Type @ to mention a bandmate."
 msgstr "Réservé au groupe, jamais envoyé par e-mail. Tapez @ pour mentionner un membre du groupe."
 
 #: roadie/roadie/doctype/band_task/band_task.py:12
+#: roadie/roadie/doctype/gig/gig.py:16
 msgid "Invalid dates"
 msgstr "Dates invalides"
 
@@ -370,21 +375,21 @@ msgstr "Juillet"
 msgid "June"
 msgstr "Juin"
 
-#: frontend/src/components/EntryContacts.vue:65
+#: frontend/src/components/EntryContacts.vue:67
 msgid "Last name"
 msgstr "Nom"
 
-#: frontend/src/components/EntryForm.vue:52
+#: frontend/src/components/EntryForm.vue:56
 #: frontend/src/components/ListSkeleton.vue:8
-#: frontend/src/pages/PipelineScreen.vue:96
+#: frontend/src/pages/PipelineScreen.vue:97
 msgid "Loading"
 msgstr "Chargement"
 
-#: frontend/src/App.vue:10
+#: frontend/src/App.vue:17
 msgid "Log out"
 msgstr "Se déconnecter"
 
-#: roadie/api.py:105
+#: roadie/api.py:119
 msgid "Mailbox is either Sent or Received, not {0}"
 msgstr "La boîte est soit Sent, soit Received, pas {0}"
 
@@ -398,7 +403,7 @@ msgstr "Mars"
 msgid "May"
 msgstr "Mai"
 
-#: frontend/src/App.vue:47
+#: frontend/src/App.vue:54
 msgid "Menu"
 msgstr "Menu"
 
@@ -410,11 +415,11 @@ msgstr "Vue"
 msgid "Month"
 msgstr "Mois"
 
-#: frontend/src/pages/PipelineScreen.vue:77
+#: frontend/src/pages/PipelineScreen.vue:78
 msgid "Moved {0} to {1}"
 msgstr "{0} passe en « {1} »"
 
-#: frontend/src/App.vue:17 frontend/src/pages/MyTasksScreen.vue:28
+#: frontend/src/App.vue:24 frontend/src/pages/MyTasksScreen.vue:28
 msgid "My tasks"
 msgstr "Mes tâches"
 
@@ -439,8 +444,8 @@ msgid "New"
 msgstr "Nouveau"
 
 #: frontend/src/components/GigPanel.vue:24
-#: frontend/src/pages/PipelineScreen.vue:94
-#: frontend/src/pages/PipelineScreen.vue:110
+#: frontend/src/pages/PipelineScreen.vue:95
+#: frontend/src/pages/PipelineScreen.vue:111
 msgid "New gig"
 msgstr "Nouveau concert"
 
@@ -460,7 +465,7 @@ msgstr "Aucune pièce jointe pour l'instant."
 msgid "No comments yet."
 msgstr "Aucun commentaire pour l'instant."
 
-#: frontend/src/components/EntryContacts.vue:61
+#: frontend/src/components/EntryContacts.vue:63
 msgid "No contacts yet."
 msgstr "Aucun contact pour l'instant."
 
@@ -472,11 +477,11 @@ msgstr "Aucun e-mail reçu pour l'instant"
 msgid "No emails yet."
 msgstr "Aucun e-mail pour l'instant."
 
-#: frontend/src/pages/PipelineScreen.vue:107
+#: frontend/src/pages/PipelineScreen.vue:108
 msgid "No gigs yet"
 msgstr "Aucun concert pour l'instant"
 
-#: frontend/src/pages/DirectoryScreen.vue:69
+#: frontend/src/pages/DirectoryScreen.vue:71
 msgid "No match for “{0}”"
 msgstr "Aucun résultat pour « {0} »"
 
@@ -498,7 +503,7 @@ msgstr "Aucune tâche pour l'instant."
 msgid "Notes"
 msgstr "Notes"
 
-#: frontend/src/pages/MyTasksScreen.vue:37
+#: frontend/src/pages/MyTasksScreen.vue:36
 msgid "Nothing assigned to you"
 msgstr "Rien ne vous est assigné"
 
@@ -532,7 +537,7 @@ msgstr "Le {0}, {1} a écrit :"
 msgid "Only band members can open Roadie"
 msgstr "Seuls les membres du groupe peuvent ouvrir Roadie"
 
-#: frontend/src/pages/MyTasksScreen.vue:38
+#: frontend/src/pages/MyTasksScreen.vue:37
 msgid "Open a gig and add a task to its checklist. Whatever is assigned to you shows up here, overdue first."
 msgstr "Ouvrez un concert et ajoutez une tâche à sa liste. Tout ce qui vous est assigné s'affiche ici, les retards en premier."
 
@@ -541,20 +546,20 @@ msgid "Open a gig and write to its contacts. Every email the band sends shows he
 msgstr "Ouvrez un concert et écrivez à ses contacts. Chaque e-mail envoyé par le groupe s'affiche ici avec son statut d'envoi."
 
 #: frontend/src/pages/MailboxScreen.vue:56
-#: frontend/src/pages/MyTasksScreen.vue:40
+#: frontend/src/pages/MyTasksScreen.vue:39
 #: frontend/src/pages/PlanningScreen.vue:93
 msgid "Open the pipeline"
 msgstr "Ouvrir le pipeline"
 
-#: roadie/api.py:181
+#: roadie/api.py:195
 msgid "Other"
 msgstr "Autres"
 
-#: frontend/src/App.vue:20 frontend/src/pages/MailboxScreen.vue:39
+#: frontend/src/App.vue:27 frontend/src/pages/MailboxScreen.vue:39
 msgid "Outbox"
 msgstr "Boîte d'envoi"
 
-#: frontend/src/App.vue:20
+#: frontend/src/App.vue:27
 msgid "Outgoing"
 msgstr "Envoyés"
 
@@ -563,15 +568,15 @@ msgstr "Envoyés"
 msgid "Owner"
 msgstr "Responsable"
 
-#: frontend/src/components/EntryContacts.vue:67
+#: frontend/src/components/EntryContacts.vue:69
 msgid "Phone"
 msgstr "Téléphone"
 
-#: frontend/src/App.vue:15 frontend/src/pages/PipelineScreen.vue:93
+#: frontend/src/App.vue:22 frontend/src/pages/PipelineScreen.vue:94
 msgid "Pipeline"
 msgstr "Pipeline"
 
-#: frontend/src/App.vue:16 frontend/src/pages/PlanningScreen.vue:77
+#: frontend/src/App.vue:23 frontend/src/pages/PlanningScreen.vue:77
 msgid "Planning"
 msgstr "Planning"
 
@@ -580,7 +585,7 @@ msgstr "Planning"
 msgid "Played"
 msgstr "Joué"
 
-#: frontend/src/pages/DirectoryScreen.vue:59
+#: frontend/src/pages/DirectoryScreen.vue:60
 msgid "Press / to search"
 msgstr "Appuyez sur / pour rechercher"
 
@@ -603,11 +608,11 @@ msgstr "Quart de journée"
 msgid "Queued"
 msgstr "En attente"
 
-#: frontend/src/App.vue:19
+#: frontend/src/App.vue:26
 msgid "Received"
 msgstr "Reçus"
 
-#: frontend/src/components/EntryContacts.vue:58
+#: frontend/src/components/EntryContacts.vue:60
 msgid "Remove contact"
 msgstr "Retirer le contact"
 
@@ -616,9 +621,9 @@ msgstr "Retirer le contact"
 msgid "Remove {0}"
 msgstr "Retirer {0}"
 
-#: frontend/src/components/EntryContacts.vue:41
+#: frontend/src/components/EntryContacts.vue:42
 msgid "Removed {0}"
-msgstr "Contact supprimé : {0}"
+msgstr "Contact retiré : {0}"
 
 #: frontend/src/pages/MailboxScreen.vue:47
 msgid "Replies to the emails the band sends from a gig or a directory entry land here."
@@ -632,15 +637,15 @@ msgstr "Répondre"
 msgid "Reply all"
 msgstr "Répondre à tous"
 
-#: frontend/src/components/EntryForm.vue:69
+#: frontend/src/components/EntryForm.vue:74
 msgid "Save"
 msgstr "Enregistrer"
 
-#: frontend/src/components/EntryForm.vue:44
+#: frontend/src/components/EntryForm.vue:48
 msgid "Saved"
 msgstr "Enregistré"
 
-#: frontend/src/App.vue:52
+#: frontend/src/App.vue:59
 msgid "Screens"
 msgstr "Écrans"
 
@@ -648,11 +653,11 @@ msgstr "Écrans"
 msgid "Search by name or city"
 msgstr "Rechercher par nom ou ville"
 
-#: frontend/src/pages/DirectoryScreen.vue:70
+#: frontend/src/pages/DirectoryScreen.vue:72
 msgid "Search looks at names and cities. Try a shorter word, or add the entry."
 msgstr "La recherche porte sur les noms et les villes. Essayez un mot plus court, ou ajoutez la fiche."
 
-#: frontend/src/components/EmailComposer.vue:96
+#: frontend/src/components/EmailComposer.vue:97
 msgid "Send"
 msgstr "Envoyer"
 
@@ -701,7 +706,7 @@ msgstr "Responsable Système"
 msgid "Task"
 msgstr "Tâche"
 
-#: frontend/src/App.vue:17 frontend/src/components/GigTasks.vue:32
+#: frontend/src/App.vue:24 frontend/src/components/GigTasks.vue:32
 msgid "Tasks"
 msgstr "Tâches"
 
@@ -728,8 +733,8 @@ msgstr "À {0}"
 msgid "Today"
 msgstr "Aujourd'hui"
 
-#: frontend/src/components/EntryContacts.vue:42
-#: frontend/src/pages/PipelineScreen.vue:72
+#: frontend/src/components/EntryContacts.vue:43
+#: frontend/src/pages/PipelineScreen.vue:73
 msgid "Undo"
 msgstr "Annuler"
 
@@ -811,7 +816,7 @@ msgstr "Rédigez votre e-mail…"
 msgid "Year"
 msgstr "Année"
 
-#: frontend/src/pages/DirectoryScreen.vue:76
+#: frontend/src/pages/DirectoryScreen.vue:78
 msgid "Your address book starts here"
 msgstr "Votre carnet d'adresses commence ici"
 
@@ -831,15 +836,15 @@ msgstr "{0} Ko"
 msgid "{0} MB"
 msgstr "{0} Mo"
 
-#: frontend/src/pages/PipelineScreen.vue:50
+#: frontend/src/pages/PipelineScreen.vue:51
 msgid "{0} is booked. Time to rehearse!"
 msgstr "{0} est confirmé. Place aux répètes !"
 
-#: frontend/src/pages/PipelineScreen.vue:51
+#: frontend/src/pages/PipelineScreen.vue:52
 msgid "{0} is in the books. What a night!"
 msgstr "{0} : c'est joué. Quelle soirée !"
 
-#: roadie/mentions.py:44
+#: roadie/mentions.py:48
 msgid "{0} mentioned you in a comment in {1} {2}"
 msgstr "{0} vous a mentionné dans un commentaire sur {1} {2}"
 
