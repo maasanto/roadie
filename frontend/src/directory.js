@@ -1,4 +1,4 @@
-import { translatedOptions } from "./translation";
+import { translatedOptions } from "./translation.js";
 
 const MONTHS = [
 	"January",
@@ -14,6 +14,44 @@ const MONTHS = [
 	"November",
 	"December",
 ];
+
+// A band's genres; values stay English in the database, only their labels are translated.
+const GENRES = [
+	"Alternative",
+	"Blues",
+	"Chanson",
+	"Classical",
+	"Country",
+	"Disco",
+	"Electronic",
+	"Folk",
+	"Funk",
+	"Gospel",
+	"Hardcore",
+	"Hip Hop",
+	"Indie",
+	"Jazz",
+	"Latin",
+	"Metal",
+	"Pop",
+	"Punk",
+	"Rap",
+	"Reggae",
+	"Rock",
+	"Ska",
+	"Soul",
+	"Techno",
+	"World",
+];
+
+// A multiselect lives as an array in the SPA and as one comma-separated string in the database.
+export const splitList = (value) =>
+	(value || "")
+		.split(",")
+		.map((item) => item.trim())
+		.filter(Boolean);
+
+export const joinList = (values) => (values || []).join(", ");
 
 const headFields = [
 	{ fieldname: "title", label: __("Name"), type: "text", required: true },
@@ -53,6 +91,13 @@ export const directoryTypes = [
 	{
 		doctype: "Band",
 		plural: __("Bands"),
-		fields: withCommonFields([{ fieldname: "genre", label: __("Genre"), type: "text" }]),
+		fields: withCommonFields([
+			{
+				fieldname: "genre",
+				label: __("Genre"),
+				type: "multiselect",
+				options: translatedOptions(GENRES),
+			},
+		]),
 	},
 ];
