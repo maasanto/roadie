@@ -10,6 +10,8 @@ class TestDirectoryColumns(IntegrationTestCase):
 	def setUp(self):
 		make_member(MEMBER, "John")
 		make_member(OTHER_MEMBER, "Jane")
+		# The runner rolls back once per class, not per test, so rows an earlier test left behind are still here.
+		frappe.db.delete("Roadie List View")
 
 	def tearDown(self):
 		frappe.set_user("Administrator")
