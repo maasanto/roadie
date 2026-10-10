@@ -90,6 +90,7 @@ class TestEmail(IntegrationTestCase):
 		self.assertEqual([email.sent_or_received for email in thread], ["Sent", "Received"])
 		self.assertEqual([file.file_name for file in thread[0].attachments], ["rider.pdf"])
 		self.assertEqual(thread[1].sender, VENUE)
+		self.assertEqual(thread[1].account_email, MAILBOX)
 		self.assertEqual([file.file_name for file in thread[1].attachments], ["tech-sheet.pdf"])
 		received_file = frappe.get_doc("File", thread[1].attachments[0].name)
 		self.assertTrue(received_file.is_downloadable())

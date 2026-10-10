@@ -42,11 +42,18 @@ function quote(email) {
 	return `<p></p><p>${attribution}</p><blockquote>${asHtml(email.content)}</blockquote>`;
 }
 
+// Received headers keep display names: "Bob <bob@example.com>".
+const bareAddress = (recipient) => (recipient.match(/<([^>]+)>/)?.[1] ?? recipient).trim();
+
 export function replyDraft(email, mode) {
-	const to = email.sent_or_received === "Received" ? [email.sender] : splitEmails(email.recipients);
+	const isOtherParty = (address) => address.toLowerCase() !== (email.account_email || "").toLowerCase();
+	const addresses = (value) => splitEmails(value).map(bareAddress).filter(isOtherParty);
+	const isReceived = email.sent_or_received === "Received";
+	const to = isReceived ? [email.sender] : addresses(email.recipients);
+	if (mode === "reply-all" && isReceived) to.push(...addresses(email.recipients));
 	return {
-		to,
-		cc: mode === "reply-all" ? splitEmails(email.cc) : [],
+		to: [...new Set(to)],
+		cc: mode === "reply-all" ? addresses(email.cc) : [],
 		subject: /^re:/i.test(email.subject || "") ? email.subject : `Re: ${email.subject || ""}`,
 		content: quote(email),
 		inReplyTo: email.name,

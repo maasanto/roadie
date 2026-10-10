@@ -83,7 +83,8 @@ def get_emails(doctype: str, name: str) -> list[dict]:
 			"communication_type": "Communication",
 			"name": ["in", [*thread_root, *referencing, *linked]],
 		},
-		fields=[*EMAIL_SUMMARY_FIELDS, "content"],
+		# Reply all leaves out the shared account's own address
+		fields=[*EMAIL_SUMMARY_FIELDS, "content", "email_account.email_id as account_email"],
 		order_by="communication_date asc",
 	)
 	attachments = frappe.get_all(
