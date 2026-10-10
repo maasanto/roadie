@@ -47,6 +47,11 @@ msgstr "Adresse"
 msgid "All"
 msgstr "Tous"
 
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:20
+msgid "Alternative"
+msgstr "Alternatif"
+
 #. Label of the application_closes (Date) field in DocType 'Gig'
 #: roadie/roadie/doctype/gig/gig.json
 msgid "Application Closes"
@@ -144,6 +149,11 @@ msgstr "Groupes"
 msgid "Bcc"
 msgstr "Cci"
 
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:21
+msgid "Blues"
+msgstr "Blues"
+
 #. Option for the 'Status' (Select) field in DocType 'Gig'
 #: roadie/roadie/doctype/gig/gig.json
 msgid "Booked"
@@ -166,6 +176,11 @@ msgstr "Cc"
 msgid "Cc / Bcc"
 msgstr "Cc / Cci"
 
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:22
+msgid "Chanson"
+msgstr "Chanson"
+
 #. Label of the city (Data) field in DocType 'Band'
 #. Label of the city (Data) field in DocType 'Festival'
 #. Label of the city (Data) field in DocType 'Promoter'
@@ -176,6 +191,11 @@ msgstr "Cc / Cci"
 #: roadie/roadie/doctype/venue/venue.json
 msgid "City"
 msgstr "Ville"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:23
+msgid "Classical"
+msgstr "Classique"
 
 #: frontend/src/components/GigPanel.vue:29
 #: frontend/src/pages/MailboxScreen.vue:126
@@ -207,6 +227,11 @@ msgstr "Contacts"
 msgid "Contacts can only be listed for {0}, not {1}"
 msgstr "Les contacts ne peuvent être listés que pour {0}, pas pour {1}"
 
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:24
+msgid "Country"
+msgstr "Country"
+
 #: frontend/src/components/EntryForm.vue:92
 msgid "Create"
 msgstr "Créer"
@@ -237,6 +262,11 @@ msgstr "Annuaire"
 #: frontend/src/components/EmailComposer.vue:168
 msgid "Discard"
 msgstr "Abandonner"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:25
+msgid "Disco"
+msgstr "Disco"
 
 #. Label of the done (Check) field in DocType 'Band Task'
 #: frontend/src/pages/MyTasksScreen.vue:21
@@ -271,6 +301,11 @@ msgstr "Échéance"
 #: roadie/fixtures/notification.json:48
 msgid "Due today: {0}"
 msgstr "À faire aujourd'hui : {0}"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:26
+msgid "Electronic"
+msgstr "Électronique"
 
 #: frontend/src/components/EntryContacts.vue:98
 msgid "Email"
@@ -317,8 +352,18 @@ msgstr "Prénom"
 msgid "Folder path"
 msgstr "Chemin du dossier"
 
-#. Label of the genre (Data) field in DocType 'Band'
-#: frontend/src/directory.js:56 roadie/roadie/doctype/band/band.json
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:27
+msgid "Folk"
+msgstr "Folk"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:28
+msgid "Funk"
+msgstr "Funk"
+
+#. Label of the genre (Small Text) field in DocType 'Band'
+#: frontend/src/directory.js:97 roadie/roadie/doctype/band/band.json
 msgid "Genre"
 msgstr "Genre"
 
@@ -340,9 +385,24 @@ msgstr "Date du concert"
 msgid "Gig date"
 msgstr "Date du concert"
 
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:29
+msgid "Gospel"
+msgstr "Gospel"
+
 #: frontend/src/pages/PlanningScreen.vue:28
 msgid "Half Day"
 msgstr "Demi-journée"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:30
+msgid "Hardcore"
+msgstr "Hardcore"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:31
+msgid "Hip Hop"
+msgstr "Hip-hop"
 
 #: frontend/src/components/DriveLinkDialog.vue:20
 msgid "Home"
@@ -361,6 +421,11 @@ msgstr "Idée"
 #: frontend/src/App.vue:52 frontend/src/pages/MailboxScreen.vue:42
 msgid "Inbox"
 msgstr "Boîte de réception"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:32
+msgid "Indie"
+msgstr "Indé"
 
 #: frontend/src/components/DriveLinkDialog.vue:135
 msgid "Insert link"
@@ -394,6 +459,11 @@ msgstr "Dates invalides"
 msgid "January"
 msgstr "Janvier"
 
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:33
+msgid "Jazz"
+msgstr "Jazz"
+
 #. Option for the 'Usual Month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "July"
@@ -407,6 +477,11 @@ msgstr "Juin"
 #: frontend/src/components/EntryContacts.vue:97
 msgid "Last name"
 msgstr "Nom"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:34
+msgid "Latin"
+msgstr "Latin"
 
 #: frontend/src/components/EmailComposer.vue:163
 msgid "Link from Drive"
@@ -447,6 +522,11 @@ msgstr "Mai"
 #: frontend/src/App.vue:97
 msgid "Menu"
 msgstr "Menu"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:35
+msgid "Metal"
+msgstr "Metal"
 
 #: frontend/src/pages/PlanningScreen.vue:25
 msgid "Mode"
@@ -656,6 +736,11 @@ msgstr "Planning"
 msgid "Played"
 msgstr "Joué"
 
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:36
+msgid "Pop"
+msgstr "Pop"
+
 #: frontend/src/pages/DirectoryScreen.vue:80
 msgid "Press / to search"
 msgstr "Appuyez sur / pour rechercher"
@@ -671,6 +756,11 @@ msgstr "Organisateur"
 msgid "Promoters"
 msgstr "Organisateurs"
 
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:37
+msgid "Punk"
+msgstr "Punk"
+
 #: frontend/src/pages/PlanningScreen.vue:27
 msgid "Quarter Day"
 msgstr "Quart de journée"
@@ -679,9 +769,19 @@ msgstr "Quart de journée"
 msgid "Queued"
 msgstr "En attente"
 
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:38
+msgid "Rap"
+msgstr "Rap"
+
 #: frontend/src/App.vue:52
 msgid "Received"
 msgstr "Reçus"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:39
+msgid "Reggae"
+msgstr "Reggae"
 
 #: frontend/src/components/EntryContacts.vue:83
 msgid "Remove contact"
@@ -707,6 +807,11 @@ msgstr "Répondre"
 #: frontend/src/components/EmailThread.vue:82
 msgid "Reply all"
 msgstr "Répondre à tous"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:40
+msgid "Rock"
+msgstr "Rock"
 
 #: frontend/src/components/EntryForm.vue:92
 msgid "Save"
@@ -740,6 +845,16 @@ msgstr "Envoyé"
 #: roadie/roadie/doctype/festival/festival.json
 msgid "September"
 msgstr "Septembre"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:41
+msgid "Ska"
+msgstr "Ska"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:42
+msgid "Soul"
+msgstr "Soul"
 
 #. Label of the start_date (Date) field in DocType 'Band Task'
 #: roadie/roadie/doctype/band_task/band_task.json
@@ -780,6 +895,11 @@ msgstr "Tâche"
 #: frontend/src/App.vue:41 frontend/src/components/GigTasks.vue:34
 msgid "Tasks"
 msgstr "Tâches"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:43
+msgid "Techno"
+msgstr "Techno"
 
 #: roadie/fixtures/notification.json:14
 msgid "The application for {0} closes on {1}, in {2} days, and the gig is still at {3}."
@@ -879,6 +999,11 @@ msgstr "Site web"
 #: frontend/src/pages/PlanningScreen.vue:30
 msgid "Week"
 msgstr "Semaine"
+
+#. Genre option for the Band genre multiselect
+#: frontend/src/directory.js:44
+msgid "World"
+msgstr "Musiques du monde"
 
 #: frontend/src/components/EmailThread.vue:35
 msgid "Write"
