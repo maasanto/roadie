@@ -1,6 +1,6 @@
 import frappe
 from frappe.tests import IntegrationTestCase
-from frappe.utils import add_days, today
+from frappe.utils import add_days, get_url, today
 
 from roadie.api import get_notifications, mark_notifications_read
 from roadie.roadie.doctype.gig.test_gig import MEMBER, OTHER_MEMBER, make_member
@@ -97,7 +97,26 @@ class TestNotifications(IntegrationTestCase):
 		notifications = get_notifications()
 
 		self.assertEqual([n.subject for n in notifications], ["John Doe assigned you a task: Book the van"])
-		self.assertEqual([n.route for n in notifications], ["/roadie/tasks"])
+		self.assertEqual([n.route for n in notifications], ["/tasks"])
+
+	def test_a_route_never_repeats_the_base_the_router_already_carries(self):
+		# A mention carries a site path in its link and has no entry in NOTIFICATION_ROUTES.
+		frappe.set_user(MEMBER)
+		festival = frappe.get_doc({"doctype": "Festival", "title": "Acme Festival"}).insert()
+		frappe.get_doc(
+			{
+				"doctype": "Notification Log",
+				"for_user": MEMBER,
+				"type": "Mention",
+				"document_type": "Festival",
+				"document_name": festival.name,
+				"subject": "Jane Doe mentioned you in a comment",
+				"link": get_url("/roadie/directory"),
+			}
+		).insert(ignore_permissions=True)
+
+		[notification] = get_notifications()
+		self.assertEqual(notification.route, "/directory")
 
 	def test_mark_notifications_read_clears_unread(self):
 		frappe.set_user(MEMBER)
