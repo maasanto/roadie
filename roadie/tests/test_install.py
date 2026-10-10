@@ -25,6 +25,7 @@ class TestInstall(IntegrationTestCase):
 
 		self.assertFalse(frappe.db.exists("Custom DocPerm", {"parent": "Contact", "role": ROLE}))
 		self.assertEqual(
-			frappe.db.get_value("Custom DocPerm", {"parent": "Contact", "role": "System Manager"}, "export"), 0
+			frappe.db.get_value("Custom DocPerm", {"parent": "Contact", "role": "System Manager"}, "export"),
+			0,
 		)
 		self.assertFalse(frappe.db.exists("Custom DocPerm", {"parent": "Communication"}))
