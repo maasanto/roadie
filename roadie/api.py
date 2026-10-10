@@ -298,5 +298,49 @@ def share_drive_link(entity_name: str) -> str:
 	return frappe.utils.get_url(f"/drive/{'d' if entity.is_folder else 'f'}/{entity.name}")
 
 
+# Where the SPA shows a notification's record; the record itself has no deep link yet.
+NOTIFICATION_ROUTES = {"Gig": "/roadie", "Band Task": "/roadie/tasks"}
+NOTIFICATION_FIELDS = [
+	"name",
+	"type",
+	"subject",
+	"title",
+	"description",
+	"document_type",
+	"document_name",
+	"link",
+	"read",
+	"creation",
+]
+
+
+@frappe.whitelist()
+def get_notifications() -> list[dict]:
+	"""The caller's in-app notifications: unread first, newest first, capped."""
+	frappe.only_for(("Band Member", "System Manager"))
+
+	notifications = frappe.get_all(
+		"Notification Log",
+		filters={"for_user": frappe.session.user},
+		fields=NOTIFICATION_FIELDS,
+		order_by="read asc, creation desc",
+		limit=50,
+	)
+	for notification in notifications:
+		notification.route = NOTIFICATION_ROUTES.get(notification.document_type) or notification.link
+	return notifications
+
+
+@frappe.whitelist(methods=["POST"])
+def mark_notifications_read(names: list[str] | None = None) -> None:
+	"""Clears the unread flag on the caller's notifications, all of them or just those in `names`."""
+	frappe.only_for(("Band Member", "System Manager"))
+
+	filters = {"for_user": frappe.session.user, "read": 0}
+	if names:
+		filters["name"] = ["in", names]
+	frappe.db.set_value("Notification Log", filters, "read", 1, update_modified=False)
+
+
 def has_app_permission() -> bool:
 	return frappe.has_permission("Gig", "read")
