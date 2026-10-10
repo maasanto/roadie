@@ -15,12 +15,14 @@
   "message_type": "HTML",
   "module": "Roadie",
   "name": "Gig Application Closes in 7 Days",
+  "notification_type": "Alert",
   "recipients": [
    {
     "doctype": "Notification Recipient",
     "receiver_by_document_field": "gig_owner"
    }
   ],
+  "send_system_notification": 1,
   "subject": "{{ _('Application for {0} closes in {1} days').format(doc.title, alert.days_in_advance) }}"
  },
  {
@@ -39,12 +41,14 @@
   "message_type": "HTML",
   "module": "Roadie",
   "name": "Band Task Due Today",
+  "notification_type": "Alert",
   "recipients": [
    {
     "doctype": "Notification Recipient",
     "receiver_by_document_field": "assignee"
    }
   ],
+  "send_system_notification": 1,
   "subject": "{{ _('Due today: {0}').format(doc.title) }}"
  }
 ]
