@@ -28,6 +28,7 @@ website_redirects = [{"source": r"/band(/.*)?", "target": r"/roadie\1", "forward
 role_home_page = {"Band Member": "roadie"}
 
 after_install = "roadie.install.after_install"
+after_uninstall = "roadie.install.after_uninstall"
 
 # Read by the dokos_ai app to serve the agent skill in roadie/roadie/skills; inert on a site without it
 dokos_ai_skills = ["roadie"]
