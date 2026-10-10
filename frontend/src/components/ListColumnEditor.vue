@@ -57,7 +57,7 @@ const remove = (column) => save(columns.value.filter((entry) => entry.fieldname 
 						variant="ghost"
 						icon="lucide-arrow-up"
 						:disabled="saving"
-						:aria-label="__('Move {0} up', [__(column.label)])"
+						:label="__('Move {0} up', [__(column.label)])"
 						@click="move(column, -1)"
 					/>
 					<Button
@@ -65,7 +65,7 @@ const remove = (column) => save(columns.value.filter((entry) => entry.fieldname 
 						variant="ghost"
 						icon="lucide-arrow-down"
 						:disabled="saving"
-						:aria-label="__('Move {0} down', [__(column.label)])"
+						:label="__('Move {0} down', [__(column.label)])"
 						@click="move(column, 1)"
 					/>
 					<Button
@@ -73,7 +73,7 @@ const remove = (column) => save(columns.value.filter((entry) => entry.fieldname 
 						variant="ghost"
 						icon="lucide-x"
 						:disabled="saving"
-						:aria-label="__('Remove {0}', [__(column.label)])"
+						:label="__('Remove {0}', [__(column.label)])"
 						@click="remove(column)"
 					/>
 				</div>
