@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
 import { Button, ErrorMessage, FormControl, Skeleton, toast, useCall } from "frappe-ui";
+import { joinList, splitList } from "../directory";
 
 const props = defineProps({
 	doctype: { type: String, required: true },
@@ -25,14 +26,26 @@ const updateEntry = useCall({ url: documentUrl, method: "PUT", immediate: false 
 // A modified-timestamp check would also refuse the save whenever an email lands on the record.
 let loadedForm = {};
 
+// A multiselect round-trips: an array in the form, one comma-separated string in the database.
+const toFormValue = (field, value) => (field.type === "multiselect" ? splitList(value) : value ?? "");
+
+const toStoredValue = (field, value) => (field.type === "multiselect" ? joinList(value) : value);
+
+const sameValue = (a, b) =>
+	Array.isArray(a) && Array.isArray(b)
+		? a.length === b.length && a.every((item, index) => item === b[index])
+		: a === b;
+
 function fillForm(doc) {
 	for (const field of props.fields)
-		form[field.fieldname] = doc ? doc[field.fieldname] ?? "" : field.default ?? "";
+		form[field.fieldname] = toFormValue(field, doc ? doc[field.fieldname] : field.default);
 	loadedForm = { ...form };
 }
 
 const changedFields = () =>
-	Object.fromEntries(Object.entries(form).filter(([fieldname, value]) => value !== loadedForm[fieldname]));
+	Object.fromEntries(
+		Object.entries(form).filter(([fieldname, value]) => !sameValue(value, loadedForm[fieldname]))
+	);
 
 watch(
 	() => props.name,
@@ -50,7 +63,15 @@ const saveCall = computed(() => (entryName.value ? updateEntry : createEntry));
 
 async function save() {
 	const call = saveCall.value;
-	await call.submit(entryName.value ? changedFields() : { ...form });
+	const fieldByName = Object.fromEntries(props.fields.map((field) => [field.fieldname, field]));
+	const values = entryName.value ? changedFields() : { ...form };
+	const payload = Object.fromEntries(
+		Object.entries(values).map(([fieldname, value]) => [
+			fieldname,
+			toStoredValue(fieldByName[fieldname], value),
+		])
+	);
+	await call.submit(payload);
 	if (call.error) return;
 	entryName.value = call.data.name;
 	fillForm(call.data);
