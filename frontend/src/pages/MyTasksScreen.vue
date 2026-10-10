@@ -29,7 +29,6 @@ const sections = computed(() => {
 		<ListSkeleton v-if="tasks.loading && !tasks.data" class="mt-6" />
 		<ErrorMessage v-else-if="tasks.error" class="mt-4" :message="tasks.error" />
 		<template v-else>
-			<ErrorMessage class="mt-4" :message="tasks.setValue.error" />
 			<EmptyState
 				v-if="!tasks.data?.length"
 				class="mt-6"

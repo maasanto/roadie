@@ -34,7 +34,7 @@ async function addTask() {
 			<TaskRow v-for="task in tasks.data" :key="task.name" :task="task" :assignee="memberOf(task)" @update:done="setDone(tasks, task, $event)" />
 		</ul>
 		<p v-else-if="tasks.isFinished" class="mt-3 text-p-sm text-ink-gray-5">{{ __("No tasks yet.") }}</p>
-		<ErrorMessage class="mt-2" :message="tasks.error || tasks.setValue.error" />
+		<ErrorMessage class="mt-2" :message="tasks.error" />
 		<form class="mt-3 grid grid-cols-2 gap-3" @submit.prevent="addTask">
 			<FormControl v-model="newTask.title" class="col-span-2" type="text" :placeholder="__('New task')" required />
 			<template v-if="newTask.title">
