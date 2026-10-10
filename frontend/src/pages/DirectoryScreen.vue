@@ -36,12 +36,12 @@ const entries = computed(() => {
 		.sort((a, b) => a.title.localeCompare(b.title));
 });
 
-const dialogOpen = ref(false);
+const isDialogOpen = ref(false);
 const editing = ref({ doctype: "Festival", name: null });
 
 function openEntry(doctype, name = null) {
 	editing.value = { doctype, name };
-	dialogOpen.value = true;
+	isDialogOpen.value = true;
 }
 
 const newOptions = directoryTypes.map(({ doctype }) => ({ label: __(doctype), onClick: () => openEntry(doctype) }));
@@ -93,7 +93,7 @@ const newOptions = directoryTypes.map(({ doctype }) => ({ label: __(doctype), on
 			</li>
 		</ul>
 		<EntryDialog
-			v-model:open="dialogOpen"
+			v-model:open="isDialogOpen"
 			:doctype="editing.doctype"
 			:name="editing.name"
 			:fields="directoryTypes.find((type) => type.doctype === editing.doctype).fields"

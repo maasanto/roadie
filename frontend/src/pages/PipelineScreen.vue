@@ -79,12 +79,12 @@ async function dropGig(column, columnElement) {
 	}
 }
 
-const panelOpen = ref(false);
+const isPanelOpen = ref(false);
 const openedName = ref(null);
 
 function openGig(name = null) {
 	openedName.value = name;
-	panelOpen.value = true;
+	isPanelOpen.value = true;
 }
 </script>
 
@@ -157,10 +157,10 @@ function openGig(name = null) {
 			</div>
 		</template>
 		<GigPanel
-			v-if="panelOpen"
+			v-if="isPanelOpen"
 			:name="openedName"
 			:fields="fields"
-			@close="panelOpen = false"
+			@close="isPanelOpen = false"
 			@saved="gigs.reload()"
 		/>
 	</div>
