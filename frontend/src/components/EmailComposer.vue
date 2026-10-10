@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref } from "vue";
 import { Button, ErrorMessage, FileUploader, TextEditor, useCall, useList } from "frappe-ui";
+import DriveLinkDialog from "./DriveLinkDialog.vue";
 import EmailRecipients from "./EmailRecipients.vue";
 
 const props = defineProps({
@@ -35,6 +36,26 @@ const email = reactive({
 });
 const attachments = ref([]);
 const isShowingCopies = ref(email.cc.length > 0);
+const canLinkDriveItems = window.can_link_drive_items;
+const isPickingDriveItem = ref(false);
+const textEditor = ref(null);
+
+function insertLink({ url, label }) {
+	const { editor } = textEditor.value;
+	if (!editor.state.selection.empty) {
+		editor.chain().focus().setLink({ href: url }).run();
+		return;
+	}
+	// The trailing space is unlinked, so typing after the link doesn't extend it.
+	editor
+		.chain()
+		.focus()
+		.insertContent([
+			{ type: "text", text: label, marks: [{ type: "link", attrs: { href: url } }] },
+			{ type: "text", text: " " },
+		])
+		.run();
+}
 
 const contacts = useList({
 	doctype: "Contact",
@@ -93,6 +114,7 @@ function submit() {
 			required
 		/>
 		<TextEditor
+			ref="textEditor"
 			class="mt-2"
 			:content="email.content"
 			:fixed-menu="EDITOR_BUTTONS"
@@ -118,21 +140,30 @@ function submit() {
 		</ul>
 		<ErrorMessage class="mt-2" :message="send.error" />
 		<div class="mt-3 flex items-center justify-between">
-			<FileUploader
-				:upload-args="{ doctype, docname: name, private: true }"
-				@success="attachments.push($event)"
-			>
-				<template #default="{ openFileSelector, uploading, progress, error }">
-					<Button
-						icon-left="lucide-paperclip"
-						variant="ghost"
-						:label="uploading ? __('Uploading {0}%', [progress]) : __('Attach')"
-						:loading="uploading"
-						@click="openFileSelector"
-					/>
-					<ErrorMessage class="mt-1" :message="error" />
-				</template>
-			</FileUploader>
+			<div class="flex items-start gap-1">
+				<FileUploader
+					:upload-args="{ doctype, docname: name, private: true }"
+					@success="attachments.push($event)"
+				>
+					<template #default="{ openFileSelector, uploading, progress, error }">
+						<Button
+							icon-left="lucide-paperclip"
+							variant="ghost"
+							:label="uploading ? __('Uploading {0}%', [progress]) : __('Attach')"
+							:loading="uploading"
+							@click="openFileSelector"
+						/>
+						<ErrorMessage class="mt-1" :message="error" />
+					</template>
+				</FileUploader>
+				<Button
+					v-if="canLinkDriveItems"
+					icon-left="lucide-hard-drive"
+					variant="ghost"
+					:label="__('Link from Drive')"
+					@click="isPickingDriveItem = true"
+				/>
+			</div>
 			<div class="flex gap-2">
 				<Button :label="__('Discard')" variant="ghost" @click="emit('discard')" />
 				<Button
@@ -145,5 +176,7 @@ function submit() {
 				/>
 			</div>
 		</div>
+		<!-- Mounted per opening, so each one starts from the team list with no stale error. -->
+		<DriveLinkDialog v-if="isPickingDriveItem" v-model:open="isPickingDriveItem" @pick="insertLink" />
 	</form>
 </template>
