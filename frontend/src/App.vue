@@ -1,9 +1,23 @@
 <script setup>
-import { Dropdown, FrappeUIProvider, Sidebar, SidebarHeader, SidebarItem } from "frappe-ui";
-import { onMounted } from "vue";
+import {
+	Badge,
+	Button,
+	Dropdown,
+	FrappeUIProvider,
+	Sidebar,
+	SidebarHeader,
+	SidebarItem,
+	useCall,
+} from "frappe-ui";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
+import NotificationPanel from "./components/NotificationPanel.vue";
+import { unreadCount } from "./notifications";
 
 const route = useRoute();
+const showNotifications = ref(false);
+const notifications = useCall({ url: "/api/v2/method/roadie.api.get_notifications" });
+const unread = computed(() => unreadCount(notifications.data || []));
 
 // An open Dialog treats any pointerdown or focus elsewhere as "outside" and closes, so Undo on a toast would close it too.
 onMounted(() => {
@@ -67,6 +81,16 @@ const screens = [
 						:menu-items="accountMenu"
 					/>
 					<SidebarItem
+						:label="__('Notifications')"
+						icon="lucide-bell"
+						:active="showNotifications"
+						@click="showNotifications = true"
+					>
+						<template v-if="unread" #suffix>
+							<Badge :label="String(unread)" theme="gray" />
+						</template>
+					</SidebarItem>
+					<SidebarItem
 						v-for="screen in screens"
 						:key="screen.name"
 						:label="screen.label"
@@ -91,6 +115,16 @@ const screens = [
 			<header class="flex items-center gap-2 border-b px-4 py-2 md:hidden">
 				<img :src="logoUrl" alt="" class="size-7" />
 				<span class="flex-1 text-base-semibold">Roadie</span>
+				<Button
+					icon="lucide-bell"
+					variant="ghost"
+					:label="__('Notifications')"
+					@click="showNotifications = true"
+				>
+					<template v-if="unread" #suffix>
+						<Badge :label="String(unread)" theme="gray" />
+					</template>
+				</Button>
 				<Dropdown
 					:options="phoneMenu"
 					align="end"
@@ -114,5 +148,6 @@ const screens = [
 				</router-link>
 			</nav>
 		</div>
+		<NotificationPanel v-model:open="showNotifications" :notifications="notifications" />
 	</FrappeUIProvider>
 </template>
