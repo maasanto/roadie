@@ -6,7 +6,7 @@ from frappe.desk.doctype.notification_log.notification_log import (
 	get_title_html,
 )
 from frappe.desk.notifications import extract_mentions
-from frappe.utils import get_fullname
+from frappe.utils import get_fullname, get_url
 
 from roadie.api import COMMENT_DOCTYPES
 
@@ -33,6 +33,8 @@ def notify_mentioned_members(comment, method=None):
 		return
 
 	title = get_title(comment.reference_doctype, comment.reference_name)
+	# Members can't open the Desk form Frappe links to by default.
+	screen = "/roadie" if comment.reference_doctype == "Gig" else "/roadie/directory"
 	enqueue_create_notification(
 		members,
 		{
@@ -41,12 +43,14 @@ def notify_mentioned_members(comment, method=None):
 			"document_name": comment.reference_name,
 			"source_doctype": comment.doctype,
 			"source_name": comment.name,
+			"link": get_url(screen),
+			# comment_email is whatever the client sent, so the author is the comment's owner.
 			"subject": _("{0} mentioned you in a comment in {1} {2}").format(
-				frappe.bold(get_fullname(comment.comment_email)),
+				frappe.bold(get_fullname(comment.owner)),
 				frappe.bold(_(comment.reference_doctype)),
 				get_title_html(title),
 			),
-			"from_user": comment.comment_email,
+			"from_user": comment.owner,
 			"email_content": comment.content,
 		},
 	)

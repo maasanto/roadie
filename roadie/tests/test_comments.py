@@ -32,16 +32,18 @@ class TestComments(IntegrationTestCase):
 			f'<p><span class="mention" data-type="mention" data-id="{BANDMATE}" data-label="Jane Doe">@Jane Doe</span>'
 			" can you call them about the deadline?</p>"
 		)
-		comment = add_comment("Festival", festival.name, content, MEMBER, "John Doe")
+		comment = add_comment("Festival", festival.name, content, "mallory@example.com", "Mallory")
 
 		frappe.set_user(BANDMATE)
 		self.assertEqual([entry.name for entry in get_comments("Festival", festival.name)], [comment.name])
-		self.assertTrue(
-			frappe.db.exists(
-				"Notification Log",
-				{"for_user": BANDMATE, "type": "Mention", "document_type": "Festival", "document_name": festival.name},
-			)
+		notification = frappe.db.get_value(
+			"Notification Log",
+			{"for_user": BANDMATE, "type": "Mention", "document_type": "Festival", "document_name": festival.name},
+			["from_user", "link"],
+			as_dict=True,
 		)
+		self.assertEqual(notification.from_user, MEMBER)
+		self.assertTrue(notification.link.endswith("/roadie/directory"))
 		self.assertFalse(frappe.db.exists("Email Queue Recipient", {"recipient": FESTIVAL_CONTACT}))
 
 	def test_comments_are_only_listed_for_band_records(self):
