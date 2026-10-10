@@ -31,7 +31,7 @@ Records are named by a random hash, so always look a record up by `title` first 
 
 Gig statuses, in pipeline order: `Idea`, `Contacted`, `Applied`, `Negotiating`, `Booked`, `Played`, `Declined`, `Dropped`.
 
-The last two are dead ends and stay off the pipeline. A gig created with a `festival` and no
+The last two are dead ends, shown together in the pipeline's last column. A gig created with a `festival` and no
 window copies the festival's `application_opens` and `application_closes`.
 
 People are standard Contacts, attached to a Festival, Venue, Promoter or Band through a Dynamic
