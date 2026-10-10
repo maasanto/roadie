@@ -6,10 +6,9 @@ EMAIL_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
 COMMENT_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 # Frappe roots a thread linked to no record on its first Communication, so that Communication is a thread too.
 THREAD_DOCTYPES = (*EMAIL_DOCTYPES, "Communication")
-EMAIL_FIELDS = [
+EMAIL_SUMMARY_FIELDS = [
 	"name",
 	"subject",
-	"content",
 	"sender",
 	"sender_full_name",
 	"recipients",
@@ -18,6 +17,7 @@ EMAIL_FIELDS = [
 	"delivery_status",
 	"communication_date",
 ]
+EMAIL_FIELDS = [*EMAIL_SUMMARY_FIELDS, "content"]
 
 
 @frappe.whitelist()
@@ -133,12 +133,7 @@ def get_mailbox(sent_or_received: str) -> list[dict]:
 			"communication_type": "Communication",
 			"sent_or_received": sent_or_received,
 		},
-		fields=[
-			*[field for field in EMAIL_FIELDS if field != "content"],
-			"seen",
-			"reference_doctype",
-			"reference_name",
-		],
+		fields=[*EMAIL_SUMMARY_FIELDS, "seen", "reference_doctype", "reference_name"],
 		order_by="communication_date desc",
 		limit=200,
 	)
