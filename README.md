@@ -1,33 +1,61 @@
-### Roadie
+# Roadie
 
-Track the people, places and deadlines that get the band booked
+Track the people, places and deadlines that get the band booked.
 
-### Installation
+Roadie is a small, shared booking desk for a band. Everyone in the band sees the same gigs, festivals, venues, promoters, tasks and email, and nobody has to learn an ERP to use it. It is a [Frappe](https://frappeframework.com) app with its own screen at `/roadie`, in English and French.
 
-You can install this app using the [bench](https://github.com/frappe/bench) CLI:
+![Pipeline](docs/screenshots/pipeline.png)
+
+## What it does
+
+- Pipeline: every gig on a kanban, from Idea to Played (or Declined / Dropped). Drag a card to change its status, with Undo. Application deadlines turn red when they get close.
+- Gig panel: the gig's fields, a task checklist, attachments (riders, contracts), the email thread with a composer, and a comment thread for the band only.
+- Planning: a gantt with one lane per gig showing the application window, the gig date and its tasks, plus a lane for loose tasks.
+- My tasks: what is assigned to you, overdue first, ticked off in one click.
+- Directory: festivals, venues, promoters and bands with their contacts, searchable in one list.
+- Inbox and Outbox: the band's shared mailbox, with read/unread and delivery status. Email to a contact also shows on the festival, venue, promoter or band they belong to.
+- Reminders: the gig owner gets an email 7 days before an application closes, and the assignee gets one when a task is due.
+
+On a phone the kanban and gantt become lists and the sidebar becomes a tab bar.
+
+| Gig panel | Planning |
+| --- | --- |
+| ![Gig panel](docs/screenshots/gig-panel.png) | ![Planning](docs/screenshots/planning.png) |
+
+| Directory | Inbox | Phone |
+| --- | --- | --- |
+| ![Directory](docs/screenshots/directory.png) | ![Inbox](docs/screenshots/inbox.png) | ![Pipeline on a phone](docs/screenshots/pipeline-phone.png) |
+
+## Install
+
+Roadie needs a [bench](https://github.com/frappe/bench) running Frappe v16.
 
 ```bash
-cd $PATH_TO_YOUR_BENCH
-bench get-app $URL_OF_THIS_REPO --branch N
-bench install-app roadie
+bench get-app https://github.com/maasanto/roadie --branch develop
+bench --site <your-site> install-app roadie
 ```
 
-### Contributing
+Then, on the site:
 
-This app uses `pre-commit` for code formatting and linting. Please [install pre-commit](https://pre-commit.com/#installation) and enable it for this repository:
+1. Give each bandmate a user with the Band Member role. Members land on `/roadie` when they log in and never need the Desk.
+2. Add the band's mailbox as an Email Account with incoming and outgoing enabled. Roadie reads and sends through it.
+3. Optionally, point the sidebar's Drive link at the band's shared folder:
+
+   ```bash
+   bench --site <your-site> set-config band_drive_url "https://drive.example.com/your-band"
+   ```
+
+## Development
+
+The screen is a [frappe-ui](https://github.com/frappe/frappe-ui) app in `frontend/`. `bench build --app roadie` builds it, and `yarn dev` in `frontend/` serves it with hot reload.
 
 ```bash
-cd apps/roadie
-pre-commit install
+bench --site <your-site> run-tests --app roadie
+yarn --cwd apps/roadie/frontend test
 ```
 
-Pre-commit is configured to use the following tools for checking and formatting your code:
+The app uses `pre-commit` (ruff, eslint, prettier, pyupgrade): run `pre-commit install` in `apps/roadie`.
 
-- ruff
-- eslint
-- prettier
-- pyupgrade
+## License
 
-### License
-
-mit
+[AGPL-3.0](license.txt). The email composer is adapted from [Frappe CRM](https://github.com/frappe/crm), which is AGPL-3.0.
