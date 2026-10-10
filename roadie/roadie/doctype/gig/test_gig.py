@@ -65,6 +65,18 @@ class TestGig(IntegrationTestCase):
 		self.assertEqual(str(edited.application_closes), "2027-03-01")
 		self.assertEqual(copied.gig_owner, MEMBER)
 
+	def test_application_window_cannot_close_before_it_opens(self):
+		frappe.set_user(MEMBER)
+		with self.assertRaises(frappe.ValidationError):
+			frappe.get_doc(
+				{
+					"doctype": "Gig",
+					"title": "Acme 2027",
+					"application_opens": "2027-03-01",
+					"application_closes": "2027-02-01",
+				}
+			).insert()
+
 	def test_members_lists_only_band_members(self):
 		frappe.set_user(MEMBER)
 		members = [member.name for member in get_members()]
