@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roadie VERSION\n"
 "Report-Msgid-Bugs-To: antoine.maas@okte.io\n"
-"POT-Creation-Date: 2026-10-10 11:25+0009\n"
-"PO-Revision-Date: 2026-10-10 11:25+0009\n"
+"POT-Creation-Date: 2026-10-10 14:03+0009\n"
+"PO-Revision-Date: 2026-10-10 14:03+0009\n"
 "Last-Translator: antoine.maas@okte.io\n"
 "Language-Team: antoine.maas@okte.io\n"
 "MIME-Version: 1.0\n"
@@ -64,11 +64,15 @@ msgstr ""
 msgid "Application closes"
 msgstr ""
 
+#: roadie/fixtures/notification.json:24
+msgid "Application for {0} closes in {1} days"
+msgstr ""
+
 #: frontend/src/gig.js:75
 msgid "Application opens"
 msgstr ""
 
-#: frontend/src/pages/PlanningScreen.vue:17 roadie/api.py:193
+#: frontend/src/pages/PlanningScreen.vue:17 roadie/api.py:194
 msgid "Application window"
 msgstr ""
 
@@ -180,7 +184,7 @@ msgstr ""
 msgid "Comments"
 msgstr ""
 
-#: roadie/api.py:108
+#: roadie/api.py:109
 msgid "Comments can only be listed for {0}, not {1}"
 msgstr ""
 
@@ -257,6 +261,10 @@ msgstr ""
 msgid "Due date"
 msgstr ""
 
+#: roadie/fixtures/notification.json:48
+msgid "Due today: {0}"
+msgstr ""
+
 #: frontend/src/components/EntryContacts.vue:98
 msgid "Email"
 msgstr ""
@@ -306,7 +314,7 @@ msgstr ""
 #. Label of the gig (Link) field in DocType 'Band Task'
 #. Name of a DocType
 #: frontend/src/components/GigPanel.vue:27
-#: frontend/src/pages/PlanningScreen.vue:18 roadie/api.py:202
+#: frontend/src/pages/PlanningScreen.vue:18 roadie/api.py:203
 #: roadie/roadie/doctype/band_task/band_task.json
 #: roadie/roadie/doctype/gig/gig.json
 msgid "Gig"
@@ -387,7 +395,7 @@ msgstr ""
 msgid "Log out"
 msgstr ""
 
-#: roadie/api.py:125
+#: roadie/api.py:126
 msgid "Mailbox is either Sent or Received, not {0}"
 msgstr ""
 
@@ -539,7 +547,7 @@ msgstr ""
 msgid "Only band members can open Roadie"
 msgstr ""
 
-#: roadie/api.py:249
+#: roadie/api.py:250
 msgid "Only {0} bars can be rescheduled, not {1}"
 msgstr ""
 
@@ -551,13 +559,18 @@ msgstr ""
 msgid "Open a gig and write to its contacts. Every email the band sends shows here with its delivery status."
 msgstr ""
 
+#: roadie/fixtures/notification.json:38
+msgid "Open my tasks"
+msgstr ""
+
 #: frontend/src/pages/MailboxScreen.vue:65
 #: frontend/src/pages/MyTasksScreen.vue:43
 #: frontend/src/pages/PlanningScreen.vue:195
+#: roadie/fixtures/notification.json:14
 msgid "Open the pipeline"
 msgstr ""
 
-#: roadie/api.py:212
+#: roadie/api.py:213
 msgid "Other"
 msgstr ""
 
@@ -721,6 +734,10 @@ msgstr ""
 msgid "Tasks"
 msgstr ""
 
+#: roadie/fixtures/notification.json:14
+msgid "The application for {0} closes on {1}, in {2} days, and the gig is still at {3}."
+msgstr ""
+
 #. Label of the title (Data) field in DocType 'Band Task'
 #. Label of the title (Data) field in DocType 'Gig'
 #: frontend/src/gig.js:45 roadie/roadie/doctype/band_task/band_task.json
@@ -852,11 +869,15 @@ msgstr ""
 msgid "{0} is booked. Time to rehearse!"
 msgstr ""
 
+#: roadie/fixtures/notification.json:38
+msgid "{0} is due today."
+msgstr ""
+
 #: frontend/src/pages/PipelineScreen.vue:52
 msgid "{0} is in the books. What a night!"
 msgstr ""
 
-#: roadie/mentions.py:48
+#: roadie/mentions.py:47
 msgid "{0} mentioned you in a comment in {1} {2}"
 msgstr ""
 

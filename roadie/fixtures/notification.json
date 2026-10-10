@@ -11,7 +11,7 @@
   "enabled": 1,
   "event": "Days Before",
   "is_standard": 0,
-  "message": "<p>The application for <b>{{ doc.title }}</b> closes on {{ frappe.utils.format_date(doc.application_closes) }}, in 7 days, and the gig is still at {{ doc.status }}.</p>\n<p><a href=\"{{ frappe.utils.get_url('/roadie') }}\">Open the pipeline</a></p>",
+  "message": "<p>{{ _('The application for {0} closes on {1}, in {2} days, and the gig is still at {3}.').format('<b>' ~ doc.title ~ '</b>', frappe.utils.format_date(doc.application_closes), alert.days_in_advance, _(doc.status)) }}</p>\n<p><a href=\"{{ frappe.utils.get_url('/roadie') }}\">{{ _('Open the pipeline') }}</a></p>",
   "message_type": "HTML",
   "module": "Roadie",
   "name": "Gig Application Closes in 7 Days",
@@ -21,7 +21,7 @@
     "receiver_by_document_field": "gig_owner"
    }
   ],
-  "subject": "Application for {{ doc.title }} closes in 7 days"
+  "subject": "{{ _('Application for {0} closes in {1} days').format(doc.title, alert.days_in_advance) }}"
  },
  {
   "channel": "Email",
@@ -35,7 +35,7 @@
   "enabled": 1,
   "event": "Days Before",
   "is_standard": 0,
-  "message": "<p><b>{{ doc.title }}</b> is due today.</p>\n<p><a href=\"{{ frappe.utils.get_url('/roadie/tasks') }}\">Open my tasks</a></p>",
+  "message": "<p>{{ _('{0} is due today.').format('<b>' ~ doc.title ~ '</b>') }}</p>\n<p><a href=\"{{ frappe.utils.get_url('/roadie/tasks') }}\">{{ _('Open my tasks') }}</a></p>",
   "message_type": "HTML",
   "module": "Roadie",
   "name": "Band Task Due Today",
@@ -45,6 +45,6 @@
     "receiver_by_document_field": "assignee"
    }
   ],
-  "subject": "Due today: {{ doc.title }}"
+  "subject": "{{ _('Due today: {0}').format(doc.title) }}"
  }
 ]

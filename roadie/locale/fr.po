@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roadie VERSION\n"
 "Report-Msgid-Bugs-To: antoine.maas@okte.io\n"
-"POT-Creation-Date: 2026-10-10 11:25+0009\n"
+"POT-Creation-Date: 2026-10-10 14:03+0009\n"
 "PO-Revision-Date: 2026-10-09 23:47+0009\n"
 "Last-Translator: antoine.maas@okte.io\n"
 "Language: fr\n"
@@ -66,11 +66,15 @@ msgstr "Lien de candidature"
 msgid "Application closes"
 msgstr "Clôture des candidatures"
 
+#: roadie/fixtures/notification.json:24
+msgid "Application for {0} closes in {1} days"
+msgstr "Les candidatures pour {0} ferment dans {1} jours"
+
 #: frontend/src/gig.js:75
 msgid "Application opens"
 msgstr "Ouverture des candidatures"
 
-#: frontend/src/pages/PlanningScreen.vue:17 roadie/api.py:193
+#: frontend/src/pages/PlanningScreen.vue:17 roadie/api.py:194
 msgid "Application window"
 msgstr "Période de candidature"
 
@@ -182,7 +186,7 @@ msgstr "Commenter"
 msgid "Comments"
 msgstr "Commentaires"
 
-#: roadie/api.py:108
+#: roadie/api.py:109
 msgid "Comments can only be listed for {0}, not {1}"
 msgstr "Les commentaires ne peuvent être listés que pour {0}, pas pour {1}"
 
@@ -259,6 +263,10 @@ msgstr "Échéance"
 msgid "Due date"
 msgstr "Échéance"
 
+#: roadie/fixtures/notification.json:48
+msgid "Due today: {0}"
+msgstr "À faire aujourd'hui : {0}"
+
 #: frontend/src/components/EntryContacts.vue:98
 msgid "Email"
 msgstr "E-mail"
@@ -308,7 +316,7 @@ msgstr "Genre"
 #. Label of the gig (Link) field in DocType 'Band Task'
 #. Name of a DocType
 #: frontend/src/components/GigPanel.vue:27
-#: frontend/src/pages/PlanningScreen.vue:18 roadie/api.py:202
+#: frontend/src/pages/PlanningScreen.vue:18 roadie/api.py:203
 #: roadie/roadie/doctype/band_task/band_task.json
 #: roadie/roadie/doctype/gig/gig.json
 msgid "Gig"
@@ -389,7 +397,7 @@ msgstr "Chargement"
 msgid "Log out"
 msgstr "Se déconnecter"
 
-#: roadie/api.py:125
+#: roadie/api.py:126
 msgid "Mailbox is either Sent or Received, not {0}"
 msgstr "La boîte est soit Sent, soit Received, pas {0}"
 
@@ -541,7 +549,7 @@ msgstr "Le {0}, {1} a écrit :"
 msgid "Only band members can open Roadie"
 msgstr "Seuls les membres du groupe peuvent ouvrir Roadie"
 
-#: roadie/api.py:249
+#: roadie/api.py:250
 msgid "Only {0} bars can be rescheduled, not {1}"
 msgstr "Seules les barres {0} peuvent être replanifiées, pas {1}"
 
@@ -553,13 +561,18 @@ msgstr "Ouvrez un concert et ajoutez une tâche à sa liste. Tout ce qui vous es
 msgid "Open a gig and write to its contacts. Every email the band sends shows here with its delivery status."
 msgstr "Ouvrez un concert et écrivez à ses contacts. Chaque e-mail envoyé par le groupe s'affiche ici avec son statut d'envoi."
 
+#: roadie/fixtures/notification.json:38
+msgid "Open my tasks"
+msgstr "Ouvrir mes tâches"
+
 #: frontend/src/pages/MailboxScreen.vue:65
 #: frontend/src/pages/MyTasksScreen.vue:43
 #: frontend/src/pages/PlanningScreen.vue:195
+#: roadie/fixtures/notification.json:14
 msgid "Open the pipeline"
 msgstr "Ouvrir le pipeline"
 
-#: roadie/api.py:212
+#: roadie/api.py:213
 msgid "Other"
 msgstr "Autres"
 
@@ -723,6 +736,10 @@ msgstr "Tâche"
 msgid "Tasks"
 msgstr "Tâches"
 
+#: roadie/fixtures/notification.json:14
+msgid "The application for {0} closes on {1}, in {2} days, and the gig is still at {3}."
+msgstr "Les candidatures pour {0} ferment le {1}, dans {2} jours, et le concert est toujours au statut « {3} »."
+
 #. Label of the title (Data) field in DocType 'Band Task'
 #. Label of the title (Data) field in DocType 'Gig'
 #: frontend/src/gig.js:45 roadie/roadie/doctype/band_task/band_task.json
@@ -854,11 +871,15 @@ msgstr "{0} Mo"
 msgid "{0} is booked. Time to rehearse!"
 msgstr "{0} est confirmé. Place aux répètes !"
 
+#: roadie/fixtures/notification.json:38
+msgid "{0} is due today."
+msgstr "{0} est à faire aujourd'hui."
+
 #: frontend/src/pages/PipelineScreen.vue:52
 msgid "{0} is in the books. What a night!"
 msgstr "{0} : c'est joué. Quelle soirée !"
 
-#: roadie/mentions.py:48
+#: roadie/mentions.py:47
 msgid "{0} mentioned you in a comment in {1} {2}"
 msgstr "{0} vous a mentionné dans un commentaire sur {1} {2}"
 

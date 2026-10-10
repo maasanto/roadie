@@ -63,6 +63,28 @@ class TestReminders(IntegrationTestCase):
 		self.assertFalse(queued_reminders("Gig", already_applied.name))
 		self.assertFalse(queued_reminders("Gig", later.name))
 
+	def test_gig_reminder_is_translated_and_states_the_notification_lead_time(self):
+		lead_time = frappe.db.get_value("Notification", GIG_REMINDER, "days_in_advance")
+		self.addCleanup(frappe.db.set_value, "Notification", GIG_REMINDER, "days_in_advance", lead_time)
+		frappe.db.set_value("Notification", GIG_REMINDER, "days_in_advance", 3)
+		closing = frappe.get_doc(
+			{"doctype": "Gig", "title": "Acme Festival 2027", "application_closes": add_days(today(), 3)}
+		).insert()
+
+		frappe.set_user("Administrator")
+		frappe.local.lang = "fr"
+		self.addCleanup(setattr, frappe.local, "lang", "en")
+		run_daily_reminder(GIG_REMINDER)
+
+		reminder = frappe.db.get_value(
+			"Communication",
+			{"reference_doctype": "Gig", "reference_name": closing.name},
+			["subject", "content"],
+			as_dict=True,
+		)
+		self.assertEqual(reminder.subject, "Les candidatures pour Acme Festival 2027 ferment dans 3 jours")
+		self.assertIn("dans 3 jours, et le concert est toujours au statut « Idée »", reminder.content)
+
 	def test_assignee_is_emailed_on_the_due_date_of_an_open_task(self):
 		due = frappe.get_doc(
 			{"doctype": "Band Task", "title": "Send the rider", "assignee": MEMBER, "due_date": today()}
