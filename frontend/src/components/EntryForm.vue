@@ -14,14 +14,19 @@ const form = reactive({});
 const documentUrl = computed(() => `/api/v2/document/${props.doctype}/${entryName.value}`);
 
 const loadEntry = useCall({ url: documentUrl, immediate: false });
-const createEntry = useCall({ url: computed(() => `/api/v2/document/${props.doctype}`), method: "POST", immediate: false });
+const createEntry = useCall({
+	url: computed(() => `/api/v2/document/${props.doctype}`),
+	method: "POST",
+	immediate: false,
+});
 const updateEntry = useCall({ url: documentUrl, method: "PUT", immediate: false });
 
 // Sent back on save, so Frappe refuses to overwrite a change made since the form was loaded.
 const loadedModified = ref(null);
 
 function fillForm(doc) {
-	for (const field of props.fields) form[field.fieldname] = doc ? (doc[field.fieldname] ?? "") : (field.default ?? "");
+	for (const field of props.fields)
+		form[field.fieldname] = doc ? doc[field.fieldname] ?? "" : field.default ?? "";
 	loadedModified.value = doc?.modified ?? null;
 }
 
@@ -34,7 +39,7 @@ watch(
 		await loadEntry.execute();
 		fillForm(loadEntry.data);
 	},
-	{ immediate: true },
+	{ immediate: true }
 );
 
 const saveCall = computed(() => (entryName.value ? updateEntry : createEntry));
@@ -54,7 +59,12 @@ defineExpose({ form, entryName });
 
 <template>
 	<div v-if="loadEntry.loading" class="grid grid-cols-2 gap-4" aria-busy="true" :aria-label="__('Loading')">
-		<Skeleton v-for="field in fields" :key="field.fieldname" class="h-14 rounded" :class="field.type === 'textarea' ? 'col-span-2' : ''" />
+		<Skeleton
+			v-for="field in fields"
+			:key="field.fieldname"
+			class="h-14 rounded"
+			:class="field.type === 'textarea' ? 'col-span-2' : ''"
+		/>
 	</div>
 	<ErrorMessage v-else-if="loadEntry.error" :message="loadEntry.error" />
 	<div v-else class="space-y-6">
@@ -71,7 +81,12 @@ defineExpose({ form, entryName });
 			/>
 			<ErrorMessage class="col-span-2" :message="saveCall.error" />
 			<div class="col-span-2 flex justify-end">
-				<Button type="submit" variant="solid" :loading="saveCall.loading" :label="entryName ? __('Save') : __('Create')" />
+				<Button
+					type="submit"
+					variant="solid"
+					:loading="saveCall.loading"
+					:label="entryName ? __('Save') : __('Create')"
+				/>
 			</div>
 		</form>
 		<slot v-if="entryName" :entry-name="entryName" />

@@ -30,10 +30,17 @@ export function burstConfetti(origin) {
 			.animate(
 				[
 					{ transform: "translate(0, 0) rotate(0deg)", opacity: 1 },
-					{ transform: `translate(${peakX}px, ${peakY}px) rotate(${spin / 2}deg)`, opacity: 1, offset: 0.55 },
-					{ transform: `translate(${peakX * 1.2}px, ${peakY + 70}px) rotate(${spin}deg)`, opacity: 0 },
+					{
+						transform: `translate(${peakX}px, ${peakY}px) rotate(${spin / 2}deg)`,
+						opacity: 1,
+						offset: 0.55,
+					},
+					{
+						transform: `translate(${peakX * 1.2}px, ${peakY + 70}px) rotate(${spin}deg)`,
+						opacity: 0,
+					},
 				],
-				{ duration: DURATION_MS, easing: "cubic-bezier(.2, .7, .4, 1)" },
+				{ duration: DURATION_MS, easing: "cubic-bezier(.2, .7, .4, 1)" }
 			)
 			.finished.then(() => piece.remove());
 	}

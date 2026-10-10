@@ -9,7 +9,12 @@ export async function setDone(tasks, task, isDone) {
 	if (task.done === done) return;
 	tasks.updateRow({ name: task.name, done });
 	try {
-		await call("frappe.client.set_value", { doctype: "Band Task", name: task.name, fieldname: "done", value: done });
+		await call("frappe.client.set_value", {
+			doctype: "Band Task",
+			name: task.name,
+			fieldname: "done",
+			value: done,
+		});
 	} catch (error) {
 		tasks.updateRow({ name: task.name, done: done ? 0 : 1 });
 		toast.error(error.messages.join("\n"));

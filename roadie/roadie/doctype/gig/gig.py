@@ -12,6 +12,8 @@ class Gig(Document):
 			and getdate(self.application_opens) > getdate(self.application_closes)
 		):
 			frappe.throw(
-				_("Application opens {0} after it closes {1}").format(self.application_opens, self.application_closes),
+				_("Application opens {0} after it closes {1}").format(
+					self.application_opens, self.application_closes
+				),
 				title=_("Invalid dates"),
 			)

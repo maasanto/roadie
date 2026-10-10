@@ -54,8 +54,12 @@ class TestReminders(IntegrationTestCase):
 		run_daily_reminder(GIG_REMINDER)
 
 		[queued] = queued_reminders("Gig", closing.name)
-		self.assertEqual(frappe.get_all("Email Queue Recipient", {"parent": queued}, pluck="recipient"), [MEMBER])
-		self.assertIn("Acme Festival 2027 closes in 7 days", frappe.db.get_value("Email Queue", queued, "message"))
+		self.assertEqual(
+			frappe.get_all("Email Queue Recipient", {"parent": queued}, pluck="recipient"), [MEMBER]
+		)
+		self.assertIn(
+			"Acme Festival 2027 closes in 7 days", frappe.db.get_value("Email Queue", queued, "message")
+		)
 		self.assertFalse(queued_reminders("Gig", already_applied.name))
 		self.assertFalse(queued_reminders("Gig", later.name))
 
@@ -64,12 +68,20 @@ class TestReminders(IntegrationTestCase):
 			{"doctype": "Band Task", "title": "Send the rider", "assignee": MEMBER, "due_date": today()}
 		).insert()
 		done = frappe.get_doc(
-			{"doctype": "Band Task", "title": "Book the van", "assignee": MEMBER, "due_date": today(), "done": 1}
+			{
+				"doctype": "Band Task",
+				"title": "Book the van",
+				"assignee": MEMBER,
+				"due_date": today(),
+				"done": 1,
+			}
 		).insert()
 
 		frappe.set_user("Administrator")
 		run_daily_reminder(TASK_REMINDER)
 
 		[queued] = queued_reminders("Band Task", due.name)
-		self.assertEqual(frappe.get_all("Email Queue Recipient", {"parent": queued}, pluck="recipient"), [MEMBER])
+		self.assertEqual(
+			frappe.get_all("Email Queue Recipient", {"parent": queued}, pluck="recipient"), [MEMBER]
+		)
 		self.assertFalse(queued_reminders("Band Task", done.name))

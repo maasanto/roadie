@@ -17,7 +17,11 @@ const isShowingEmails = ref(false);
 
 <template>
 	<li class="flex items-center gap-3 px-3 py-2">
-		<Checkbox :model-value="Boolean(task.done)" :aria-label="__('Done: {0}', [task.title])" @update:model-value="emit('update:done', $event)" />
+		<Checkbox
+			:model-value="Boolean(task.done)"
+			:aria-label="__('Done: {0}', [task.title])"
+			@update:model-value="emit('update:done', $event)"
+		/>
 		<div class="min-w-0 flex-1">
 			<button
 				type="button"
@@ -36,7 +40,13 @@ const isShowingEmails = ref(false);
 		>
 			<span class="lucide-calendar-check size-3.5" aria-hidden="true" />{{ formatDate(task.due_date) }}
 		</span>
-		<Avatar v-if="assignee" :label="assignee.full_name" :image="assignee.user_image" size="sm" :title="assignee.full_name" />
+		<Avatar
+			v-if="assignee"
+			:label="assignee.full_name"
+			:image="assignee.user_image"
+			size="sm"
+			:title="assignee.full_name"
+		/>
 		<Dialog v-model:open="isShowingEmails" :title="task.title" size="2xl">
 			<EmailThread doctype="Band Task" :name="task.name" />
 		</Dialog>

@@ -34,12 +34,22 @@ const sections = computed(() => {
 				class="mt-6"
 				icon="lucide-list-checks"
 				:title="__('Nothing assigned to you')"
-				:description="__('Open a gig and add a task to its checklist. Whatever is assigned to you shows up here, overdue first.')"
+				:description="
+					__(
+						'Open a gig and add a task to its checklist. Whatever is assigned to you shows up here, overdue first.'
+					)
+				"
 			>
 				<Button :label="__('Open the pipeline')" route="/" />
 			</EmptyState>
-			<section v-for="section in sections.filter((section) => section.tasks.length)" :key="section.label" class="mt-6">
-				<h2 class="pb-2 text-sm-medium text-ink-gray-7">{{ section.label }} · {{ section.tasks.length }}</h2>
+			<section
+				v-for="section in sections.filter((section) => section.tasks.length)"
+				:key="section.label"
+				class="mt-6"
+			>
+				<h2 class="pb-2 text-sm-medium text-ink-gray-7">
+					{{ section.label }} · {{ section.tasks.length }}
+				</h2>
 				<ul class="divide-y divide-outline-gray-1 rounded-6 border">
 					<TaskRow
 						v-for="task in section.tasks"

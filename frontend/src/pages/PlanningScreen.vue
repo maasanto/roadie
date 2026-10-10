@@ -28,7 +28,8 @@ const GANTT_CONTROL_LABELS = {
 };
 
 function translateGanttControls() {
-	for (const option of chart.value.querySelectorAll(".viewmode-select option")) option.textContent = GANTT_CONTROL_LABELS[option.value] || option.textContent;
+	for (const option of chart.value.querySelectorAll(".viewmode-select option"))
+		option.textContent = GANTT_CONTROL_LABELS[option.value] || option.textContent;
 	chart.value.querySelector(".today-button").textContent = __("Today");
 }
 
@@ -66,7 +67,7 @@ watch([chart, () => planning.data], ([element, bars]) => {
 			auto_move_label: true,
 			language: window.lang,
 			on_view_change: translateGanttControls,
-		},
+		}
 	);
 });
 </script>
@@ -77,7 +78,9 @@ watch([chart, () => planning.data], ([element, bars]) => {
 			<h1 class="text-2xl-semibold">{{ __("Planning") }}</h1>
 			<ul class="flex flex-wrap gap-3 text-sm text-ink-gray-6">
 				<li v-for="item in legend" :key="item.kind" class="flex items-center gap-1.5">
-					<span class="planning-swatch size-3 rounded-sm" :class="`bar-${item.kind}`" />{{ item.label }}
+					<span class="planning-swatch size-3 rounded-sm" :class="`bar-${item.kind}`" />{{
+						item.label
+					}}
 				</li>
 			</ul>
 		</div>
@@ -88,7 +91,9 @@ watch([chart, () => planning.data], ([element, bars]) => {
 			class="mt-4"
 			icon="lucide-calendar-range"
 			:title="__('Nothing on the calendar yet')"
-			:description="__('Nothing dated yet. Give a gig a date or an application window, or a task a due date.')"
+			:description="
+				__('Nothing dated yet. Give a gig a date or an application window, or a task a due date.')
+			"
 		>
 			<Button :label="__('Open the pipeline')" route="/" />
 		</EmptyState>
@@ -98,8 +103,15 @@ watch([chart, () => planning.data], ([element, bars]) => {
 				<section v-for="(lane, index) in lanes" :key="index">
 					<h2 class="pb-2 text-sm-medium text-ink-gray-7">{{ lane.title }}</h2>
 					<ul class="divide-y divide-outline-gray-1 rounded-6 border">
-						<li v-for="bar in lane.bars" :key="bar.id" class="flex items-baseline gap-2 px-3 py-2">
-							<span class="planning-swatch size-3 shrink-0 rounded-sm" :class="`bar-${bar.kind}`" />
+						<li
+							v-for="bar in lane.bars"
+							:key="bar.id"
+							class="flex items-baseline gap-2 px-3 py-2"
+						>
+							<span
+								class="planning-swatch size-3 shrink-0 rounded-sm"
+								:class="`bar-${bar.kind}`"
+							/>
 							<div class="min-w-0">
 								<p class="text-base text-ink-gray-8">{{ bar.label }}</p>
 								<p class="text-sm text-ink-gray-5">{{ formatRange(bar) }}</p>

@@ -6,8 +6,8 @@ from frappe.email.receive import InboundMail
 from frappe.tests import IntegrationTestCase
 
 from roadie.api import get_emails, get_mailbox, mark_seen
-from roadie.roadie.doctype.gig.test_gig import MEMBER, blank_pdf, make_member
 from roadie.install import grant_communication_access
+from roadie.roadie.doctype.gig.test_gig import MEMBER, blank_pdf, make_member
 
 MAILBOX = "band@example.com"
 VENUE = "venue@example.com"
@@ -80,7 +80,9 @@ class TestEmail(IntegrationTestCase):
 		)
 
 		frappe.set_user("Administrator")
-		InboundMail(venue_reply(frappe.get_doc("Communication", sent["name"]), "tech-sheet.pdf"), self.mailbox).process()
+		InboundMail(
+			venue_reply(frappe.get_doc("Communication", sent["name"]), "tech-sheet.pdf"), self.mailbox
+		).process()
 
 		frappe.set_user(MEMBER)
 		thread = get_emails("Gig", gig.name)
@@ -105,7 +107,12 @@ class TestEmail(IntegrationTestCase):
 		).insert()
 		gig = frappe.get_doc({"doctype": "Gig", "title": "Le Petit Club residency"}).insert()
 		sent = make(
-			doctype="Gig", name=gig.name, subject="Residency dates", content="<p>Hi Bob</p>", recipients=[VENUE], send_email=True
+			doctype="Gig",
+			name=gig.name,
+			subject="Residency dates",
+			content="<p>Hi Bob</p>",
+			recipients=[VENUE],
+			send_email=True,
 		)
 
 		frappe.set_user("Administrator")
@@ -113,7 +120,9 @@ class TestEmail(IntegrationTestCase):
 		reply = frappe.get_last_doc("Communication", filters={"in_reply_to": sent["name"]})
 
 		frappe.set_user(MEMBER)
-		self.assertEqual([email.name for email in get_emails("Venue", venue.name)], [sent["name"], reply.name])
+		self.assertEqual(
+			[email.name for email in get_emails("Venue", venue.name)], [sent["name"], reply.name]
+		)
 		outbox = {email.name: email for email in get_mailbox("Sent")}
 		inbox = {email.name: email for email in get_mailbox("Received")}
 		self.assertIn(sent["name"], outbox)
@@ -142,7 +151,8 @@ class TestEmail(IntegrationTestCase):
 			send_email=True,
 		)
 		self.assertEqual(
-			[email.name for email in get_emails("Communication", received.name)], [received.name, reply["name"]]
+			[email.name for email in get_emails("Communication", received.name)],
+			[received.name, reply["name"]],
 		)
 
 	def test_reminders_stay_out_of_the_gig_thread(self):

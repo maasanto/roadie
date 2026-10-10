@@ -17,7 +17,12 @@ class TestAppsScreen(IntegrationTestCase):
 
 		if not frappe.db.exists("User", OUTSIDER):
 			frappe.get_doc(
-				{"doctype": "User", "email": OUTSIDER, "first_name": "Outsider", "roles": [{"role": "Website Manager"}]}
+				{
+					"doctype": "User",
+					"email": OUTSIDER,
+					"first_name": "Outsider",
+					"roles": [{"role": "Website Manager"}],
+				}
 			).insert()
 		self.assertNotIn("roadie", [app["name"] for app in self._apps_seen_by(OUTSIDER)])
 

@@ -39,7 +39,12 @@ function onKeydown(event) {
 			class="inline-flex items-center gap-1 rounded bg-surface-gray-2 py-0.5 pl-2 pr-1 text-sm text-ink-gray-8"
 		>
 			{{ email }}
-			<button type="button" class="lucide-x size-3.5 text-ink-gray-5 hover:text-ink-gray-8" :aria-label="__('Remove {0}', [email])" @click="remove(email)" />
+			<button
+				type="button"
+				class="lucide-x size-3.5 text-ink-gray-5 hover:text-ink-gray-8"
+				:aria-label="__('Remove {0}', [email])"
+				@click="remove(email)"
+			/>
 		</span>
 		<input
 			v-model="query"
@@ -51,7 +56,9 @@ function onKeydown(event) {
 			@blur="addTyped"
 		/>
 		<datalist :id="listId">
-			<option v-for="suggestion in suggestions" :key="suggestion.value" :value="suggestion.value">{{ suggestion.label }}</option>
+			<option v-for="suggestion in suggestions" :key="suggestion.value" :value="suggestion.value">
+				{{ suggestion.label }}
+			</option>
 		</datalist>
 	</label>
 </template>

@@ -6,7 +6,15 @@ export const splitEmails = (value) =>
 
 export const isEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
-const FAILED_STATUSES = ["Bounced", "Soft-Bounced", "Rejected", "Error", "Expired", "Marked As Spam", "Recipient Unsubscribed"];
+const FAILED_STATUSES = [
+	"Bounced",
+	"Soft-Bounced",
+	"Rejected",
+	"Error",
+	"Expired",
+	"Marked As Spam",
+	"Recipient Unsubscribed",
+];
 const QUEUED_STATUSES = ["", "Sending", "Scheduled", "Delayed"];
 
 export function deliveryState(status) {
@@ -15,8 +23,11 @@ export function deliveryState(status) {
 	return { label: __("Sent"), theme: "green" };
 }
 
-export const formatDateTime =(value) =>
-	new Date(value.replace(" ", "T")).toLocaleString(window.lang, { dateStyle: "medium", timeStyle: "short" });
+export const formatDateTime = (value) =>
+	new Date(value.replace(" ", "T")).toLocaleString(window.lang, {
+		dateStyle: "medium",
+		timeStyle: "short",
+	});
 
 // Plain-text emails are stored as escaped text with every CRLF doubled, which the rich-text renderer would collapse.
 export function asHtml(content) {

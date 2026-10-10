@@ -32,9 +32,9 @@ after_install = "roadie.install.after_install"
 # Read by the dokos_ai app to serve the agent skill in roadie/roadie/skills; inert on a site without it
 dokos_ai_skills = ["roadie"]
 
-doc_events ={"Comment": {"after_insert": "roadie.mentions.notify_mentioned_members"}}
+doc_events = {"Comment": {"after_insert": "roadie.mentions.notify_mentioned_members"}}
 
-fixtures =[
+fixtures = [
 	{"dt": "Role", "filters": [["name", "=", "Band Member"]]},
 	{"dt": "Notification", "filters": [["module", "=", "Roadie"]]},
 ]

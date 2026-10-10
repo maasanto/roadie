@@ -8,21 +8,47 @@ const route = useRoute();
 // An open Dialog treats any pointerdown or focus elsewhere as "outside" and closes, so Undo on a toast would close it too.
 onMounted(() => {
 	const toaster = document.querySelector('section[aria-label^="Notifications"]');
-	for (const eventType of ["pointerdown", "focusin"]) toaster.addEventListener(eventType, (event) => event.stopPropagation());
+	for (const eventType of ["pointerdown", "focusin"])
+		toaster.addEventListener(eventType, (event) => event.stopPropagation());
 });
 const logoUrl = "/assets/roadie/logo.svg";
 const currentUser = window.user;
 const driveUrl = window.drive_url;
 const openDrive = () => window.open(driveUrl, "_blank", "noopener");
-const logOut = { label: __("Log out"), icon: "lucide-log-out", onClick: () => (window.location.href = "/?cmd=web_logout") };
+const logOut = {
+	label: __("Log out"),
+	icon: "lucide-log-out",
+	onClick: () => (window.location.href = "/?cmd=web_logout"),
+};
 const accountMenu = [logOut];
-const phoneMenu = [...(driveUrl ? [{ label: __("Drive"), icon: "lucide-hard-drive", onClick: openDrive }] : []), logOut];
+const phoneMenu = [
+	...(driveUrl ? [{ label: __("Drive"), icon: "lucide-hard-drive", onClick: openDrive }] : []),
+	logOut,
+];
 
 const screens = [
 	{ name: "Pipeline", label: __("Pipeline"), shortLabel: __("Pipeline"), icon: "lucide-kanban", to: "/" },
-	{ name: "Planning", label: __("Planning"), shortLabel: __("Planning"), icon: "lucide-chart-gantt", to: "/planning" },
-	{ name: "MyTasks", label: __("My tasks"), shortLabel: __("Tasks"), icon: "lucide-list-checks", to: "/tasks" },
-	{ name: "Directory", label: __("Directory"), shortLabel: __("Directory"), icon: "lucide-book-user", to: "/directory" },
+	{
+		name: "Planning",
+		label: __("Planning"),
+		shortLabel: __("Planning"),
+		icon: "lucide-chart-gantt",
+		to: "/planning",
+	},
+	{
+		name: "MyTasks",
+		label: __("My tasks"),
+		shortLabel: __("Tasks"),
+		icon: "lucide-list-checks",
+		to: "/tasks",
+	},
+	{
+		name: "Directory",
+		label: __("Directory"),
+		shortLabel: __("Directory"),
+		icon: "lucide-book-user",
+		to: "/directory",
+	},
 	{ name: "Inbox", label: __("Inbox"), shortLabel: __("Received"), icon: "lucide-inbox", to: "/inbox" },
 	{ name: "Outbox", label: __("Outbox"), shortLabel: __("Outgoing"), icon: "lucide-send", to: "/outbox" },
 ];
@@ -34,7 +60,12 @@ const screens = [
 			<!-- frappe-ui casts SidebarItem's absent `active` prop to false, so route matching is passed explicitly. -->
 			<div class="hidden md:flex">
 				<Sidebar disable-collapse>
-					<SidebarHeader title="Roadie" :logo="logoUrl" :subtitle="currentUser" :menu-items="accountMenu" />
+					<SidebarHeader
+						title="Roadie"
+						:logo="logoUrl"
+						:subtitle="currentUser"
+						:menu-items="accountMenu"
+					/>
 					<SidebarItem
 						v-for="screen in screens"
 						:key="screen.name"
@@ -43,15 +74,28 @@ const screens = [
 						:to="screen.to"
 						:active="route.name === screen.name"
 					/>
-					<SidebarItem v-if="driveUrl" :label="__('Drive')" icon="lucide-hard-drive" @click="openDrive">
-						<template #suffix><span class="lucide-external-link mr-2 size-3.5 text-ink-gray-4" aria-hidden="true" /></template>
+					<SidebarItem
+						v-if="driveUrl"
+						:label="__('Drive')"
+						icon="lucide-hard-drive"
+						@click="openDrive"
+					>
+						<template #suffix
+							><span
+								class="lucide-external-link mr-2 size-3.5 text-ink-gray-4"
+								aria-hidden="true"
+						/></template>
 					</SidebarItem>
 				</Sidebar>
 			</div>
 			<header class="flex items-center gap-2 border-b px-4 py-2 md:hidden">
 				<img :src="logoUrl" alt="" class="size-7" />
 				<span class="flex-1 text-base-semibold">Roadie</span>
-				<Dropdown :options="phoneMenu" align="end" :button="{ icon: 'lucide-menu', variant: 'ghost', label: __('Menu') }" />
+				<Dropdown
+					:options="phoneMenu"
+					align="end"
+					:button="{ icon: 'lucide-menu', variant: 'ghost', label: __('Menu') }"
+				/>
 			</header>
 			<main class="min-w-0 flex-1 overflow-auto">
 				<router-view />

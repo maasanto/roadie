@@ -38,7 +38,12 @@ class TestComments(IntegrationTestCase):
 		self.assertEqual([entry.name for entry in get_comments("Festival", festival.name)], [comment.name])
 		notification = frappe.db.get_value(
 			"Notification Log",
-			{"for_user": BANDMATE, "type": "Mention", "document_type": "Festival", "document_name": festival.name},
+			{
+				"for_user": BANDMATE,
+				"type": "Mention",
+				"document_type": "Festival",
+				"document_name": festival.name,
+			},
 			["from_user", "link"],
 			as_dict=True,
 		)

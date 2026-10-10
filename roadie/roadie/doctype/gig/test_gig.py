@@ -15,7 +15,13 @@ OTHER_MEMBER = "jane@example.com"
 def make_member(email, first_name):
 	if not frappe.db.exists("User", email):
 		frappe.get_doc(
-			{"doctype": "User", "email": email, "first_name": first_name, "last_name": "Doe", "send_welcome_email": 0}
+			{
+				"doctype": "User",
+				"email": email,
+				"first_name": first_name,
+				"last_name": "Doe",
+				"send_welcome_email": 0,
+			}
 		).insert(ignore_permissions=True)
 	frappe.get_doc("User", email).add_roles("Band Member")
 
@@ -57,7 +63,12 @@ class TestGig(IntegrationTestCase):
 		frappe.set_user(MEMBER)
 		copied = frappe.get_doc({"doctype": "Gig", "title": "Acme 2027", "festival": festival.name}).insert()
 		edited = frappe.get_doc(
-			{"doctype": "Gig", "title": "Acme 2027 late", "festival": festival.name, "application_closes": "2027-03-01"}
+			{
+				"doctype": "Gig",
+				"title": "Acme 2027 late",
+				"festival": festival.name,
+				"application_closes": "2027-03-01",
+			}
 		).insert()
 
 		self.assertEqual(str(copied.application_opens), "2027-01-10")

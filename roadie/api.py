@@ -63,7 +63,9 @@ def get_attachments(gig: str) -> list[dict]:
 def get_emails(doctype: str, name: str) -> list[dict]:
 	"""A record's thread, oldest first: emails written from it, plus those Frappe linked to it through a contact."""
 	if doctype not in THREAD_DOCTYPES:
-		frappe.throw(_("Emails can only be listed for {0}, not {1}").format(", ".join(THREAD_DOCTYPES), doctype))
+		frappe.throw(
+			_("Emails can only be listed for {0}, not {1}").format(", ".join(THREAD_DOCTYPES), doctype)
+		)
 	frappe.get_doc(doctype, name).check_permission("read")
 
 	referencing = frappe.get_all(
@@ -87,7 +89,10 @@ def get_emails(doctype: str, name: str) -> list[dict]:
 	)
 	attachments = frappe.get_all(
 		"File",
-		filters={"attached_to_doctype": "Communication", "attached_to_name": ["in", [email.name for email in emails]]},
+		filters={
+			"attached_to_doctype": "Communication",
+			"attached_to_name": ["in", [email.name for email in emails]],
+		},
 		fields=["name", "file_name", "file_url", "attached_to_name"],
 		order_by="creation asc",
 	)
@@ -100,7 +105,9 @@ def get_emails(doctype: str, name: str) -> list[dict]:
 def get_comments(doctype: str, name: str) -> list[dict]:
 	"""Members are website users, who can't list Comment themselves, so the record grants access."""
 	if doctype not in COMMENT_DOCTYPES:
-		frappe.throw(_("Comments can only be listed for {0}, not {1}").format(", ".join(COMMENT_DOCTYPES), doctype))
+		frappe.throw(
+			_("Comments can only be listed for {0}, not {1}").format(", ".join(COMMENT_DOCTYPES), doctype)
+		)
 	frappe.get_doc(doctype, name).check_permission("read")
 
 	return frappe.get_all(
@@ -126,7 +133,12 @@ def get_mailbox(sent_or_received: str) -> list[dict]:
 			"communication_type": "Communication",
 			"sent_or_received": sent_or_received,
 		},
-		fields=[*[field for field in EMAIL_FIELDS if field != "content"], "seen", "reference_doctype", "reference_name"],
+		fields=[
+			*[field for field in EMAIL_FIELDS if field != "content"],
+			"seen",
+			"reference_doctype",
+			"reference_name",
+		],
 		order_by="communication_date desc",
 		limit=200,
 	)
@@ -180,10 +192,19 @@ def get_planning() -> list[dict]:
 	for gig in gigs:
 		if gig.application_opens or gig.application_closes:
 			lanes[gig.name].append(
-				_bar(f"{gig.name}-window", gig.title, _("Application window"), gig.application_opens, gig.application_closes, "window")
+				_bar(
+					f"{gig.name}-window",
+					gig.title,
+					_("Application window"),
+					gig.application_opens,
+					gig.application_closes,
+					"window",
+				)
 			)
 		if gig.gig_date:
-			lanes[gig.name].append(_bar(f"{gig.name}-date", gig.title, _("Gig"), gig.gig_date, gig.gig_date, "gig"))
+			lanes[gig.name].append(
+				_bar(f"{gig.name}-date", gig.title, _("Gig"), gig.gig_date, gig.gig_date, "gig")
+			)
 
 	gig_titles = {gig.name: gig.title for gig in gigs}
 	other_lane = []
@@ -201,7 +222,14 @@ def get_planning() -> list[dict]:
 
 
 def _bar(bar_id, lane, label, start, end, kind):
-	return {"id": bar_id, "lane": lane, "label": label, "start": str(start or end), "end": str(end or start), "kind": kind}
+	return {
+		"id": bar_id,
+		"lane": lane,
+		"label": label,
+		"start": str(start or end),
+		"end": str(end or start),
+		"kind": kind,
+	}
 
 
 @frappe.whitelist()

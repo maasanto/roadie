@@ -24,11 +24,20 @@ class TestBandTask(IntegrationTestCase):
 		frappe.set_user(OTHER_MEMBER)
 		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Festival 2027"}).insert()
 		task = frappe.get_doc(
-			{"doctype": "Band Task", "title": "Send the rider", "assignee": MEMBER, "gig": gig.name, "due_date": "2027-01-15"}
+			{
+				"doctype": "Band Task",
+				"title": "Send the rider",
+				"assignee": MEMBER,
+				"gig": gig.name,
+				"due_date": "2027-01-15",
+			}
 		).insert()
 
 		frappe.set_user(MEMBER)
-		self.assertIn({"name": task.name, "title": "Send the rider", "gig_title": "Acme Festival 2027"}, self.my_open_tasks())
+		self.assertIn(
+			{"name": task.name, "title": "Send the rider", "gig_title": "Acme Festival 2027"},
+			self.my_open_tasks(),
+		)
 
 		set_value("Band Task", task.name, "done", 1)
 
@@ -37,6 +46,11 @@ class TestBandTask(IntegrationTestCase):
 
 	def test_start_date_after_due_date_is_rejected(self):
 		task = frappe.get_doc(
-			{"doctype": "Band Task", "title": "Book the van", "start_date": "2027-02-01", "due_date": "2027-01-15"}
+			{
+				"doctype": "Band Task",
+				"title": "Book the van",
+				"start_date": "2027-02-01",
+				"due_date": "2027-01-15",
+			}
 		)
 		self.assertRaises(frappe.ValidationError, task.insert)

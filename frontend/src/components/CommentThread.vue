@@ -13,8 +13,12 @@ const comments = useCall({
 	params: () => ({ doctype: props.doctype, name: props.name }),
 });
 const members = useCall({ url: "/api/v2/method/roadie.api.get_members" });
-const membersByEmail = computed(() => Object.fromEntries((members.data || []).map((member) => [member.name, member])));
-const mentions = computed(() => (members.data || []).map((member) => ({ label: member.full_name, value: member.name })));
+const membersByEmail = computed(() =>
+	Object.fromEntries((members.data || []).map((member) => [member.name, member]))
+);
+const mentions = computed(() =>
+	(members.data || []).map((member) => ({ label: member.full_name, value: member.name }))
+);
 
 const draft = ref("");
 const editorKey = ref(0);
@@ -45,7 +49,9 @@ function submit() {
 <template>
 	<section>
 		<h2 class="text-lg-semibold">{{ __("Comments") }}</h2>
-		<p class="text-p-sm text-ink-gray-5">{{ __("Internal to the band, never emailed. Type @ to mention a bandmate.") }}</p>
+		<p class="text-p-sm text-ink-gray-5">
+			{{ __("Internal to the band, never emailed. Type @ to mention a bandmate.") }}
+		</p>
 		<ul v-if="comments.data?.length" class="mt-3 space-y-3">
 			<li v-for="comment in comments.data" :key="comment.name" class="flex items-start gap-2">
 				<Avatar
@@ -55,16 +61,32 @@ function submit() {
 				/>
 				<div class="min-w-0 flex-1 rounded-6 bg-surface-amber-1 px-3 py-2">
 					<p class="flex items-baseline justify-between gap-2">
-						<span class="truncate text-base-medium text-ink-gray-8">{{ comment.comment_by || comment.comment_email }}</span>
-						<span class="shrink-0 text-sm text-ink-gray-5">{{ formatDateTime(comment.creation) }}</span>
+						<span class="truncate text-base-medium text-ink-gray-8">{{
+							comment.comment_by || comment.comment_email
+						}}</span>
+						<span class="shrink-0 text-sm text-ink-gray-5">{{
+							formatDateTime(comment.creation)
+						}}</span>
 					</p>
-					<TextEditor :content="comment.content" :editable="false" :mentions="mentions" editor-class="prose-sm max-w-none" />
+					<TextEditor
+						:content="comment.content"
+						:editable="false"
+						:mentions="mentions"
+						editor-class="prose-sm max-w-none"
+					/>
 				</div>
 			</li>
 		</ul>
-		<p v-else-if="comments.isFinished" class="mt-3 text-p-sm text-ink-gray-5">{{ __("No comments yet.") }}</p>
+		<p v-else-if="comments.isFinished" class="mt-3 text-p-sm text-ink-gray-5">
+			{{ __("No comments yet.") }}
+		</p>
 		<ErrorMessage class="mt-2" :message="comments.error" />
-		<form v-if="members.data" data-draft class="mt-3 rounded-6 border border-outline-gray-2 px-3 pb-2" @submit.prevent="submit">
+		<form
+			v-if="members.data"
+			data-draft
+			class="mt-3 rounded-6 border border-outline-gray-2 px-3 pb-2"
+			@submit.prevent="submit"
+		>
 			<TextEditor
 				:key="editorKey"
 				:content="draft"
@@ -75,7 +97,13 @@ function submit() {
 			/>
 			<ErrorMessage class="mt-1" :message="post.error" />
 			<div class="flex justify-end">
-				<Button type="submit" variant="solid" :label="__('Comment')" :loading="post.loading" :disabled="isDraftEmpty" />
+				<Button
+					type="submit"
+					variant="solid"
+					:label="__('Comment')"
+					:loading="post.loading"
+					:disabled="isDraftEmpty"
+				/>
 			</div>
 		</form>
 	</section>

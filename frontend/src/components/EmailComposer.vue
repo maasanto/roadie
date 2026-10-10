@@ -10,9 +10,29 @@ const props = defineProps({
 });
 const emit = defineEmits(["sent", "discard"]);
 
-const EDITOR_BUTTONS = ["Bold", "Italic", "Separator", "Bullet List", "Numbered List", "Separator", "Blockquote", "Link", "Separator", "Undo", "Redo"];
+const EDITOR_BUTTONS = [
+	"Bold",
+	"Italic",
+	"Separator",
+	"Bullet List",
+	"Numbered List",
+	"Separator",
+	"Blockquote",
+	"Link",
+	"Separator",
+	"Undo",
+	"Redo",
+];
 
-const email = reactive({ to: [], cc: [], bcc: [], subject: "", content: "", inReplyTo: null, ...props.draft });
+const email = reactive({
+	to: [],
+	cc: [],
+	bcc: [],
+	subject: "",
+	content: "",
+	inReplyTo: null,
+	...props.draft,
+});
 const attachments = ref([]);
 const isShowingCopies = ref(email.cc.length > 0);
 
@@ -23,7 +43,9 @@ const contacts = useList({
 	orderBy: "full_name asc",
 	limit: 500,
 });
-const suggestions = computed(() => (contacts.data || []).map((contact) => ({ label: contact.full_name, value: contact.email_id })));
+const suggestions = computed(() =>
+	(contacts.data || []).map((contact) => ({ label: contact.full_name, value: contact.email_id }))
+);
 
 const send = useCall({
 	url: "/api/v2/method/frappe.core.doctype.communication.email.make",
@@ -52,7 +74,13 @@ function submit() {
 	<form data-draft class="rounded-6 border border-outline-gray-2 px-3 pb-3" @submit.prevent="submit">
 		<div class="flex items-start gap-2">
 			<EmailRecipients v-model="email.to" class="flex-1" :label="__('To')" :suggestions="suggestions" />
-			<Button v-if="!isShowingCopies" class="mt-1.5" variant="ghost" :label="__('Cc / Bcc')" @click="isShowingCopies = true" />
+			<Button
+				v-if="!isShowingCopies"
+				class="mt-1.5"
+				variant="ghost"
+				:label="__('Cc / Bcc')"
+				@click="isShowingCopies = true"
+			/>
 		</div>
 		<template v-if="isShowingCopies">
 			<EmailRecipients v-model="email.cc" :label="__('Cc')" :suggestions="suggestions" />
@@ -73,7 +101,11 @@ function submit() {
 			@change="email.content = $event"
 		/>
 		<ul v-if="attachments.length" class="mt-2 flex flex-wrap gap-1.5">
-			<li v-for="file in attachments" :key="file.name" class="inline-flex items-center gap-1 rounded bg-surface-gray-2 py-0.5 pl-2 pr-1 text-sm text-ink-gray-8">
+			<li
+				v-for="file in attachments"
+				:key="file.name"
+				class="inline-flex items-center gap-1 rounded bg-surface-gray-2 py-0.5 pl-2 pr-1 text-sm text-ink-gray-8"
+			>
 				<span class="lucide-paperclip size-3.5 text-ink-gray-5" aria-hidden="true" />
 				{{ file.file_name }}
 				<button
@@ -86,15 +118,31 @@ function submit() {
 		</ul>
 		<ErrorMessage class="mt-2" :message="send.error" />
 		<div class="mt-3 flex items-center justify-between">
-			<FileUploader :upload-args="{ doctype, docname: name, private: true }" @success="attachments.push($event)">
+			<FileUploader
+				:upload-args="{ doctype, docname: name, private: true }"
+				@success="attachments.push($event)"
+			>
 				<template #default="{ openFileSelector, uploading, progress, error }">
-					<Button icon-left="lucide-paperclip" variant="ghost" :label="uploading ? __('Uploading {0}%', [progress]) : __('Attach')" :loading="uploading" @click="openFileSelector" />
+					<Button
+						icon-left="lucide-paperclip"
+						variant="ghost"
+						:label="uploading ? __('Uploading {0}%', [progress]) : __('Attach')"
+						:loading="uploading"
+						@click="openFileSelector"
+					/>
 					<ErrorMessage class="mt-1" :message="error" />
 				</template>
 			</FileUploader>
 			<div class="flex gap-2">
 				<Button :label="__('Discard')" variant="ghost" @click="emit('discard')" />
-				<Button type="submit" variant="solid" icon-left="lucide-send" :label="__('Send')":loading="send.loading" :disabled="!email.to.length" />
+				<Button
+					type="submit"
+					variant="solid"
+					icon-left="lucide-send"
+					:label="__('Send')"
+					:loading="send.loading"
+					:disabled="!email.to.length"
+				/>
 			</div>
 		</div>
 	</form>

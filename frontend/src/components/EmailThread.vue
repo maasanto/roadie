@@ -39,15 +39,24 @@ function onSent() {
 				<header class="flex items-start gap-2">
 					<Avatar :label="email.sender_full_name || email.sender" size="md" />
 					<div class="min-w-0 flex-1">
-						<p class="truncate text-base-medium text-ink-gray-8">{{ email.sender_full_name || email.sender }}</p>
+						<p class="truncate text-base-medium text-ink-gray-8">
+							{{ email.sender_full_name || email.sender }}
+						</p>
 						<p class="truncate text-sm text-ink-gray-5">
-							{{ __("to {0}", [email.recipients]) }}<template v-if="email.cc"> · {{ __("cc {0}", [email.cc]) }}</template>
+							{{ __("to {0}", [email.recipients])
+							}}<template v-if="email.cc"> · {{ __("cc {0}", [email.cc]) }}</template>
 						</p>
 					</div>
-					<span class="shrink-0 text-sm text-ink-gray-5">{{ formatDateTime(email.communication_date) }}</span>
+					<span class="shrink-0 text-sm text-ink-gray-5">{{
+						formatDateTime(email.communication_date)
+					}}</span>
 				</header>
 				<p class="mt-2 text-base-medium text-ink-gray-8">{{ email.subject }}</p>
-				<TextEditor :content="asHtml(email.content)" :editable="false" editor-class="prose-sm max-w-none" />
+				<TextEditor
+					:content="asHtml(email.content)"
+					:editable="false"
+					editor-class="prose-sm max-w-none"
+				/>
 				<ul v-if="email.attachments.length" class="mt-2 flex flex-wrap gap-1.5">
 					<li v-for="file in email.attachments" :key="file.name">
 						<a
@@ -61,13 +70,32 @@ function onSent() {
 					</li>
 				</ul>
 				<footer class="mt-2 flex gap-1">
-					<Button icon-left="lucide-reply" variant="ghost" :label="__('Reply')" @click="compose(replyDraft(email, 'reply'))" />
-					<Button icon-left="lucide-reply-all" variant="ghost" :label="__('Reply all')"@click="compose(replyDraft(email, 'reply-all'))" />
+					<Button
+						icon-left="lucide-reply"
+						variant="ghost"
+						:label="__('Reply')"
+						@click="compose(replyDraft(email, 'reply'))"
+					/>
+					<Button
+						icon-left="lucide-reply-all"
+						variant="ghost"
+						:label="__('Reply all')"
+						@click="compose(replyDraft(email, 'reply-all'))"
+					/>
 				</footer>
 			</li>
 		</ul>
 		<p v-else-if="emails.isFinished" class="mt-3 text-p-sm text-ink-gray-5">{{ __("No emails yet.") }}</p>
 		<ErrorMessage class="mt-2" :message="emails.error" />
-		<EmailComposer v-if="draft" :key="composerKey" class="mt-3" :doctype="doctype" :name="name" :draft="draft" @sent="onSent" @discard="draft = null" />
+		<EmailComposer
+			v-if="draft"
+			:key="composerKey"
+			class="mt-3"
+			:doctype="doctype"
+			:name="name"
+			:draft="draft"
+			@sent="onSent"
+			@discard="draft = null"
+		/>
 	</section>
 </template>

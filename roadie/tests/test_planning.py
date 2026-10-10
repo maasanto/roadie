@@ -30,13 +30,17 @@ class TestPlanning(IntegrationTestCase):
 		)
 		club_gig = make_gig("Le Petit Club 2030", gig_date="2030-03-20")
 		declined_gig = make_gig("Declined Fest 2030", status="Declined", gig_date="2030-01-01")
-		rider = make_task("Send the rider", gig=festival_gig.name, start_date="2031-06-01", due_date="2031-06-10")
+		rider = make_task(
+			"Send the rider", gig=festival_gig.name, start_date="2031-06-01", due_date="2031-06-10"
+		)
 		make_task("Chase the declined fest", gig=declined_gig.name, due_date="2030-01-01")
 		make_task("Some day", gig=festival_gig.name)
 		van = make_task("Book the van", due_date="2031-07-01")
 
 		ours = {festival_gig.name, club_gig.name, declined_gig.name, rider.name, van.name}
-		bars = [bar for bar in get_planning() if bar["id"].removesuffix("-window").removesuffix("-date") in ours]
+		bars = [
+			bar for bar in get_planning() if bar["id"].removesuffix("-window").removesuffix("-date") in ours
+		]
 
 		self.assertEqual(
 			[(bar["lane"], bar["label"], bar["start"], bar["end"], bar["kind"]) for bar in bars],

@@ -11,7 +11,17 @@ import { UNDO_WINDOW_MS } from "../undo";
 // ponytail: the whole pipeline in one unpaged fetch, page per column if a band ever tracks hundreds of gigs
 const gigs = useList({
 	doctype: "Gig",
-	fields: ["name", "title", "status", "gig_owner", "gig_date", "festival", "venue", "promoter", "application_closes"],
+	fields: [
+		"name",
+		"title",
+		"status",
+		"gig_owner",
+		"gig_date",
+		"festival",
+		"venue",
+		"promoter",
+		"application_closes",
+	],
 	orderBy: "modified desc",
 	limit: 500,
 });
@@ -19,20 +29,24 @@ const linkLists = Object.fromEntries(
 	["Festival", "Venue", "Promoter"].map((doctype) => [
 		doctype,
 		useList({ doctype, fields: ["name", "title"], orderBy: "title asc", limit: 500 }),
-	]),
+	])
 );
 const members = useCall({ url: "/api/v2/method/roadie.api.get_members" });
 
 const titleOf = (doctype, name) => linkLists[doctype].data?.find((row) => row.name === name)?.title;
 const linkedTitles = (gig) =>
-	[titleOf("Festival", gig.festival), titleOf("Venue", gig.venue), titleOf("Promoter", gig.promoter)].filter(Boolean);
+	[
+		titleOf("Festival", gig.festival),
+		titleOf("Venue", gig.venue),
+		titleOf("Promoter", gig.promoter),
+	].filter(Boolean);
 const ownerOf = (gig) => members.data?.find((member) => member.name === gig.gig_owner);
 
 const columns = computed(() =>
 	pipelineColumns.map((column) => ({
 		...column,
 		gigs: (gigs.data || []).filter((gig) => column.statuses.includes(gig.status)),
-	})),
+	}))
 );
 
 const fields = computed(() =>
@@ -41,7 +55,7 @@ const fields = computed(() =>
 		venues: linkLists.Venue.data,
 		promoters: linkLists.Promoter.data,
 		members: members.data,
-	}),
+	})
 );
 
 const draggedGig = ref(null);
@@ -70,7 +84,10 @@ async function dropGig(column, columnElement) {
 	const status = column.statuses[0];
 	if (!(await setStatus(gig, status))) return;
 
-	const undoable = { action: { label: __("Undo"), onClick: () => setStatus(gig, previousStatus) }, duration: UNDO_WINDOW_MS };
+	const undoable = {
+		action: { label: __("Undo"), onClick: () => setStatus(gig, previousStatus) },
+		duration: UNDO_WINDOW_MS,
+	};
 	if (celebrations[status]) {
 		burstConfetti(columnElement);
 		toast.success(celebrations[status](gig.title), undoable);
@@ -92,10 +109,25 @@ function openGig(name = null) {
 	<div class="p-6">
 		<div class="flex items-center justify-between">
 			<h1 class="text-2xl-semibold">{{ __("Pipeline") }}</h1>
-			<Button v-if="gigs.data?.length !== 0" variant="solid" icon-left="lucide-plus" :label="__('New gig')" @click="openGig()" />
+			<Button
+				v-if="gigs.data?.length !== 0"
+				variant="solid"
+				icon-left="lucide-plus"
+				:label="__('New gig')"
+				@click="openGig()"
+			/>
 		</div>
-		<div v-if="gigs.loading && !gigs.data" class="mt-4 flex gap-3 overflow-hidden" aria-busy="true" :aria-label="__('Loading')">
-			<div v-for="column in 5" :key="column" class="min-w-52 flex-1 space-y-2 rounded-6 bg-surface-gray-1 p-2">
+		<div
+			v-if="gigs.loading && !gigs.data"
+			class="mt-4 flex gap-3 overflow-hidden"
+			aria-busy="true"
+			:aria-label="__('Loading')"
+		>
+			<div
+				v-for="column in 5"
+				:key="column"
+				class="min-w-52 flex-1 space-y-2 rounded-6 bg-surface-gray-1 p-2"
+			>
 				<Skeleton class="mb-3 h-4 w-24 rounded" />
 				<Skeleton v-for="card in (column % 3) + 1" :key="card" class="h-20 rounded-4" />
 			</div>
@@ -106,7 +138,11 @@ function openGig(name = null) {
 			class="mt-4"
 			icon="lucide-guitar"
 			:title="__('No gigs yet')"
-			:description="__('Add the first gig you are chasing, even if it is only an idea. Drag it from column to column as things move.')"
+			:description="
+				__(
+					'Add the first gig you are chasing, even if it is only an idea. Drag it from column to column as things move.'
+				)
+			"
 		>
 			<Button variant="solid" icon-left="lucide-plus" :label="__('New gig')" @click="openGig()" />
 		</EmptyState>
@@ -142,7 +178,9 @@ function openGig(name = null) {
 			</div>
 			<div class="mt-4 space-y-6 md:hidden">
 				<section v-for="column in columns.filter((column) => column.gigs.length)" :key="column.label">
-					<h2 class="pb-2 text-sm-medium text-ink-gray-7">{{ column.label }} · {{ column.gigs.length }}</h2>
+					<h2 class="pb-2 text-sm-medium text-ink-gray-7">
+						{{ column.label }} · {{ column.gigs.length }}
+					</h2>
 					<div class="space-y-2">
 						<GigCard
 							v-for="gig in column.gigs"

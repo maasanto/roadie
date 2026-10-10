@@ -1,6 +1,19 @@
 import { translatedOptions } from "./translation";
 
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MONTHS = [
+	"January",
+	"February",
+	"March",
+	"April",
+	"May",
+	"June",
+	"July",
+	"August",
+	"September",
+	"October",
+	"November",
+	"December",
+];
 
 const headFields = [
 	{ fieldname: "title", label: __("Name"), type: "text", required: true },
@@ -17,7 +30,12 @@ export const directoryTypes = [
 		doctype: "Festival",
 		plural: __("Festivals"),
 		fields: withCommonFields([
-			{ fieldname: "usual_month", label: __("Usual month"), type: "select", options: translatedOptions(MONTHS) },
+			{
+				fieldname: "usual_month",
+				label: __("Usual month"),
+				type: "select",
+				options: translatedOptions(MONTHS),
+			},
 			{ fieldname: "application_url", label: __("Application URL"), type: "url" },
 			{ fieldname: "application_opens", label: __("Usual application opens"), type: "date" },
 			{ fieldname: "application_closes", label: __("Usual application closes"), type: "date" },
@@ -32,5 +50,9 @@ export const directoryTypes = [
 		]),
 	},
 	{ doctype: "Promoter", plural: __("Promoters"), fields: withCommonFields([]) },
-	{ doctype: "Band", plural: __("Bands"), fields: withCommonFields([{ fieldname: "genre", label: __("Genre"), type: "text" }]) },
+	{
+		doctype: "Band",
+		plural: __("Bands"),
+		fields: withCommonFields([{ fieldname: "genre", label: __("Genre"), type: "text" }]),
+	},
 ];
