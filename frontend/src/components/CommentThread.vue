@@ -64,7 +64,7 @@ function submit() {
 		</ul>
 		<p v-else-if="comments.isFinished" class="mt-3 text-p-sm text-ink-gray-5">{{ __("No comments yet.") }}</p>
 		<ErrorMessage class="mt-2" :message="comments.error" />
-		<form v-if="members.data" class="mt-3 rounded-6 border border-outline-gray-2 px-3 pb-2" @submit.prevent="submit">
+		<form v-if="members.data" data-draft class="mt-3 rounded-6 border border-outline-gray-2 px-3 pb-2" @submit.prevent="submit">
 			<TextEditor
 				:key="editorKey"
 				:content="draft"

@@ -14,7 +14,7 @@ const EDITOR_BUTTONS = ["Bold", "Italic", "Separator", "Bullet List", "Numbered 
 
 const email = reactive({ to: [], cc: [], bcc: [], subject: "", content: "", inReplyTo: null, ...props.draft });
 const attachments = ref([]);
-const showCopies = ref(email.cc.length > 0);
+const isShowingCopies = ref(email.cc.length > 0);
 
 const contacts = useList({
 	doctype: "Contact",
@@ -49,12 +49,12 @@ function submit() {
 </script>
 
 <template>
-	<form class="rounded-6 border border-outline-gray-2 px-3 pb-3" @submit.prevent="submit">
+	<form data-draft class="rounded-6 border border-outline-gray-2 px-3 pb-3" @submit.prevent="submit">
 		<div class="flex items-start gap-2">
 			<EmailRecipients v-model="email.to" class="flex-1" :label="__('To')" :suggestions="suggestions" />
-			<Button v-if="!showCopies" class="mt-1.5" variant="ghost" :label="__('Cc / Bcc')" @click="showCopies = true" />
+			<Button v-if="!isShowingCopies" class="mt-1.5" variant="ghost" :label="__('Cc / Bcc')" @click="isShowingCopies = true" />
 		</div>
-		<template v-if="showCopies">
+		<template v-if="isShowingCopies">
 			<EmailRecipients v-model="email.cc" :label="__('Cc')" :suggestions="suggestions" />
 			<EmailRecipients v-model="email.bcc" :label="__('Bcc')" :suggestions="suggestions" />
 		</template>
@@ -87,8 +87,9 @@ function submit() {
 		<ErrorMessage class="mt-2" :message="send.error" />
 		<div class="mt-3 flex items-center justify-between">
 			<FileUploader :upload-args="{ doctype, docname: name, private: true }" @success="attachments.push($event)">
-				<template #default="{ openFileSelector, uploading, progress }">
+				<template #default="{ openFileSelector, uploading, progress, error }">
 					<Button icon-left="lucide-paperclip" variant="ghost" :label="uploading ? __('Uploading {0}%', [progress]) : __('Attach')" :loading="uploading" @click="openFileSelector" />
+					<ErrorMessage class="mt-1" :message="error" />
 				</template>
 			</FileUploader>
 			<div class="flex gap-2">
