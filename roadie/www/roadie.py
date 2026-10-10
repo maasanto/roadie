@@ -2,7 +2,7 @@ import frappe
 from frappe import _
 from frappe.translate import get_translations_from_apps
 
-from roadie.api import PROTECTED_FIELDS
+from roadie.api import PROTECTED_FIELDS, can_use_drive
 
 no_cache = 1
 
@@ -24,5 +24,6 @@ def get_context():
 			"translations": get_translations_from_apps(frappe.local.lang, apps=["roadie"]),
 			"drive_url": frappe.conf.get("band_drive_url"),
 			"protected_fields": PROTECTED_FIELDS,
+			"can_link_drive_items": can_use_drive(),
 		}
 	)

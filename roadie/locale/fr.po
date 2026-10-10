@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roadie VERSION\n"
 "Report-Msgid-Bugs-To: antoine.maas@okte.io\n"
-"POT-Creation-Date: 2026-10-10 15:06+0009\n"
+"POT-Creation-Date: 2026-10-10 21:36+0009\n"
 "PO-Revision-Date: 2026-10-09 23:47+0009\n"
 "Last-Translator: antoine.maas@okte.io\n"
 "Language: fr\n"
@@ -107,7 +107,7 @@ msgstr "Assigné à"
 msgid "Assignee: {0}"
 msgstr "Assigné à : {0}"
 
-#: frontend/src/components/EmailComposer.vue:129
+#: frontend/src/components/EmailComposer.vue:152
 #: frontend/src/components/GigAttachments.vue:28
 msgid "Attach"
 msgstr "Joindre"
@@ -145,7 +145,7 @@ msgstr "Tâche"
 msgid "Bands"
 msgstr "Groupes"
 
-#: frontend/src/components/EmailComposer.vue:87
+#: frontend/src/components/EmailComposer.vue:108
 msgid "Bcc"
 msgstr "Cci"
 
@@ -154,16 +154,20 @@ msgstr "Cci"
 msgid "Booked"
 msgstr "Confirmé"
 
+#: frontend/src/components/DriveLinkDialog.vue:132
+msgid "Cancel"
+msgstr "Annuler"
+
 #. Label of the capacity (Int) field in DocType 'Venue'
 #: roadie/roadie/doctype/venue/venue.json
 msgid "Capacity"
 msgstr "Capacité"
 
-#: frontend/src/components/EmailComposer.vue:86
+#: frontend/src/components/EmailComposer.vue:107
 msgid "Cc"
 msgstr "Cc"
 
-#: frontend/src/components/EmailComposer.vue:81
+#: frontend/src/components/EmailComposer.vue:102
 msgid "Cc / Bcc"
 msgstr "Cc / Cci"
 
@@ -255,7 +259,7 @@ msgstr "Refusé / Abandonné"
 msgid "Directory"
 msgstr "Annuaire"
 
-#: frontend/src/components/EmailComposer.vue:137
+#: frontend/src/components/EmailComposer.vue:168
 msgid "Discard"
 msgstr "Abandonner"
 
@@ -272,6 +276,7 @@ msgid "Done: {0}"
 msgstr "Fait : {0}"
 
 #: frontend/src/App.vue:25 frontend/src/App.vue:79
+#: frontend/src/components/DriveLinkDialog.vue:73
 msgid "Drive"
 msgstr "Drive"
 
@@ -334,6 +339,10 @@ msgstr "Festivals"
 msgid "First name"
 msgstr "Prénom"
 
+#: frontend/src/components/DriveLinkDialog.vue:70
+msgid "Folder path"
+msgstr "Chemin du dossier"
+
 #. Label of the genre (Data) field in DocType 'Band'
 #: roadie/roadie/doctype/band/band.json
 msgid "Genre"
@@ -365,6 +374,10 @@ msgstr "Champs masqués"
 msgid "Hide {0}"
 msgstr "Masquer {0}"
 
+#: frontend/src/components/DriveLinkDialog.vue:20
+msgid "Home"
+msgstr "Accueil"
+
 #: frontend/src/pages/PlanningScreen.vue:26
 msgid "Hour"
 msgstr "Heure"
@@ -378,6 +391,14 @@ msgstr "Idée"
 #: frontend/src/App.vue:52 frontend/src/pages/MailboxScreen.vue:42
 msgid "Inbox"
 msgstr "Boîte de réception"
+
+#: frontend/src/components/DriveLinkDialog.vue:135
+msgid "Insert link"
+msgstr "Insérer le lien"
+
+#: frontend/src/components/DriveLinkDialog.vue:128
+msgid "Inserting the link makes the item public: anyone who has the link can open it."
+msgstr "Insérer le lien rend l'élément public : toute personne qui a le lien pourra l'ouvrir."
 
 #. Label of the instagram (Data) field in DocType 'Band'
 #. Label of the instagram (Data) field in DocType 'Festival'
@@ -416,6 +437,18 @@ msgstr "Juin"
 #: frontend/src/components/EntryContacts.vue:97
 msgid "Last name"
 msgstr "Nom"
+
+#: frontend/src/components/EmailComposer.vue:163
+msgid "Link from Drive"
+msgstr "Lien depuis le Drive"
+
+#: frontend/src/components/DriveLinkDialog.vue:67
+msgid "Link to a Drive item"
+msgstr "Lien vers un élément du Drive"
+
+#: roadie/api.py:370
+msgid "Linking Drive items needs Frappe Drive and the Drive User role"
+msgstr "Pour insérer des liens Drive, il faut Frappe Drive et le rôle Drive User"
 
 #: frontend/src/components/EntryForm.vue:97
 #: frontend/src/components/ListSkeleton.vue:8
@@ -594,6 +627,14 @@ msgstr "Le {0}, {1} a écrit :"
 msgid "Only band members can open Roadie"
 msgstr "Seuls les membres du groupe peuvent ouvrir Roadie"
 
+#: roadie/api.py:377
+msgid "Only files and folders from a Drive team can be linked, not {0}"
+msgstr "Seuls les fichiers et dossiers d'une équipe Drive peuvent être liés, pas {0}"
+
+#: frontend/src/components/DriveLinkDialog.vue:100
+msgid "Only its owner can share this item."
+msgstr "Seul son propriétaire peut partager cet élément."
+
 #: roadie/api.py:325
 msgid "Only the forms of {0} can be customised, not {1}"
 msgstr "Seuls les formulaires {0} se personnalisent, pas {1}"
@@ -620,6 +661,10 @@ msgstr "Ouvrir mes tâches"
 #: roadie/fixtures/notification.json:14
 msgid "Open the pipeline"
 msgstr "Ouvrir le pipeline"
+
+#: frontend/src/components/DriveLinkDialog.vue:117
+msgid "Open {0}"
+msgstr "Ouvrir {0}"
 
 #: roadie/api.py:221
 msgid "Other"
@@ -691,7 +736,7 @@ msgstr "Reçus"
 msgid "Remove contact"
 msgstr "Retirer le contact"
 
-#: frontend/src/components/EmailComposer.vue:114
+#: frontend/src/components/EmailComposer.vue:136
 #: frontend/src/components/EmailRecipients.vue:45
 msgid "Remove {0}"
 msgstr "Retirer {0}"
@@ -740,7 +785,7 @@ msgstr "Rechercher par nom ou ville"
 msgid "Search looks at names and cities. Try a shorter word, or add the entry."
 msgstr "La recherche porte sur les noms et les villes. Essayez un mot plus court, ou ajoutez la fiche."
 
-#: frontend/src/components/EmailComposer.vue:142
+#: frontend/src/components/EmailComposer.vue:173
 msgid "Send"
 msgstr "Envoyer"
 
@@ -775,7 +820,7 @@ msgstr "La date de début {0} est postérieure à l'échéance {1}"
 msgid "Status"
 msgstr "Statut"
 
-#: frontend/src/components/EmailComposer.vue:92
+#: frontend/src/components/EmailComposer.vue:113
 msgid "Subject"
 msgstr "Objet"
 
@@ -805,6 +850,10 @@ msgstr "Texte"
 msgid "The application for {0} closes on {1}, in {2} days, and the gig is still at {3}."
 msgstr "Les candidatures pour {0} ferment le {1}, dans {2} jours, et le concert est toujours au statut « {3} »."
 
+#: frontend/src/components/DriveLinkDialog.vue:123
+msgid "This folder is empty."
+msgstr "Ce dossier est vide."
+
 #. Label of the title (Data) field in DocType 'Band Task'
 #. Label of the title (Data) field in DocType 'Gig'
 #: roadie/roadie/doctype/band_task/band_task.json
@@ -812,7 +861,7 @@ msgstr "Les candidatures pour {0} ferment le {1}, dans {2} jours, et le concert 
 msgid "Title"
 msgstr "Titre"
 
-#: frontend/src/components/EmailComposer.vue:76
+#: frontend/src/components/EmailComposer.vue:97
 msgid "To"
 msgstr "À"
 
@@ -842,7 +891,7 @@ msgstr "Annuler"
 msgid "Unread"
 msgstr "Non lu"
 
-#: frontend/src/components/EmailComposer.vue:129
+#: frontend/src/components/EmailComposer.vue:152
 #: frontend/src/components/GigAttachments.vue:28
 msgid "Uploading {0}%"
 msgstr "Envoi : {0} %"
@@ -895,13 +944,17 @@ msgstr "Écrire"
 msgid "Write a comment…"
 msgstr "Écrire un commentaire…"
 
-#: frontend/src/components/EmailComposer.vue:99
+#: frontend/src/components/EmailComposer.vue:121
 msgid "Write your email…"
 msgstr "Rédigez votre e-mail…"
 
 #: frontend/src/pages/PlanningScreen.vue:32
 msgid "Year"
 msgstr "Année"
+
+#: frontend/src/components/DriveLinkDialog.vue:123
+msgid "You are not a member of any Drive team."
+msgstr "Vous n'êtes membre d'aucune équipe Drive."
 
 #: frontend/src/pages/DirectoryScreen.vue:102
 msgid "Your address book starts here"

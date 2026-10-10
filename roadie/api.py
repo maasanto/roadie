@@ -358,5 +358,33 @@ def clean_label(label: str) -> str:
 	return label
 
 
+def can_use_drive() -> bool:
+	# Drive refuses its share and permission calls to anyone without its Drive User role.
+	return "drive" in frappe.get_installed_apps() and "Drive User" in frappe.get_roles()
+
+
+@frappe.whitelist(methods=["POST"])
+def share_drive_link(entity_name: str) -> str:
+	if not can_use_drive():
+		frappe.throw(
+			_("Linking Drive items needs Frappe Drive and the Drive User role"), frappe.PermissionError
+		)
+
+	entity = frappe.get_doc("File", entity_name)
+	# Drive serves these types elsewhere (Writer, Slides, the link target), never at /drive/f/.
+	if not entity.team or entity.file_type in ("Link", "Document", "Presentation"):
+		frappe.throw(
+			_("Only files and folders from a Drive team can be linked, not {0}").format(entity.file_name)
+		)
+
+	from drive.api.permissions import get_user_access
+
+	# Sharing again would reset the public access Drive already grants, such as comment rights.
+	if not get_user_access(entity, "Guest")["read"]:
+		# Drive overrides the File class with share(), which checks the caller's share permission.
+		entity.share(user="", read=1)
+	return frappe.utils.get_url(f"/drive/{'d' if entity.is_folder else 'f'}/{entity.name}")
+
+
 def has_app_permission() -> bool:
 	return frappe.has_permission("Gig", "read")

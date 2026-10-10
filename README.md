@@ -40,7 +40,7 @@ Give Roadie a site of its own. Band Members can read and edit every Contact and 
 Then, on the site:
 
 1. Give each bandmate a user with the Band Member role. Members land on `/roadie` when they log in and never need the Desk.
-2. Add the band's mailbox as an Email Account with incoming and outgoing enabled, and tick "Always use this email address as sender address". Roadie reads and sends through it, and without that box email goes out from the member's own address, so replies miss the shared Inbox.
+2. Add the band's mailbox as an Email Account with incoming and outgoing enabled, and tick "Always use this email address as sender address". Roadie reads and sends through it, and without that box email goes out from the member's own address, so replies miss the shared Inbox. [Plugging in the band's mailbox](docs/email-account.md) walks through every setting, with OVH as the example.
 3. Optionally, point the sidebar's Drive link at the band's shared folder:
 
    ```bash
