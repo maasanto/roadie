@@ -1,11 +1,12 @@
 <script setup>
 import { computed, ref } from "vue";
-import { Button, ErrorMessage, Skeleton, toast, useCall, useList } from "frappe-ui";
+import { Button, ErrorMessage, Skeleton, toast, useList } from "frappe-ui";
 import EmptyState from "../components/EmptyState.vue";
 import GigCard from "../components/GigCard.vue";
 import GigPanel from "../components/GigPanel.vue";
 import { burstConfetti } from "../celebrate";
-import { gigFields, pipelineColumns } from "../gig";
+import { pipelineColumns } from "../gig";
+import { useGigFields } from "../gigFields";
 import { UNDO_WINDOW_MS } from "../undo";
 
 // ponytail: the whole pipeline in one unpaged fetch, page per column if a band ever tracks hundreds of gigs
@@ -25,13 +26,7 @@ const gigs = useList({
 	orderBy: "modified desc",
 	limit: 500,
 });
-const linkLists = Object.fromEntries(
-	["Festival", "Venue", "Promoter"].map((doctype) => [
-		doctype,
-		useList({ doctype, fields: ["name", "title"], orderBy: "title asc", limit: 500 }),
-	])
-);
-const members = useCall({ url: "/api/v2/method/roadie.api.get_members" });
+const { linkLists, members, fields } = useGigFields();
 
 const titleOf = (doctype, name) => linkLists[doctype].data?.find((row) => row.name === name)?.title;
 const linkedTitles = (gig) =>
@@ -47,15 +42,6 @@ const columns = computed(() =>
 		...column,
 		gigs: (gigs.data || []).filter((gig) => column.statuses.includes(gig.status)),
 	}))
-);
-
-const fields = computed(() =>
-	gigFields({
-		festivals: linkLists.Festival.data,
-		venues: linkLists.Venue.data,
-		promoters: linkLists.Promoter.data,
-		members: members.data,
-	})
 );
 
 const draggedGig = ref(null);

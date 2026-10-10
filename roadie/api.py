@@ -173,17 +173,18 @@ def get_planning() -> list[dict]:
 	gigs = frappe.get_list(
 		"Gig",
 		filters={"status": ["not in", ("Declined", "Dropped")]},
-		fields=["name", "title", "gig_date", "application_opens", "application_closes"],
+		fields=["name", "title", "gig_owner", "gig_date", "application_opens", "application_closes"],
 		limit_page_length=0,
 	)
 	tasks = frappe.get_list(
 		"Band Task",
-		fields=["name", "title", "done", "gig", "start_date", "due_date"],
+		fields=["name", "title", "done", "gig", "assignee", "start_date", "due_date"],
 		limit_page_length=0,
 	)
 
 	lanes = {gig.name: [] for gig in gigs}
 	for gig in gigs:
+		record = {"name": gig.name, "gig": gig.name, "person": gig.gig_owner}
 		if gig.application_opens or gig.application_closes:
 			lanes[gig.name].append(
 				_bar(
@@ -193,11 +194,12 @@ def get_planning() -> list[dict]:
 					gig.application_opens,
 					gig.application_closes,
 					"window",
+					record,
 				)
 			)
 		if gig.gig_date:
 			lanes[gig.name].append(
-				_bar(f"{gig.name}-date", gig.title, _("Gig"), gig.gig_date, gig.gig_date, "gig")
+				_bar(f"{gig.name}-date", gig.title, _("Gig"), gig.gig_date, gig.gig_date, "gig", record)
 			)
 
 	gig_titles = {gig.name: gig.title for gig in gigs}
@@ -209,21 +211,49 @@ def get_planning() -> list[dict]:
 		lane = lanes[task.gig] if task.gig else other_lane
 		lane_title = gig_titles[task.gig] if task.gig else _("Other")
 		kind = "done" if task.done else "task"
-		lane.append(_bar(task.name, lane_title, task.title, task.start_date, task.due_date, kind))
+		record = {"name": task.name, "gig": task.gig, "person": task.assignee}
+		lane.append(_bar(task.name, lane_title, task.title, task.start_date, task.due_date, kind, record))
 
 	gig_lanes = sorted(filter(None, lanes.values()), key=lambda lane: min(bar["start"] for bar in lane))
 	return [bar for lane in [*gig_lanes, other_lane] for bar in lane]
 
 
-def _bar(bar_id, lane, label, start, end, kind):
+def _bar(bar_id, lane, label, start, end, kind, record):
+	"""`start`/`end` fill each other in to draw the bar; `saved_start`/`saved_end` are what Undo restores."""
 	return {
 		"id": bar_id,
 		"lane": lane,
 		"label": label,
 		"start": str(start or end),
 		"end": str(end or start),
+		"saved_start": start,
+		"saved_end": end,
 		"kind": kind,
+		**record,
 	}
+
+
+# The fields a dragged Planning bar writes back: (DocType, start field, end field). A gig is a single day.
+RESCHEDULED_FIELDS = {
+	"window": ("Gig", "application_opens", "application_closes"),
+	"gig": ("Gig", "gig_date", None),
+	"task": ("Band Task", "start_date", "due_date"),
+	"done": ("Band Task", "start_date", "due_date"),
+}
+
+
+@frappe.whitelist(methods=["POST"])
+def reschedule(kind: str, name: str, start: str | None = None, end: str | None = None) -> None:
+	if kind not in RESCHEDULED_FIELDS:
+		frappe.throw(
+			_("Only {0} bars can be rescheduled, not {1}").format(", ".join(RESCHEDULED_FIELDS), kind)
+		)
+	doctype, start_field, end_field = RESCHEDULED_FIELDS[kind]
+	record = frappe.get_doc(doctype, name)
+	record.set(start_field, start)
+	if end_field:
+		record.set(end_field, end)
+	record.save()
 
 
 @frappe.whitelist()

@@ -1,12 +1,17 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import Gantt from "frappe-gantt";
-import { Button, ErrorMessage, useCall } from "frappe-ui";
+import { Button, Dialog, ErrorMessage, call, toast, useCall } from "frappe-ui";
+import EmailThread from "../components/EmailThread.vue";
 import EmptyState from "../components/EmptyState.vue";
+import GigPanel from "../components/GigPanel.vue";
 import ListSkeleton from "../components/ListSkeleton.vue";
 import { formatDate } from "../gig";
+import { useGigFields } from "../gigFields";
+import { UNDO_WINDOW_MS } from "../undo";
 
 const planning = useCall({ url: "/api/v2/method/roadie.api.get_planning" });
+const { members, fields } = useGigFields();
 
 const legend = [
 	{ kind: "window", label: __("Application window") },
@@ -46,29 +51,121 @@ const lanes = computed(() => {
 const formatRange = (bar) =>
 	bar.start === bar.end ? formatDate(bar.start) : `${formatDate(bar.start)} – ${formatDate(bar.end)}`;
 
+const toGanttTasks = (bars) =>
+	bars.map((bar) => ({
+		id: bar.id,
+		name: `${bar.lane} · ${bar.label}`,
+		start: bar.start,
+		end: bar.end,
+		progress: bar.kind === "done" ? 100 : 0,
+		custom_class: `bar-${bar.kind}`,
+	}));
+const barOf = (task) => planning.data.find((bar) => bar.id === task.id);
+const toIsoDate = (date) => date.toLocaleDateString("en-CA");
+const isTaskBar = (bar) => ["task", "done"].includes(bar.kind);
+const recordTitle = (bar) => (isTaskBar(bar) ? bar.label : bar.lane);
+const nameOf = (user) => members.data?.find((member) => member.name === user)?.full_name || user;
+
+// Built with textContent: frappe-gantt sets its popup through innerHTML, and titles are user-typed.
+function showPopup({ task, get_title, get_subtitle, get_details }) {
+	const bar = barOf(task);
+	const isTask = isTaskBar(bar);
+	get_title().textContent = recordTitle(bar);
+	get_subtitle().textContent = isTask ? bar.lane : bar.label;
+	const person = isTask
+		? __("Assignee: {0}", [nameOf(bar.person)])
+		: __("Owner: {0}", [nameOf(bar.person)]);
+	get_details().textContent = [formatRange(bar), bar.person && person].filter(Boolean).join(" · ");
+}
+
+let gantt = null;
+// gantt.refresh() would scroll back to today, away from the bar that was just moved.
+function redrawBars() {
+	gantt.setup_tasks(toGanttTasks(planning.data));
+	gantt.change_view_mode(undefined, true);
+}
+
+function reschedule(bar, start, end) {
+	return call("roadie.api.reschedule", { kind: bar.kind, name: bar.name, start, end });
+}
+
+async function saveDrag({ bar, start, end }) {
+	const previous = {
+		start: bar.start,
+		end: bar.end,
+		saved_start: bar.saved_start,
+		saved_end: bar.saved_end,
+	};
+	try {
+		await reschedule(bar, start, end);
+	} catch (error) {
+		redrawBars();
+		toast.error(error.messages?.join("\n") || error.message);
+		return;
+	}
+	Object.assign(bar, { start, end, saved_start: start, saved_end: end });
+	toast(__("New dates for {0}: {1}", [recordTitle(bar), formatRange(bar)]), {
+		action: { label: __("Undo"), onClick: () => undoDrag(bar, previous) },
+		duration: UNDO_WINDOW_MS,
+	});
+}
+
+async function undoDrag(bar, previous) {
+	try {
+		await reschedule(bar, previous.saved_start, previous.saved_end);
+	} catch (error) {
+		toast.error(error.messages?.join("\n") || error.message);
+		return;
+	}
+	Object.assign(bar, previous);
+	redrawBars();
+}
+
+// frappe-gantt fires on_date_change on every step of a drag, so only the last one is saved, once the mouse is released.
+let pendingDrag = null;
+function savePendingDrag() {
+	if (pendingDrag) saveDrag(pendingDrag);
+	pendingDrag = null;
+}
+onMounted(() => document.addEventListener("mouseup", savePendingDrag));
+onUnmounted(() => document.removeEventListener("mouseup", savePendingDrag));
+
+const isPanelOpen = ref(false);
+const openedGig = ref(null);
+const isTaskOpen = ref(false);
+const openedTask = ref(null);
+
+function openBar(task) {
+	// The browser also clicks the bar at the end of a drag.
+	if (gantt.get_bar(task.id).action_completed) return;
+	const bar = barOf(task);
+	if (bar.gig) {
+		openedGig.value = bar.gig;
+		isPanelOpen.value = true;
+	} else {
+		openedTask.value = bar;
+		isTaskOpen.value = true;
+	}
+}
+
 const chart = ref(null);
 watch([chart, () => planning.data], ([element, bars]) => {
 	if (!element || !bars?.length) return;
 	element.replaceChildren();
-	new Gantt(
-		element,
-		bars.map((bar) => ({
-			id: bar.id,
-			name: `${bar.lane} · ${bar.label}`,
-			start: bar.start,
-			end: bar.end,
-			progress: 0,
-			custom_class: `bar-${bar.kind}`,
-		})),
-		{
-			readonly: true,
-			view_mode: "Week",
-			view_mode_select: true,
-			auto_move_label: true,
-			language: window.lang,
-			on_view_change: translateGanttControls,
-		}
-	);
+	gantt = new Gantt(element, toGanttTasks(bars), {
+		readonly_progress: true,
+		view_mode: "Week",
+		view_mode_select: true,
+		auto_move_label: true,
+		language: window.lang,
+		popup_on: "hover",
+		popup: showPopup,
+		on_view_change: translateGanttControls,
+		on_click: openBar,
+		on_date_change: (task, start, end) => {
+			pendingDrag = { bar: barOf(task), start: toIsoDate(start), end: toIsoDate(end) };
+		},
+	});
 });
 </script>
 
@@ -121,6 +218,16 @@ watch([chart, () => planning.data], ([element, bars]) => {
 				</section>
 			</div>
 		</template>
+		<GigPanel
+			v-if="isPanelOpen"
+			:name="openedGig"
+			:fields="fields"
+			@close="isPanelOpen = false"
+			@saved="planning.reload()"
+		/>
+		<Dialog v-model:open="isTaskOpen" :title="openedTask?.label" size="2xl">
+			<EmailThread v-if="openedTask" doctype="Band Task" :name="openedTask.name" />
+		</Dialog>
 	</div>
 </template>
 
@@ -145,5 +252,9 @@ watch([chart, () => planning.data], ([element, bars]) => {
 }
 .gantt .bar-wrapper .bar {
 	fill: var(--planning-bar);
+}
+/* A gig is a single day: it moves, but never stretches. */
+.gantt .bar-wrapper.bar-gig .handle {
+	display: none;
 }
 </style>

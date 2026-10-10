@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roadie VERSION\n"
 "Report-Msgid-Bugs-To: antoine.maas@okte.io\n"
-"POT-Creation-Date: 2026-10-10 11:12+0009\n"
+"POT-Creation-Date: 2026-10-10 11:25+0009\n"
 "PO-Revision-Date: 2026-10-09 23:47+0009\n"
 "Last-Translator: antoine.maas@okte.io\n"
 "Language: fr\n"
@@ -30,7 +30,7 @@ msgstr "Ajouter la tâche"
 msgid "Add the festivals, venues, promoters and bands you deal with, and the people to talk to at each."
 msgstr "Ajoutez les festivals, lieux, organisateurs et groupes avec qui vous travaillez, et les bonnes personnes à contacter chez chacun."
 
-#: frontend/src/pages/PipelineScreen.vue:142
+#: frontend/src/pages/PipelineScreen.vue:128
 msgid "Add the first gig you are chasing, even if it is only an idea. Drag it from column to column as things move."
 msgstr "Ajoutez le premier concert que vous visez, même si ce n'est qu'une idée. Faites-le glisser de colonne en colonne au fil de l'avancement."
 
@@ -70,7 +70,7 @@ msgstr "Clôture des candidatures"
 msgid "Application opens"
 msgstr "Ouverture des candidatures"
 
-#: frontend/src/pages/PlanningScreen.vue:12 roadie/api.py:192
+#: frontend/src/pages/PlanningScreen.vue:17 roadie/api.py:193
 msgid "Application window"
 msgstr "Période de candidature"
 
@@ -93,6 +93,10 @@ msgstr "Avril"
 #: roadie/roadie/doctype/band_task/band_task.json
 msgid "Assignee"
 msgstr "Assigné à"
+
+#: frontend/src/pages/PlanningScreen.vue:76
+msgid "Assignee: {0}"
+msgstr "Assigné à : {0}"
 
 #: frontend/src/components/EmailComposer.vue:129
 #: frontend/src/components/GigAttachments.vue:28
@@ -199,7 +203,7 @@ msgstr "Les contacts ne peuvent être listés que pour {0}, pas pour {1}"
 msgid "Create"
 msgstr "Créer"
 
-#: frontend/src/pages/PlanningScreen.vue:24
+#: frontend/src/pages/PlanningScreen.vue:29
 msgid "Day"
 msgstr "Jour"
 
@@ -228,7 +232,7 @@ msgstr "Abandonner"
 
 #. Label of the done (Check) field in DocType 'Band Task'
 #: frontend/src/pages/MyTasksScreen.vue:21
-#: frontend/src/pages/PlanningScreen.vue:15
+#: frontend/src/pages/PlanningScreen.vue:20
 #: roadie/roadie/doctype/band_task/band_task.json
 msgid "Done"
 msgstr "Fait"
@@ -304,7 +308,7 @@ msgstr "Genre"
 #. Label of the gig (Link) field in DocType 'Band Task'
 #. Name of a DocType
 #: frontend/src/components/GigPanel.vue:27
-#: frontend/src/pages/PlanningScreen.vue:13 roadie/api.py:200
+#: frontend/src/pages/PlanningScreen.vue:18 roadie/api.py:202
 #: roadie/roadie/doctype/band_task/band_task.json
 #: roadie/roadie/doctype/gig/gig.json
 msgid "Gig"
@@ -319,11 +323,11 @@ msgstr "Date du concert"
 msgid "Gig date"
 msgstr "Date du concert"
 
-#: frontend/src/pages/PlanningScreen.vue:23
+#: frontend/src/pages/PlanningScreen.vue:28
 msgid "Half Day"
 msgstr "Demi-journée"
 
-#: frontend/src/pages/PlanningScreen.vue:21
+#: frontend/src/pages/PlanningScreen.vue:26
 msgid "Hour"
 msgstr "Heure"
 
@@ -377,7 +381,7 @@ msgstr "Nom"
 
 #: frontend/src/components/EntryForm.vue:65
 #: frontend/src/components/ListSkeleton.vue:8
-#: frontend/src/pages/PipelineScreen.vue:124
+#: frontend/src/pages/PipelineScreen.vue:110
 msgid "Loading"
 msgstr "Chargement"
 
@@ -403,15 +407,15 @@ msgstr "Mai"
 msgid "Menu"
 msgstr "Menu"
 
-#: frontend/src/pages/PlanningScreen.vue:20
+#: frontend/src/pages/PlanningScreen.vue:25
 msgid "Mode"
 msgstr "Vue"
 
-#: frontend/src/pages/PlanningScreen.vue:26
+#: frontend/src/pages/PlanningScreen.vue:31
 msgid "Month"
 msgstr "Mois"
 
-#: frontend/src/pages/PipelineScreen.vue:95
+#: frontend/src/pages/PipelineScreen.vue:81
 msgid "Moved {0} to {1}"
 msgstr "{0} passe en « {1} »"
 
@@ -439,9 +443,13 @@ msgstr "En négociation"
 msgid "New"
 msgstr "Nouveau"
 
+#: frontend/src/pages/PlanningScreen.vue:107
+msgid "New dates for {0}: {1}"
+msgstr "Nouvelles dates pour {0} : {1}"
+
 #: frontend/src/components/GigPanel.vue:27
-#: frontend/src/pages/PipelineScreen.vue:116
-#: frontend/src/pages/PipelineScreen.vue:147
+#: frontend/src/pages/PipelineScreen.vue:102
+#: frontend/src/pages/PipelineScreen.vue:133
 msgid "New gig"
 msgstr "Nouveau concert"
 
@@ -473,7 +481,7 @@ msgstr "Aucun e-mail reçu pour l'instant"
 msgid "No emails yet."
 msgstr "Aucun e-mail pour l'instant."
 
-#: frontend/src/pages/PipelineScreen.vue:140
+#: frontend/src/pages/PipelineScreen.vue:126
 msgid "No gigs yet"
 msgstr "Aucun concert pour l'instant"
 
@@ -503,11 +511,11 @@ msgstr "Notes"
 msgid "Nothing assigned to you"
 msgstr "Rien ne vous est assigné"
 
-#: frontend/src/pages/PlanningScreen.vue:95
+#: frontend/src/pages/PlanningScreen.vue:192
 msgid "Nothing dated yet. Give a gig a date or an application window, or a task a due date."
 msgstr "Rien n'est encore daté. Donnez une date ou une période de candidature à un concert, ou une échéance à une tâche."
 
-#: frontend/src/pages/PlanningScreen.vue:93
+#: frontend/src/pages/PlanningScreen.vue:190
 msgid "Nothing on the calendar yet"
 msgstr "Rien au calendrier pour l'instant"
 
@@ -533,6 +541,10 @@ msgstr "Le {0}, {1} a écrit :"
 msgid "Only band members can open Roadie"
 msgstr "Seuls les membres du groupe peuvent ouvrir Roadie"
 
+#: roadie/api.py:249
+msgid "Only {0} bars can be rescheduled, not {1}"
+msgstr "Seules les barres {0} peuvent être replanifiées, pas {1}"
+
 #: frontend/src/pages/MyTasksScreen.vue:38
 msgid "Open a gig and add a task to its checklist. Whatever is assigned to you shows up here, overdue first."
 msgstr "Ouvrez un concert et ajoutez une tâche à sa liste. Tout ce qui vous est assigné s'affiche ici, les retards en premier."
@@ -543,11 +555,11 @@ msgstr "Ouvrez un concert et écrivez à ses contacts. Chaque e-mail envoyé par
 
 #: frontend/src/pages/MailboxScreen.vue:65
 #: frontend/src/pages/MyTasksScreen.vue:43
-#: frontend/src/pages/PlanningScreen.vue:98
+#: frontend/src/pages/PlanningScreen.vue:195
 msgid "Open the pipeline"
 msgstr "Ouvrir le pipeline"
 
-#: roadie/api.py:210
+#: roadie/api.py:212
 msgid "Other"
 msgstr "Autres"
 
@@ -564,16 +576,20 @@ msgstr "Envoyés"
 msgid "Owner"
 msgstr "Responsable"
 
+#: frontend/src/pages/PlanningScreen.vue:77
+msgid "Owner: {0}"
+msgstr "Responsable : {0}"
+
 #: frontend/src/components/EntryContacts.vue:99
 msgid "Phone"
 msgstr "Téléphone"
 
-#: frontend/src/App.vue:30 frontend/src/pages/PipelineScreen.vue:111
+#: frontend/src/App.vue:30 frontend/src/pages/PipelineScreen.vue:97
 msgid "Pipeline"
 msgstr "Pipeline"
 
 #: frontend/src/App.vue:33 frontend/src/App.vue:34
-#: frontend/src/pages/PlanningScreen.vue:78
+#: frontend/src/pages/PlanningScreen.vue:175
 msgid "Planning"
 msgstr "Planning"
 
@@ -597,7 +613,7 @@ msgstr "Organisateur"
 msgid "Promoters"
 msgstr "Organisateurs"
 
-#: frontend/src/pages/PlanningScreen.vue:22
+#: frontend/src/pages/PlanningScreen.vue:27
 msgid "Quarter Day"
 msgstr "Quart de journée"
 
@@ -699,7 +715,7 @@ msgstr "Objet"
 msgid "System Manager"
 msgstr "Responsable Système"
 
-#: frontend/src/pages/PlanningScreen.vue:14
+#: frontend/src/pages/PlanningScreen.vue:19
 msgid "Task"
 msgstr "Tâche"
 
@@ -726,12 +742,13 @@ msgstr "À faire"
 msgid "To {0}"
 msgstr "À {0}"
 
-#: frontend/src/pages/PlanningScreen.vue:33
+#: frontend/src/pages/PlanningScreen.vue:38
 msgid "Today"
 msgstr "Aujourd'hui"
 
 #: frontend/src/components/EntryContacts.vue:52
-#: frontend/src/pages/PipelineScreen.vue:88
+#: frontend/src/pages/PipelineScreen.vue:74
+#: frontend/src/pages/PlanningScreen.vue:108
 msgid "Undo"
 msgstr "Annuler"
 
@@ -793,7 +810,7 @@ msgstr "Lieux"
 msgid "Website"
 msgstr "Site web"
 
-#: frontend/src/pages/PlanningScreen.vue:25
+#: frontend/src/pages/PlanningScreen.vue:30
 msgid "Week"
 msgstr "Semaine"
 
@@ -809,7 +826,7 @@ msgstr "Écrire un commentaire…"
 msgid "Write your email…"
 msgstr "Rédigez votre e-mail…"
 
-#: frontend/src/pages/PlanningScreen.vue:27
+#: frontend/src/pages/PlanningScreen.vue:32
 msgid "Year"
 msgstr "Année"
 
@@ -833,11 +850,11 @@ msgstr "{0} Ko"
 msgid "{0} MB"
 msgstr "{0} Mo"
 
-#: frontend/src/pages/PipelineScreen.vue:65
+#: frontend/src/pages/PipelineScreen.vue:51
 msgid "{0} is booked. Time to rehearse!"
 msgstr "{0} est confirmé. Place aux répètes !"
 
-#: frontend/src/pages/PipelineScreen.vue:66
+#: frontend/src/pages/PipelineScreen.vue:52
 msgid "{0} is in the books. What a night!"
 msgstr "{0} : c'est joué. Quelle soirée !"
 
