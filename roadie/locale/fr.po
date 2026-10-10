@@ -362,6 +362,10 @@ msgstr "Concert"
 msgid "Gig date"
 msgstr "Date du concert"
 
+#: frontend/src/search.js:8
+msgid "Gigs"
+msgstr "Concerts"
+
 #: frontend/src/pages/PlanningScreen.vue:28
 msgid "Half Day"
 msgstr "Demi-journée"
@@ -777,13 +781,29 @@ msgstr "Enregistré"
 msgid "Screens"
 msgstr "Écrans"
 
+#: frontend/src/App.vue:74 frontend/src/App.vue:102
+msgid "Search"
+msgstr "Rechercher"
+
 #: frontend/src/pages/DirectoryScreen.vue:74
 msgid "Search by name or city"
 msgstr "Rechercher par nom ou ville"
 
+#: frontend/src/components/SearchPalette.vue
+msgid "Search gigs, venues, promoters, bands and tasks"
+msgstr "Rechercher des concerts, salles, promoteurs, groupes et tâches"
+
+#: roadie/api.py:34
+msgid "Search is limited to {0} characters, not {1}"
+msgstr "La recherche est limitée à {0} caractères, pas {1}"
+
 #: frontend/src/pages/DirectoryScreen.vue:96
 msgid "Search looks at names and cities. Try a shorter word, or add the entry."
 msgstr "La recherche porte sur les noms et les villes. Essayez un mot plus court, ou ajoutez la fiche."
+
+#: frontend/src/components/SearchPalette.vue
+msgid "Search results"
+msgstr "Résultats de recherche"
 
 #: frontend/src/components/EmailComposer.vue:173
 msgid "Send"
