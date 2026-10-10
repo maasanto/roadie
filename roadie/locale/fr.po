@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roadie VERSION\n"
 "Report-Msgid-Bugs-To: antoine.maas@okte.io\n"
-"POT-Creation-Date: 2026-10-10 14:38+0009\n"
+"POT-Creation-Date: 2026-10-10 15:06+0009\n"
 "PO-Revision-Date: 2026-10-09 23:47+0009\n"
 "Last-Translator: antoine.maas@okte.io\n"
 "Language: fr\n"
@@ -18,7 +18,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
 
+#: roadie/api.py:289
+msgid "A choice list needs at least one choice"
+msgstr "Une liste de choix a besoin d'au moins un choix"
+
+#: roadie/api.py:357
+msgid "A field needs a label"
+msgstr "Un champ a besoin d'un nom"
+
+#: roadie/api.py:286
+msgid "A new field is one of {0}, not {1}"
+msgstr "Un nouveau champ est de type {0}, pas {1}"
+
 #: frontend/src/components/EntryContacts.vue:103
+#: frontend/src/components/FormCustomiser.vue:135
 msgid "Add"
 msgstr "Ajouter"
 
@@ -66,7 +79,7 @@ msgstr "Les candidatures pour {0} ferment dans {1} jours"
 msgid "Application opens"
 msgstr "Ouverture des candidatures"
 
-#: frontend/src/pages/PlanningScreen.vue:17 roadie/api.py:194
+#: frontend/src/pages/PlanningScreen.vue:17 roadie/api.py:202
 msgid "Application window"
 msgstr "Période de candidature"
 
@@ -154,6 +167,18 @@ msgstr "Cc"
 msgid "Cc / Bcc"
 msgstr "Cc / Cci"
 
+#: frontend/src/components/FormCustomiser.vue:17
+msgid "Checkbox"
+msgstr "Case à cocher"
+
+#: frontend/src/components/FormCustomiser.vue:18
+msgid "Choice list"
+msgstr "Liste de choix"
+
+#: frontend/src/components/FormCustomiser.vue:141
+msgid "Choices, one per line"
+msgstr "Choix, un par ligne"
+
 #. Label of the city (Data) field in DocType 'Band'
 #. Label of the city (Data) field in DocType 'Festival'
 #. Label of the city (Data) field in DocType 'Promoter'
@@ -178,7 +203,7 @@ msgstr "Commenter"
 msgid "Comments"
 msgstr "Commentaires"
 
-#: roadie/api.py:109
+#: roadie/api.py:117
 msgid "Comments can only be listed for {0}, not {1}"
 msgstr "Les commentaires ne peuvent être listés que pour {0}, pas pour {1}"
 
@@ -191,13 +216,21 @@ msgstr "Contacté"
 msgid "Contacts"
 msgstr "Contacts"
 
-#: roadie/api.py:26
+#: roadie/api.py:34
 msgid "Contacts can only be listed for {0}, not {1}"
 msgstr "Les contacts ne peuvent être listés que pour {0}, pas pour {1}"
 
-#: frontend/src/components/EntryForm.vue:118
+#: frontend/src/components/EntryForm.vue:138
 msgid "Create"
 msgstr "Créer"
+
+#: frontend/src/components/EntryForm.vue:131
+msgid "Customise form"
+msgstr "Personnaliser le formulaire"
+
+#: frontend/src/components/FormCustomiser.vue:16
+msgid "Date"
+msgstr "Date"
 
 #: frontend/src/pages/PlanningScreen.vue:29
 msgid "Day"
@@ -227,6 +260,7 @@ msgid "Discard"
 msgstr "Abandonner"
 
 #. Label of the done (Check) field in DocType 'Band Task'
+#: frontend/src/components/FormCustomiser.vue:147
 #: frontend/src/pages/MyTasksScreen.vue:21
 #: frontend/src/pages/PlanningScreen.vue:20
 #: roadie/roadie/doctype/band_task/band_task.json
@@ -267,7 +301,7 @@ msgstr "E-mail"
 msgid "Emails"
 msgstr "E-mails"
 
-#: roadie/api.py:66
+#: roadie/api.py:74
 msgid "Emails can only be listed for {0}, not {1}"
 msgstr "Les e-mails ne peuvent être listés que pour {0}, pas pour {1}"
 
@@ -308,7 +342,7 @@ msgstr "Genre"
 #. Label of the gig (Link) field in DocType 'Band Task'
 #. Name of a DocType
 #: frontend/src/components/GigPanel.vue:27
-#: frontend/src/pages/PlanningScreen.vue:18 roadie/api.py:203
+#: frontend/src/pages/PlanningScreen.vue:18 roadie/api.py:211
 #: roadie/roadie/doctype/band_task/band_task.json
 #: roadie/roadie/doctype/gig/gig.json
 msgid "Gig"
@@ -322,6 +356,14 @@ msgstr "Date du concert"
 #: frontend/src/pages/PlanningScreen.vue:28
 msgid "Half Day"
 msgstr "Demi-journée"
+
+#: frontend/src/components/FormCustomiser.vue:115
+msgid "Hidden fields"
+msgstr "Champs masqués"
+
+#: frontend/src/components/FormCustomiser.vue:60
+msgid "Hide {0}"
+msgstr "Masquer {0}"
 
 #: frontend/src/pages/PlanningScreen.vue:26
 msgid "Hour"
@@ -375,7 +417,7 @@ msgstr "Juin"
 msgid "Last name"
 msgstr "Nom"
 
-#: frontend/src/components/EntryForm.vue:89
+#: frontend/src/components/EntryForm.vue:97
 #: frontend/src/components/ListSkeleton.vue:8
 #: frontend/src/pages/PipelineScreen.vue:110
 msgid "Loading"
@@ -385,7 +427,11 @@ msgstr "Chargement"
 msgid "Log out"
 msgstr "Se déconnecter"
 
-#: roadie/api.py:126
+#: frontend/src/components/FormCustomiser.vue:14
+msgid "Long text"
+msgstr "Texte long"
+
+#: roadie/api.py:134
 msgid "Mailbox is either Sent or Received, not {0}"
 msgstr "La boîte est soit Sent, soit Received, pas {0}"
 
@@ -430,6 +476,10 @@ msgstr "Mes tâches"
 msgid "Name"
 msgstr "Nom"
 
+#: frontend/src/components/FormCustomiser.vue:102
+msgid "Name of the {0} field"
+msgstr "Nom du champ {0}"
+
 #. Option for the 'Status' (Select) field in DocType 'Gig'
 #: roadie/roadie/doctype/gig/gig.json
 msgid "Negotiating"
@@ -442,6 +492,10 @@ msgstr "Nouveau"
 #: frontend/src/pages/PlanningScreen.vue:107
 msgid "New dates for {0}: {1}"
 msgstr "Nouvelles dates pour {0} : {1}"
+
+#: frontend/src/components/FormCustomiser.vue:128
+msgid "New field"
+msgstr "Nouveau champ"
 
 #: frontend/src/components/GigPanel.vue:27
 #: frontend/src/pages/PipelineScreen.vue:102
@@ -523,6 +577,10 @@ msgstr "Rien d'envoyé pour l'instant"
 msgid "November"
 msgstr "Novembre"
 
+#: frontend/src/components/FormCustomiser.vue:15
+msgid "Number"
+msgstr "Nombre"
+
 #. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "October"
@@ -532,11 +590,15 @@ msgstr "Octobre"
 msgid "On {0}, {1} wrote:"
 msgstr "Le {0}, {1} a écrit :"
 
-#: roadie/www/roadie.py:14
+#: roadie/www/roadie.py:16
 msgid "Only band members can open Roadie"
 msgstr "Seuls les membres du groupe peuvent ouvrir Roadie"
 
-#: roadie/api.py:250
+#: roadie/api.py:325
+msgid "Only the forms of {0} can be customised, not {1}"
+msgstr "Seuls les formulaires {0} se personnalisent, pas {1}"
+
+#: roadie/api.py:258
 msgid "Only {0} bars can be rescheduled, not {1}"
 msgstr "Seules les barres {0} peuvent être replanifiées, pas {1}"
 
@@ -559,7 +621,7 @@ msgstr "Ouvrir mes tâches"
 msgid "Open the pipeline"
 msgstr "Ouvrir le pipeline"
 
-#: roadie/api.py:213
+#: roadie/api.py:221
 msgid "Other"
 msgstr "Autres"
 
@@ -638,6 +700,14 @@ msgstr "Retirer {0}"
 msgid "Removed {0}"
 msgstr "Contact retiré : {0}"
 
+#: frontend/src/components/FormCustomiser.vue:90
+msgid "Rename, hide or add fields. Changes apply to the whole band."
+msgstr "Renommez, masquez ou ajoutez des champs. Les changements valent pour tout le groupe."
+
+#: frontend/src/components/FormCustomiser.vue:53
+msgid "Renamed to {0}"
+msgstr "Renommé en {0}"
+
 #: frontend/src/pages/MailboxScreen.vue:51
 msgid "Replies to the emails the band sends from a gig or a directory entry land here."
 msgstr "Les réponses aux e-mails envoyés depuis un concert ou une fiche de l'annuaire arrivent ici."
@@ -650,11 +720,11 @@ msgstr "Répondre"
 msgid "Reply all"
 msgstr "Répondre à tous"
 
-#: frontend/src/components/EntryForm.vue:118
+#: frontend/src/components/EntryForm.vue:138
 msgid "Save"
 msgstr "Enregistrer"
 
-#: frontend/src/components/EntryForm.vue:76
+#: frontend/src/components/EntryForm.vue:84
 msgid "Saved"
 msgstr "Enregistré"
 
@@ -682,6 +752,10 @@ msgstr "Envoyé"
 #: roadie/roadie/doctype/festival/festival.json
 msgid "September"
 msgstr "Septembre"
+
+#: frontend/src/components/FormCustomiser.vue:123
+msgid "Show"
+msgstr "Afficher"
 
 #. Label of the start_date (Date) field in DocType 'Band Task'
 #: roadie/roadie/doctype/band_task/band_task.json
@@ -723,6 +797,10 @@ msgstr "Tâche"
 msgid "Tasks"
 msgstr "Tâches"
 
+#: frontend/src/components/FormCustomiser.vue:13
+msgid "Text"
+msgstr "Texte"
+
 #: roadie/fixtures/notification.json:14
 msgid "The application for {0} closes on {1}, in {2} days, and the gig is still at {3}."
 msgstr "Les candidatures pour {0} ferment le {1}, dans {2} jours, et le concert est toujours au statut « {3} »."
@@ -749,6 +827,10 @@ msgstr "À {0}"
 #: frontend/src/pages/PlanningScreen.vue:38
 msgid "Today"
 msgstr "Aujourd'hui"
+
+#: frontend/src/components/FormCustomiser.vue:132
+msgid "Type"
+msgstr "Type"
 
 #: frontend/src/components/EntryContacts.vue:52
 #: frontend/src/pages/PipelineScreen.vue:74
@@ -841,6 +923,22 @@ msgstr "{0} Ko"
 msgid "{0} MB"
 msgstr "{0} Mo"
 
+#: frontend/src/components/FormCustomiser.vue:81
+msgid "{0} added"
+msgstr "Champ « {0} » ajouté"
+
+#: roadie/api.py:317
+msgid "{0} cannot be hidden: Roadie relies on it"
+msgstr "Le champ « {0} » ne peut pas être masqué : Roadie s'appuie dessus"
+
+#: roadie/api.py:336
+msgid "{0} has no field {1} that Roadie's form shows"
+msgstr "{0} n'a pas de champ {1} affiché dans le formulaire de Roadie"
+
+#: frontend/src/components/FormCustomiser.vue:64
+msgid "{0} hidden"
+msgstr "Champ « {0} » masqué"
+
 #: frontend/src/pages/PipelineScreen.vue:51
 msgid "{0} is booked. Time to rehearse!"
 msgstr "{0} est confirmé. Place aux répètes !"
@@ -856,4 +954,12 @@ msgstr "{0} : c'est joué. Quelle soirée !"
 #: roadie/mentions.py:47
 msgid "{0} mentioned you in a comment in {1} {2}"
 msgstr "{0} vous a mentionné dans un commentaire sur {1} {2}"
+
+#: frontend/src/components/FormCustomiser.vue:71
+msgid "{0} shown again"
+msgstr "Champ « {0} » de nouveau affiché"
+
+#: frontend/src/components/FormCustomiser.vue:59
+msgid "{0} stays visible: Roadie relies on it"
+msgstr "Le champ « {0} » reste affiché : Roadie s'appuie dessus"
 
