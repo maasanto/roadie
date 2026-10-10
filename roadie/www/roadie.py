@@ -2,6 +2,8 @@ import frappe
 from frappe import _
 from frappe.translate import get_translations_from_apps
 
+from roadie.api import PROTECTED_FIELDS
+
 no_cache = 1
 
 
@@ -21,5 +23,6 @@ def get_context():
 			# Only this app's catalogue: every SPA string is ours, and the full one weighs megabytes.
 			"translations": get_translations_from_apps(frappe.local.lang, apps=["roadie"]),
 			"drive_url": frappe.conf.get("band_drive_url"),
+			"protected_fields": PROTECTED_FIELDS,
 		}
 	)

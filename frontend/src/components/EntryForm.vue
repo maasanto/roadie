@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
 import { Button, ErrorMessage, FormControl, Skeleton, toast, useCall } from "frappe-ui";
+import FormCustomiser from "./FormCustomiser.vue";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
 
@@ -15,6 +16,8 @@ const entryName = ref(null);
 const form = reactive({});
 const meta = computed(() => useMeta(props.doctype));
 const fields = computed(() => fieldsFromMeta(meta.value.data?.fields ?? [], props.controls));
+const visibleFields = computed(() => fields.value.filter((field) => !field.hidden));
+const isCustomising = ref(false);
 const documentUrl = computed(() => `/api/v2/document/${props.doctype}/${entryName.value}`);
 
 const loadEntry = useCall({ url: documentUrl, immediate: false });
@@ -47,8 +50,13 @@ function fillForm(doc) {
 const changedFields = () =>
 	Object.fromEntries(Object.entries(form).filter(([fieldname, value]) => value !== loadedForm[fieldname]));
 
-// Leaving a blank field out lets the server apply its default, e.g. "Today" or the current user.
-const filledFields = () => Object.fromEntries(Object.entries(form).filter(([, value]) => value !== ""));
+// Leaving a blank or hidden field out lets the server apply its default, e.g. "Today" or the current user.
+const filledFields = () =>
+	Object.fromEntries(
+		visibleFields.value
+			.map(({ fieldname }) => [fieldname, form[fieldname]])
+			.filter(([, value]) => value !== "")
+	);
 
 // The meta may land after the record: fill only the newcomers, so it never overwrites what the member typed.
 watch(fields, (newFields) => fillFields(newFields.filter(({ fieldname }) => !(fieldname in loadedForm))));
@@ -81,7 +89,7 @@ defineExpose({ form, entryName });
 </script>
 
 <template>
-	<ErrorMessage v-if="meta.error" :message="meta.error" />
+	<ErrorMessage v-if="meta.error && !meta.data" :message="meta.error" />
 	<div
 		v-else-if="loadEntry.loading || !meta.data"
 		class="grid grid-cols-2 gap-4"
@@ -89,7 +97,7 @@ defineExpose({ form, entryName });
 		:aria-label="__('Loading')"
 	>
 		<Skeleton
-			v-for="field in fields"
+			v-for="field in visibleFields"
 			:key="field.fieldname"
 			class="h-14 rounded"
 			:class="field.type === 'textarea' ? 'col-span-2' : ''"
@@ -97,9 +105,15 @@ defineExpose({ form, entryName });
 	</div>
 	<ErrorMessage v-else-if="loadEntry.error" :message="loadEntry.error" />
 	<div v-else class="space-y-6">
-		<form class="grid grid-cols-2 gap-4" @submit.prevent="save">
+		<FormCustomiser
+			v-if="isCustomising"
+			:doctype="doctype"
+			:fields="fields"
+			@done="isCustomising = false"
+		/>
+		<form v-else class="grid grid-cols-2 gap-4" @submit.prevent="save">
 			<FormControl
-				v-for="field in fields"
+				v-for="field in visibleFields"
 				:key="field.fieldname"
 				v-model="form[field.fieldname]"
 				:type="field.type"
@@ -110,7 +124,13 @@ defineExpose({ form, entryName });
 				:class="field.type === 'textarea' ? 'col-span-2' : ''"
 			/>
 			<ErrorMessage class="col-span-2" :message="saveCall.error" />
-			<div class="col-span-2 flex justify-end">
+			<div class="col-span-2 flex justify-between">
+				<Button
+					icon-left="lucide-settings-2"
+					variant="ghost"
+					:label="__('Customise form')"
+					@click="isCustomising = true"
+				/>
 				<Button
 					type="submit"
 					variant="solid"

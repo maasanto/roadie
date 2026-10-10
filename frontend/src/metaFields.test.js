@@ -21,14 +21,21 @@ const festivalMeta = [
 
 test("a field added in Desk shows in the form, in the meta's order", () => {
 	assert.deepEqual(
-		fieldsFromMeta(festivalMeta).map(({ fieldname }) => fieldname),
+		fieldsFromMeta(festivalMeta)
+			.filter(({ hidden }) => !hidden)
+			.map(({ fieldname }) => fieldname),
 		["title", "website", "usual_month", "camping", "listed_on"]
 	);
 });
 
-test("hidden fields, layout breaks, types the form cannot edit and higher permlevels stay out", () => {
+test("a hidden field is kept, flagged, so it can be brought back", () => {
+	const oldNotes = fieldsFromMeta(festivalMeta).find(({ fieldname }) => fieldname === "old_notes");
+	assert.equal(oldNotes.hidden, true);
+});
+
+test("layout breaks, types the form cannot edit and higher permlevels stay out", () => {
 	const fieldnames = fieldsFromMeta(festivalMeta).map(({ fieldname }) => fieldname);
-	for (const fieldname of ["old_notes", "details_section", "rider", "budget"])
+	for (const fieldname of ["details_section", "rider", "budget"])
 		assert.ok(!fieldnames.includes(fieldname));
 });
 
