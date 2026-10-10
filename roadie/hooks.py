@@ -29,7 +29,10 @@ role_home_page = {"Band Member": "roadie"}
 
 after_install = "roadie.install.after_install"
 
-doc_events = {"Comment": {"after_insert": "roadie.mentions.notify_mentioned_members"}}
+# Read by the dokos_ai app to serve the agent skill in roadie/roadie/skills; inert on a site without it
+dokos_ai_skills = ["roadie"]
+
+doc_events ={"Comment": {"after_insert": "roadie.mentions.notify_mentioned_members"}}
 
 fixtures =[
 	{"dt": "Role", "filters": [["name", "=", "Band Member"]]},
