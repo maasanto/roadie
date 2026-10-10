@@ -1,0 +1,54 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-10-10 23:35:00.000000",
+ "description": "The columns a member shows in one of Roadie's lists, one row per member per DocType. Falling back to the app's defaults when a member has no row.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "dt",
+  "columns"
+ ],
+ "fields": [
+  {
+   "fieldname": "dt",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "DocType",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "columns",
+   "fieldtype": "Code",
+   "label": "Columns",
+   "options": "JSON"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-10 23:35:00.000000",
+ "modified_by": "Administrator",
+ "module": "Roadie",
+ "name": "Roadie List View",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "if_owner": 1,
+   "read": 1,
+   "role": "Band Member",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
