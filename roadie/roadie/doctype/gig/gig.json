@@ -12,9 +12,9 @@
   "festival",
   "venue",
   "promoter",
+  "fee",
   "application_opens",
   "application_closes",
-  "fee",
   "notes"
  ],
  "fields": [
@@ -46,7 +46,7 @@
    "fieldname": "gig_date",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Gig Date"
+   "label": "Gig date"
   },
   {
    "fieldname": "festival",
@@ -67,23 +67,23 @@
    "options": "Promoter"
   },
   {
+   "fieldname": "fee",
+   "fieldtype": "Currency",
+   "label": "Fee"
+  },
+  {
    "fetch_from": "festival.application_opens",
    "fetch_if_empty": 1,
    "fieldname": "application_opens",
    "fieldtype": "Date",
-   "label": "Application Opens"
+   "label": "Application opens"
   },
   {
    "fetch_from": "festival.application_closes",
    "fetch_if_empty": 1,
    "fieldname": "application_closes",
    "fieldtype": "Date",
-   "label": "Application Closes"
-  },
-  {
-   "fieldname": "fee",
-   "fieldtype": "Currency",
-   "label": "Fee"
+   "label": "Application closes"
   },
   {
    "fieldname": "notes",
@@ -92,7 +92,7 @@
   }
  ],
  "links": [],
- "modified": "2026-10-09 22:00:00.000000",
+ "modified": "2026-10-10 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Roadie",
  "name": "Gig",

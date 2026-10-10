@@ -43,7 +43,7 @@
   {
    "fieldname": "usual_month",
    "fieldtype": "Select",
-   "label": "Usual Month",
+   "label": "Usual month",
    "options": "\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember"
   },
   {
@@ -55,12 +55,12 @@
   {
    "fieldname": "application_opens",
    "fieldtype": "Date",
-   "label": "Usual Application Opens"
+   "label": "Usual application opens"
   },
   {
    "fieldname": "application_closes",
    "fieldtype": "Date",
-   "label": "Usual Application Closes"
+   "label": "Usual application closes"
   },
   {
    "fieldname": "notes",
@@ -69,7 +69,7 @@
   }
  ],
  "links": [],
- "modified": "2026-10-09 18:00:00.000000",
+ "modified": "2026-10-10 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Roadie",
  "name": "Festival",
