@@ -4,3 +4,8 @@
 [data-sonner-toaster] {
 	pointer-events: auto;
 }
+
+/* frappe-ui dialogs set no z-index, so one opened from the gig panel (fixed, z-20) would open underneath it. */
+.dialog-overlay {
+	z-index: 30;
+}
