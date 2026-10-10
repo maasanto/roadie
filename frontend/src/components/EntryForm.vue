@@ -21,14 +21,18 @@ const createEntry = useCall({
 });
 const updateEntry = useCall({ url: documentUrl, method: "PUT", immediate: false });
 
-// Sent back on save, so Frappe refuses to overwrite a change made since the form was loaded.
-const loadedModified = ref(null);
+// Saving only what changed keeps a stale form from reverting what a bandmate or a drag changed since.
+// A modified-timestamp check would also refuse the save whenever an email lands on the record.
+let loadedForm = {};
 
 function fillForm(doc) {
 	for (const field of props.fields)
 		form[field.fieldname] = doc ? doc[field.fieldname] ?? "" : field.default ?? "";
-	loadedModified.value = doc?.modified ?? null;
+	loadedForm = { ...form };
 }
+
+const changedFields = () =>
+	Object.fromEntries(Object.entries(form).filter(([fieldname, value]) => value !== loadedForm[fieldname]));
 
 watch(
 	() => props.name,
@@ -46,7 +50,7 @@ const saveCall = computed(() => (entryName.value ? updateEntry : createEntry));
 
 async function save() {
 	const call = saveCall.value;
-	await call.submit(entryName.value ? { ...form, modified: loadedModified.value } : { ...form });
+	await call.submit(entryName.value ? changedFields() : { ...form });
 	if (call.error) return;
 	entryName.value = call.data.name;
 	fillForm(call.data);
