@@ -17,7 +17,6 @@ EMAIL_SUMMARY_FIELDS = [
 	"delivery_status",
 	"communication_date",
 ]
-EMAIL_FIELDS = [*EMAIL_SUMMARY_FIELDS, "content"]
 
 
 @frappe.whitelist()
@@ -84,7 +83,7 @@ def get_emails(doctype: str, name: str) -> list[dict]:
 			"communication_type": "Communication",
 			"name": ["in", [*thread_root, *referencing, *linked]],
 		},
-		fields=EMAIL_FIELDS,
+		fields=[*EMAIL_SUMMARY_FIELDS, "content"],
 		order_by="communication_date asc",
 	)
 	attachments = frappe.get_all(
