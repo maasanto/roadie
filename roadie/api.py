@@ -1,3 +1,5 @@
+from urllib.parse import urlsplit
+
 import frappe
 from frappe import _
 
@@ -298,8 +300,9 @@ def share_drive_link(entity_name: str) -> str:
 	return frappe.utils.get_url(f"/drive/{'d' if entity.is_folder else 'f'}/{entity.name}")
 
 
-# Where the SPA shows a notification's record; the record itself has no deep link yet.
-NOTIFICATION_ROUTES = {"Gig": "/roadie", "Band Task": "/roadie/tasks"}
+# Router paths, not site paths: the SPA's router is already mounted at /roadie.
+NOTIFICATION_ROUTES = {"Gig": "/", "Band Task": "/tasks"}
+SPA_BASE = "/roadie"
 NOTIFICATION_FIELDS = [
 	"name",
 	"type",
@@ -327,8 +330,18 @@ def get_notifications() -> list[dict]:
 		limit=50,
 	)
 	for notification in notifications:
-		notification.route = NOTIFICATION_ROUTES.get(notification.document_type) or notification.link
+		notification.route = _notification_route(notification)
 	return notifications
+
+
+def _notification_route(notification) -> str | None:
+	"""A Notification Log's own link is a site path like /roadie/tasks, which the router would double."""
+	if notification.document_type in NOTIFICATION_ROUTES:
+		return NOTIFICATION_ROUTES[notification.document_type]
+	path = urlsplit(notification.link or "").path
+	if not path.startswith(SPA_BASE):
+		return None
+	return path[len(SPA_BASE) :] or "/"
 
 
 @frappe.whitelist(methods=["POST"])
