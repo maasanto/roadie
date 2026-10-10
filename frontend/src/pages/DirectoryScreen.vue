@@ -1,50 +1,59 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Badge, Dropdown, ErrorMessage, TabButtons, TextInput, useList } from "frappe-ui";
+import { Button, ErrorMessage, Skeleton, TextInput, useList } from "frappe-ui";
+import { List, ListCell, ListHeader, ListHeaderCell, ListRow, ListRows } from "frappe-ui/list";
 import CommentThread from "../components/CommentThread.vue";
 import EmailThread from "../components/EmailThread.vue";
 import EmptyState from "../components/EmptyState.vue";
 import EntryContacts from "../components/EntryContacts.vue";
 import EntryDialog from "../components/EntryDialog.vue";
-import ListSkeleton from "../components/ListSkeleton.vue";
-import { directoryControls, directoryTypes } from "../directory";
+import ListColumnEditor from "../components/ListColumnEditor.vue";
+import { directoryControls, directoryType } from "../directory";
+import { fetchFields, formatCell } from "../listColumns";
+import { useListView } from "../listView";
 import { onKey } from "../keyboard";
 
-// ponytail: one unpaged fetch per type, page server-side if the directory outgrows a few hundred entries
-const lists = Object.fromEntries(
-	directoryTypes.map(({ doctype }) => [
-		doctype,
-		useList({ doctype, fields: ["name", "title", "city"], orderBy: "title asc", limit: 500 }),
-	])
-);
+const props = defineProps({ doctype: { type: String, required: true } });
 
-const activeType = ref("all");
+const type = directoryType(props.doctype);
+const { columns } = useListView(props.doctype);
+
+// The search reads the name and the city whether or not those columns are on screen, so they are always fetched.
+const SEARCH_FIELDS = ["title", "city"];
+
+// ponytail: the whole type in one unpaged fetch, page server-side if a directory outgrows a few hundred entries
+const entries = useList({
+	doctype: props.doctype,
+	fields: () => fetchFields(columns.value, SEARCH_FIELDS),
+	orderBy: "title asc",
+	limit: 500,
+});
+
+const isLoading = computed(() => entries.loading && !entries.data);
+const placeholderRows = Array.from({ length: 4 }, (unused, index) => ({ name: `row-${index}` }));
+
 const query = ref("");
 const searchInput = ref(null);
 onKey("/", () => searchInput.value?.el.focus());
-const typeTabs = [
-	{ value: "all", label: __("All") },
-	...directoryTypes.map((type) => ({ value: type.doctype, label: type.plural })),
-];
 
-const isLoading = computed(() => Object.values(lists).some((list) => list.loading && !list.data));
-const loadError = computed(() => Object.values(lists).find((list) => list.error)?.error);
-
-const entries = computed(() => {
+const rows = computed(() => {
 	const needle = query.value.trim().toLowerCase();
-	return directoryTypes
-		.filter(({ doctype }) => activeType.value === "all" || activeType.value === doctype)
-		.flatMap(({ doctype }) => (lists[doctype].data || []).map((row) => ({ ...row, doctype })))
-		.filter((entry) => !needle || `${entry.title} ${entry.city || ""}`.toLowerCase().includes(needle))
-		.sort((a, b) => a.title.localeCompare(b.title));
+	return (entries.data || []).filter(
+		(entry) => !needle || `${entry.title || ""} ${entry.city || ""}`.toLowerCase().includes(needle)
+	);
 });
 
-const isDialogOpen = ref(false);
-const editing = ref({ doctype: "Festival", name: null });
+// The name column takes the room and the rest are fixed, so a column means the same width on every row. A
+// phone drops to the name and its first extra column, as a two-track feed.
+const tracks = computed(() => columns.value.map((column, index) => (index === 0 ? "minmax(0,1fr)" : "8rem")));
+const isExtra = (index) => index > 1;
 
-function openEntry(doctype, name = null) {
-	editing.value = { doctype, name };
+const isDialogOpen = ref(false);
+const editingName = ref(null);
+
+function openEntry(name = null) {
+	editingName.value = name;
 	isDialogOpen.value = true;
 }
 
@@ -54,35 +63,26 @@ const router = useRouter();
 watch(
 	() => route.query.entry,
 	(entry) => {
-		if (!entry || route.name !== "Directory") return;
+		if (!entry) return;
 		const [doctype, name] = entry.split(":");
-		if (!directoryTypes.some((type) => type.doctype === doctype)) return;
-		openEntry(doctype, name);
+		if (doctype !== props.doctype) return;
+		openEntry(name);
 		router.replace({ query: { ...route.query, entry: undefined } });
 	},
 	{ immediate: true }
 );
-
-const newOptions = directoryTypes.map(({ doctype }) => ({
-	label: __(doctype),
-	onClick: () => openEntry(doctype),
-}));
 </script>
 
 <template>
 	<div class="p-6">
-		<div class="flex items-center justify-between">
-			<h1 class="text-2xl-semibold">{{ __("Directory") }}</h1>
-			<Dropdown
-				:options="newOptions"
-				align="end"
-				:button="{ label: __('New'), iconLeft: 'lucide-plus', variant: 'solid' }"
-			/>
+		<div class="flex flex-wrap items-center justify-between gap-3">
+			<h1 class="text-2xl-semibold">{{ type.plural }}</h1>
+			<div class="flex items-center gap-2">
+				<ListColumnEditor :doctype="doctype" />
+				<Button variant="solid" icon-left="lucide-plus" :label="__('New')" @click="openEntry()" />
+			</div>
 		</div>
 		<div class="mt-4 flex flex-wrap items-center gap-3">
-			<div class="max-w-full overflow-x-auto">
-				<TabButtons v-model="activeType" :options="typeTabs" />
-			</div>
 			<TextInput
 				ref="searchInput"
 				v-model="query"
@@ -102,56 +102,72 @@ const newOptions = directoryTypes.map(({ doctype }) => ({
 				/></template>
 			</TextInput>
 		</div>
-		<ListSkeleton v-if="isLoading" class="mt-4" />
-		<ErrorMessage v-else-if="loadError" class="mt-4" :message="loadError" />
+		<ErrorMessage v-if="entries.error" class="mt-4" :message="entries.error" />
 		<EmptyState
-			v-else-if="!entries.length && query.trim()"
+			v-else-if="!isLoading && !rows.length && query.trim()"
 			class="mt-4"
 			icon="lucide-search-x"
 			:title="__('No match for “{0}”', [query.trim()])"
 			:description="__('Search looks at names and cities. Try a shorter word, or add the entry.')"
 		/>
 		<EmptyState
-			v-else-if="!entries.length"
+			v-else-if="!isLoading && !rows.length"
 			class="mt-4"
-			icon="lucide-book-user"
-			:title="__('Your address book starts here')"
+			:icon="type.icon"
+			:title="__('No {0} yet', [type.plural.toLowerCase()])"
 			:description="
-				__(
-					'Add the festivals, venues, promoters and bands you deal with, and the people to talk to at each.'
-				)
+				__('Add the {0} you deal with, and the people to talk to at each.', [
+					type.plural.toLowerCase(),
+				])
 			"
 		>
-			<Dropdown
-				:options="newOptions"
-				:button="{ label: __('Add the first one'), iconLeft: 'lucide-plus' }"
-			/>
+			<Button icon-left="lucide-plus" :label="__('Add the first one')" @click="openEntry()" />
 		</EmptyState>
-		<ul v-else class="mt-4 divide-y divide-outline-gray-1 rounded-6 border">
-			<li v-for="entry in entries" :key="`${entry.doctype}:${entry.name}`">
-				<button
-					class="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-surface-gray-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-3"
-					@click="openEntry(entry.doctype, entry.name)"
+		<List v-else :columns="tracks" class="mt-4 list-row-px-3 max-sm:[--list-columns:minmax(0,1fr)_auto]">
+			<ListHeader class="max-sm:hidden">
+				<ListHeaderCell
+					v-for="(column, index) in columns"
+					:key="column.fieldname"
+					:class="isExtra(index) && 'max-sm:hidden'"
 				>
-					<span class="min-w-0 flex-1 truncate text-base">{{ entry.title }}</span>
-					<span class="hidden w-40 truncate text-sm text-ink-gray-5 sm:block">{{
-						entry.city
-					}}</span>
-					<Badge :label="__(entry.doctype)" class="w-20 justify-center" />
-				</button>
-			</li>
-		</ul>
+					{{ __(column.label) }}
+				</ListHeaderCell>
+			</ListHeader>
+			<ListRows v-if="isLoading" :items="placeholderRows" v-slot="{ item }">
+				<ListRow>
+					<ListCell
+						v-for="(column, index) in columns"
+						:key="column.fieldname"
+						:class="isExtra(index) && 'max-sm:hidden'"
+					>
+						<Skeleton class="h-4 rounded" :class="index === 0 ? 'w-40' : 'w-16'" />
+					</ListCell>
+				</ListRow>
+			</ListRows>
+			<ListRows v-else :items="rows" v-slot="{ item }">
+				<ListRow :on-click="() => openEntry(item.name)">
+					<ListCell
+						v-for="(column, index) in columns"
+						:key="column.fieldname"
+						class="text-base"
+						:class="[isExtra(index) && 'max-sm:hidden', index > 0 && 'text-sm text-ink-gray-5']"
+					>
+						<span class="truncate">{{ formatCell(column, item) }}</span>
+					</ListCell>
+				</ListRow>
+			</ListRows>
+		</List>
 		<EntryDialog
 			v-model:open="isDialogOpen"
-			:doctype="editing.doctype"
-			:name="editing.name"
-			:controls="directoryControls[editing.doctype]"
-			@saved="lists[editing.doctype].reload()"
+			:doctype="doctype"
+			:name="editingName"
+			:controls="directoryControls[doctype]"
+			@saved="entries.reload()"
 		>
 			<template #default="{ entryName }">
-				<EntryContacts :doctype="editing.doctype" :name="entryName" />
-				<CommentThread :doctype="editing.doctype" :name="entryName" />
-				<EmailThread :doctype="editing.doctype" :name="entryName" />
+				<EntryContacts :doctype="doctype" :name="entryName" />
+				<CommentThread :doctype="doctype" :name="entryName" />
+				<EmailThread :doctype="doctype" :name="entryName" />
 			</template>
 		</EntryDialog>
 	</div>
