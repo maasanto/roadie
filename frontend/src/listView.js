@@ -20,6 +20,9 @@ export const useListView = (doctype) =>
 		const row = computed(() => list.data?.[0]);
 		// A site that has not run migrate has no such DocType, let alone a row: the type's defaults stand in.
 		const columns = computed(() => columnsFor(doctype, row.value?.columns));
+		// Whether the saved layout is known yet. A list whose fields follow from those columns must not ask
+		// before this is true: its first request would only be abandoned for the second.
+		const ready = computed(() => Boolean(list.error) || list.isFinished === true);
 		const saved = computed(() => Boolean(row.value));
 		const saving = ref(false);
 
@@ -69,5 +72,5 @@ export const useListView = (doctype) =>
 				__("Back to the usual columns")
 			);
 
-		return { columns, saved, saving, save, reset };
+		return { columns, ready, saved, saving, save, reset };
 	}));

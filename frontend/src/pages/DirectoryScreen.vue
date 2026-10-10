@@ -17,20 +17,40 @@ import { onKey } from "../keyboard";
 const props = defineProps({ doctype: { type: String, required: true } });
 
 const type = directoryType(props.doctype);
-const { columns } = useListView(props.doctype);
+const { columns, ready } = useListView(props.doctype);
 
 // The search reads the name and the city whether or not those columns are on screen, so they are always fetched.
 const SEARCH_FIELDS = ["title", "city"];
+const fields = computed(() => fetchFields(columns.value, SEARCH_FIELDS));
 
 // ponytail: the whole type in one unpaged fetch, page server-side if a directory outgrows a few hundred entries
 const entries = useList({
 	doctype: props.doctype,
-	fields: () => fetchFields(columns.value, SEARCH_FIELDS),
+	fields: () => fields.value,
 	orderBy: "title asc",
 	limit: 500,
+	immediate: false,
+	// The fields change when the columns do, and each change would otherwise fire a request that the next one
+	// abandons. Asking once per set of fields keeps the network and the console clean; a reorder changes
+	// nothing, so it asks for nothing.
+	refetch: false,
 });
 
-const isLoading = computed(() => entries.loading && !entries.data);
+let fetched = null;
+watch(
+	[ready, fields],
+	() => {
+		if (!ready.value) return;
+		const key = fields.value.join(",");
+		if (key === fetched) return;
+		fetched = key;
+		entries.execute();
+	},
+	{ immediate: true }
+);
+
+const isLoading = computed(() => !ready.value || (entries.loading && !entries.data));
+const loadError = computed(() => (entries.loading || entries.data ? null : entries.error));
 const placeholderRows = Array.from({ length: 4 }, (unused, index) => ({ name: `row-${index}` }));
 
 const query = ref("");
@@ -102,7 +122,7 @@ watch(
 				/></template>
 			</TextInput>
 		</div>
-		<ErrorMessage v-if="entries.error" class="mt-4" :message="entries.error" />
+		<ErrorMessage v-if="loadError" class="mt-4" :message="loadError" />
 		<EmptyState
 			v-else-if="!isLoading && !rows.length && query.trim()"
 			class="mt-4"
