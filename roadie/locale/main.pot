@@ -338,6 +338,10 @@ msgstr ""
 msgid "Gig date"
 msgstr ""
 
+#: frontend/src/search.js:8
+msgid "Gigs"
+msgstr ""
+
 #: frontend/src/pages/PlanningScreen.vue:28
 msgid "Half Day"
 msgstr ""
@@ -718,8 +722,16 @@ msgstr ""
 msgid "Screens"
 msgstr ""
 
+#: frontend/src/App.vue:74 frontend/src/App.vue:102
+msgid "Search"
+msgstr ""
+
 #: frontend/src/pages/DirectoryScreen.vue:74
 msgid "Search by name or city"
+msgstr ""
+
+#: roadie/api.py:34
+msgid "Search is limited to {0} characters, not {1}"
 msgstr ""
 
 #: frontend/src/pages/DirectoryScreen.vue:96
