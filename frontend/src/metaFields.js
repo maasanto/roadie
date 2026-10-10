@@ -23,9 +23,10 @@ const controlType = ({ fieldtype, options }) =>
 
 // Members only hold permlevel 0, so a higher level would show a field whose edits the server drops.
 const isFormField = (field, controls) =>
-	!field.hidden && !field.permlevel && Boolean(controls[field.fieldname] || controlType(field));
+	!field.permlevel && Boolean(controls[field.fieldname] || controlType(field));
 
 // The form's fields as the DocType meta has them, so a field added, renamed or hidden in Desk shows here too.
+// Hidden fields stay in the list, flagged, so the form customiser can bring them back.
 export function fieldsFromMeta(metaFields, controls = {}) {
 	return metaFields
 		.filter((field) => isFormField(field, controls))
@@ -33,6 +34,7 @@ export function fieldsFromMeta(metaFields, controls = {}) {
 			fieldname: field.fieldname,
 			label: __(field.label || field.fieldname),
 			type: controlType(field),
+			hidden: Boolean(field.hidden),
 			// A required checkbox would force a tick, while Frappe accepts an unticked one.
 			required: Boolean(field.reqd) && field.fieldtype !== "Check",
 			disabled: Boolean(field.read_only || (field.fetch_from && !field.fetch_if_empty)),
