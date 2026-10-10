@@ -6,7 +6,7 @@ import GigCard from "../components/GigCard.vue";
 import GigPanel from "../components/GigPanel.vue";
 import { burstConfetti } from "../celebrate";
 import { pipelineColumns } from "../gig";
-import { useGigFields } from "../gigFields";
+import { useGigControls } from "../gigControls";
 import { UNDO_WINDOW_MS } from "../undo";
 
 // ponytail: the whole pipeline in one unpaged fetch, page per column if a band ever tracks hundreds of gigs
@@ -26,7 +26,7 @@ const gigs = useList({
 	orderBy: "modified desc",
 	limit: 500,
 });
-const { linkLists, members, fields } = useGigFields();
+const { linkLists, members, controls } = useGigControls();
 
 const titleOf = (doctype, name) => linkLists[doctype].data?.find((row) => row.name === name)?.title;
 const linkedTitles = (gig) =>
@@ -183,7 +183,7 @@ function openGig(name = null) {
 		<GigPanel
 			v-if="isPanelOpen"
 			:name="openedName"
-			:fields="fields"
+			:controls="controls"
 			@close="isPanelOpen = false"
 			@saved="gigs.reload()"
 		/>

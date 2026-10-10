@@ -10,7 +10,7 @@ import { onKey } from "../keyboard";
 
 defineProps({
 	name: { type: String, default: null },
-	fields: { type: Array, required: true },
+	controls: { type: Object, required: true },
 });
 const emit = defineEmits(["close", "saved"]);
 
@@ -34,7 +34,7 @@ onKey("Escape", () => emit("close"));
 				ref="entryForm"
 				doctype="Gig"
 				:name="name"
-				:fields="fields"
+				:controls="controls"
 				@saved="emit('saved')"
 			>
 				<template #default="{ entryName }">

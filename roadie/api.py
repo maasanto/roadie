@@ -2,8 +2,16 @@ from urllib.parse import urlsplit
 
 import frappe
 from frappe import _
+from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 
 DIRECTORY_DOCTYPES = ("Festival", "Venue", "Promoter", "Band")
+CUSTOMISABLE_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
+# The pipeline, the planning and the reminders read these, so hiding one would quietly break them.
+PROTECTED_FIELDS = ("title", "status", "gig_owner", "gig_date", "application_opens", "application_closes")
+# Text, long text, number, date, checkbox and choice list: the types a form edits without a picker.
+NEW_FIELD_TYPES = ("Data", "Small Text", "Float", "Date", "Check", "Select")
+# Mirrors the controls of frontend/src/metaFields.js, plus Link for the gig's pickers.
+FORM_FIELD_TYPES = (*NEW_FIELD_TYPES, "Text", "Long Text", "Int", "Currency", "Link")
 EMAIL_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
 COMMENT_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 # Frappe roots a thread linked to no record on its first Communication, so that Communication is a thread too.
@@ -270,6 +278,86 @@ def get_members() -> list[dict]:
 		order_by="full_name asc",
 		distinct=True,
 	)
+
+
+@frappe.whitelist(methods=["POST"])
+def add_form_field(doctype: str, label: str, fieldtype: str, options: str | None = None) -> str:
+	"""Members are website users who cannot write Custom Field, so Roadie adds the field on their behalf."""
+	check_customisable(doctype)
+	if fieldtype not in NEW_FIELD_TYPES:
+		frappe.throw(_("A new field is one of {0}, not {1}").format(", ".join(NEW_FIELD_TYPES), fieldtype))
+	choices = "\n".join(filter(None, (line.strip() for line in (options or "").splitlines())))
+	if fieldtype == "Select" and not choices:
+		frappe.throw(_("A choice list needs at least one choice"))
+
+	field = frappe.get_doc(
+		{
+			"doctype": "Custom Field",
+			"dt": doctype,
+			"label": clean_label(label),
+			"fieldtype": fieldtype,
+			# The blank first choice keeps Frappe from defaulting every new record to the first real one.
+			"options": f"\n{choices}" if fieldtype == "Select" else None,
+			"insert_after": "append",
+			"is_system_generated": 0,
+		}
+	)
+	field.insert(ignore_permissions=True)
+	return field.fieldname
+
+
+@frappe.whitelist(methods=["POST"])
+def rename_form_field(doctype: str, fieldname: str, label: str) -> None:
+	check_customisable_field(doctype, fieldname)
+	set_field_property(doctype, fieldname, "label", clean_label(label), "Data")
+
+
+@frappe.whitelist(methods=["POST"])
+def set_form_field_hidden(doctype: str, fieldname: str, hidden: bool) -> None:
+	field = check_customisable_field(doctype, fieldname)
+	if hidden and (fieldname in PROTECTED_FIELDS or field.reqd):
+		frappe.throw(_("{0} cannot be hidden: Roadie relies on it").format(_(field.label)))
+	set_field_property(doctype, fieldname, "hidden", int(hidden), "Check")
+
+
+def check_customisable(doctype: str) -> None:
+	frappe.only_for(("Band Member", "System Manager"))
+	if doctype not in CUSTOMISABLE_DOCTYPES:
+		frappe.throw(
+			_("Only the forms of {0} can be customised, not {1}").format(
+				", ".join(CUSTOMISABLE_DOCTYPES), doctype
+			)
+		)
+
+
+def check_customisable_field(doctype: str, fieldname: str):
+	"""Only the fields the Roadie form shows: no layout breaks, tables, or levels members cannot read."""
+	check_customisable(doctype)
+	field = frappe.get_meta(doctype).get_field(fieldname)
+	if not field or field.permlevel or field.fieldtype not in FORM_FIELD_TYPES:
+		frappe.throw(_("{0} has no field {1} that Roadie's form shows").format(doctype, fieldname))
+	return field
+
+
+def set_field_property(doctype: str, fieldname: str, property_name: str, value, property_type: str) -> None:
+	"""A field someone added by hand is edited in place, as Customize Form does, so Desk can still change it.
+	Fields from the DocType or another app's fixtures get a Property Setter, which survives their next sync."""
+	if custom_field := frappe.db.get_value(
+		"Custom Field", {"dt": doctype, "fieldname": fieldname, "is_system_generated": 0}
+	):
+		field = frappe.get_doc("Custom Field", custom_field)
+		field.set(property_name, value)
+		field.save(ignore_permissions=True)
+	else:
+		make_property_setter(
+			doctype, fieldname, property_name, value, property_type, is_system_generated=False
+		)
+
+
+def clean_label(label: str) -> str:
+	if not (label := (label or "").strip()):
+		frappe.throw(_("A field needs a label"))
+	return label
 
 
 def can_use_drive() -> bool:

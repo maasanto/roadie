@@ -129,7 +129,6 @@ const newOptions = directoryTypes.map(({ doctype }) => ({
 			v-model:open="isDialogOpen"
 			:doctype="editing.doctype"
 			:name="editing.name"
-			:fields="directoryTypes.find((type) => type.doctype === editing.doctype).fields"
 			@saved="lists[editing.doctype].reload()"
 		>
 			<template #default="{ entryName }">
