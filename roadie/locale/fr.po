@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roadie VERSION\n"
 "Report-Msgid-Bugs-To: antoine.maas@okte.io\n"
-"POT-Creation-Date: 2026-10-10 14:03+0009\n"
+"POT-Creation-Date: 2026-10-10 14:38+0009\n"
 "PO-Revision-Date: 2026-10-09 23:47+0009\n"
 "Last-Translator: antoine.maas@okte.io\n"
 "Language: fr\n"
@@ -39,7 +39,7 @@ msgid "Add the first one"
 msgstr "Ajouter la première fiche"
 
 #. Label of the address (Small Text) field in DocType 'Venue'
-#: frontend/src/directory.js:49 roadie/roadie/doctype/venue/venue.json
+#: roadie/roadie/doctype/venue/venue.json
 msgid "Address"
 msgstr "Adresse"
 
@@ -47,22 +47,13 @@ msgstr "Adresse"
 msgid "All"
 msgstr "Tous"
 
-#. Label of the application_closes (Date) field in DocType 'Gig'
-#: roadie/roadie/doctype/gig/gig.json
-msgid "Application Closes"
-msgstr "Clôture des candidatures"
-
-#. Label of the application_opens (Date) field in DocType 'Gig'
-#: roadie/roadie/doctype/gig/gig.json
-msgid "Application Opens"
-msgstr "Ouverture des candidatures"
-
 #. Label of the application_url (Data) field in DocType 'Festival'
-#: frontend/src/directory.js:39 roadie/roadie/doctype/festival/festival.json
+#: roadie/roadie/doctype/festival/festival.json
 msgid "Application URL"
 msgstr "Lien de candidature"
 
-#: frontend/src/gig.js:76
+#. Label of the application_closes (Date) field in DocType 'Gig'
+#: roadie/roadie/doctype/gig/gig.json
 msgid "Application closes"
 msgstr "Clôture des candidatures"
 
@@ -70,7 +61,8 @@ msgstr "Clôture des candidatures"
 msgid "Application for {0} closes in {1} days"
 msgstr "Les candidatures pour {0} ferment dans {1} jours"
 
-#: frontend/src/gig.js:75
+#. Label of the application_opens (Date) field in DocType 'Gig'
+#: roadie/roadie/doctype/gig/gig.json
 msgid "Application opens"
 msgstr "Ouverture des candidatures"
 
@@ -87,7 +79,7 @@ msgstr "Candidature envoyée"
 msgid "Apply by {0}"
 msgstr "Candidater avant le {0}"
 
-#. Option for the 'Usual Month' (Select) field in DocType 'Festival'
+#. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "April"
 msgstr "Avril"
@@ -111,7 +103,7 @@ msgstr "Joindre"
 msgid "Attachments"
 msgstr "Pièces jointes"
 
-#. Option for the 'Usual Month' (Select) field in DocType 'Festival'
+#. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "August"
 msgstr "Août"
@@ -136,7 +128,7 @@ msgstr "Membre du groupe"
 msgid "Band Task"
 msgstr "Tâche"
 
-#: frontend/src/directory.js:55
+#: frontend/src/directory.js:5
 msgid "Bands"
 msgstr "Groupes"
 
@@ -150,7 +142,7 @@ msgid "Booked"
 msgstr "Confirmé"
 
 #. Label of the capacity (Int) field in DocType 'Venue'
-#: frontend/src/directory.js:48 roadie/roadie/doctype/venue/venue.json
+#: roadie/roadie/doctype/venue/venue.json
 msgid "Capacity"
 msgstr "Capacité"
 
@@ -166,7 +158,7 @@ msgstr "Cc / Cci"
 #. Label of the city (Data) field in DocType 'Festival'
 #. Label of the city (Data) field in DocType 'Promoter'
 #. Label of the city (Data) field in DocType 'Venue'
-#: frontend/src/directory.js:20 roadie/roadie/doctype/band/band.json
+#: roadie/roadie/doctype/band/band.json
 #: roadie/roadie/doctype/festival/festival.json
 #: roadie/roadie/doctype/promoter/promoter.json
 #: roadie/roadie/doctype/venue/venue.json
@@ -203,7 +195,7 @@ msgstr "Contacts"
 msgid "Contacts can only be listed for {0}, not {1}"
 msgstr "Les contacts ne peuvent être listés que pour {0}, pas pour {1}"
 
-#: frontend/src/components/EntryForm.vue:92
+#: frontend/src/components/EntryForm.vue:118
 msgid "Create"
 msgstr "Créer"
 
@@ -211,7 +203,7 @@ msgstr "Créer"
 msgid "Day"
 msgstr "Jour"
 
-#. Option for the 'Usual Month' (Select) field in DocType 'Festival'
+#. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "December"
 msgstr "Décembre"
@@ -283,24 +275,24 @@ msgstr "Les e-mails ne peuvent être listés que pour {0}, pas pour {1}"
 msgid "Error"
 msgstr "Erreur"
 
-#. Option for the 'Usual Month' (Select) field in DocType 'Festival'
+#. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "February"
 msgstr "Février"
 
 #. Label of the fee (Currency) field in DocType 'Gig'
-#: frontend/src/gig.js:74 roadie/roadie/doctype/gig/gig.json
+#: roadie/roadie/doctype/gig/gig.json
 msgid "Fee"
 msgstr "Cachet"
 
 #. Name of a DocType
 #. Label of the festival (Link) field in DocType 'Gig'
-#: frontend/src/gig.js:63 roadie/roadie/doctype/festival/festival.json
+#: roadie/roadie/doctype/festival/festival.json
 #: roadie/roadie/doctype/gig/gig.json
 msgid "Festival"
 msgstr "Festival"
 
-#: frontend/src/directory.js:31
+#: frontend/src/directory.js:2
 msgid "Festivals"
 msgstr "Festivals"
 
@@ -309,7 +301,7 @@ msgid "First name"
 msgstr "Prénom"
 
 #. Label of the genre (Data) field in DocType 'Band'
-#: frontend/src/directory.js:56 roadie/roadie/doctype/band/band.json
+#: roadie/roadie/doctype/band/band.json
 msgid "Genre"
 msgstr "Genre"
 
@@ -324,10 +316,6 @@ msgstr "Concert"
 
 #. Label of the gig_date (Date) field in DocType 'Gig'
 #: roadie/roadie/doctype/gig/gig.json
-msgid "Gig Date"
-msgstr "Date du concert"
-
-#: frontend/src/gig.js:60
 msgid "Gig date"
 msgstr "Date du concert"
 
@@ -353,7 +341,7 @@ msgstr "Boîte de réception"
 #. Label of the instagram (Data) field in DocType 'Festival'
 #. Label of the instagram (Data) field in DocType 'Promoter'
 #. Label of the instagram (Data) field in DocType 'Venue'
-#: frontend/src/directory.js:22 roadie/roadie/doctype/band/band.json
+#: roadie/roadie/doctype/band/band.json
 #: roadie/roadie/doctype/festival/festival.json
 #: roadie/roadie/doctype/promoter/promoter.json
 #: roadie/roadie/doctype/venue/venue.json
@@ -368,17 +356,17 @@ msgstr "Réservé au groupe, jamais envoyé par e-mail. Tapez @ pour mentionner 
 msgid "Invalid dates"
 msgstr "Dates invalides"
 
-#. Option for the 'Usual Month' (Select) field in DocType 'Festival'
+#. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "January"
 msgstr "Janvier"
 
-#. Option for the 'Usual Month' (Select) field in DocType 'Festival'
+#. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "July"
 msgstr "Juillet"
 
-#. Option for the 'Usual Month' (Select) field in DocType 'Festival'
+#. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "June"
 msgstr "Juin"
@@ -387,7 +375,7 @@ msgstr "Juin"
 msgid "Last name"
 msgstr "Nom"
 
-#: frontend/src/components/EntryForm.vue:65
+#: frontend/src/components/EntryForm.vue:89
 #: frontend/src/components/ListSkeleton.vue:8
 #: frontend/src/pages/PipelineScreen.vue:110
 msgid "Loading"
@@ -401,12 +389,12 @@ msgstr "Se déconnecter"
 msgid "Mailbox is either Sent or Received, not {0}"
 msgstr "La boîte est soit Sent, soit Received, pas {0}"
 
-#. Option for the 'Usual Month' (Select) field in DocType 'Festival'
+#. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "March"
 msgstr "Mars"
 
-#. Option for the 'Usual Month' (Select) field in DocType 'Festival'
+#. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "May"
 msgstr "Mai"
@@ -435,7 +423,7 @@ msgstr "Mes tâches"
 #. Label of the title (Data) field in DocType 'Festival'
 #. Label of the title (Data) field in DocType 'Promoter'
 #. Label of the title (Data) field in DocType 'Venue'
-#: frontend/src/directory.js:19 roadie/roadie/doctype/band/band.json
+#: roadie/roadie/doctype/band/band.json
 #: roadie/roadie/doctype/festival/festival.json
 #: roadie/roadie/doctype/promoter/promoter.json
 #: roadie/roadie/doctype/venue/venue.json
@@ -465,7 +453,7 @@ msgstr "Nouveau concert"
 msgid "New task"
 msgstr "Nouvelle tâche"
 
-#: frontend/src/components/EntryDialog.vue:20
+#: frontend/src/components/EntryDialog.vue:19
 msgid "New {0}"
 msgstr "Nouveau {0}"
 
@@ -506,7 +494,6 @@ msgstr "Aucune tâche pour l'instant."
 #. Label of the notes (Small Text) field in DocType 'Gig'
 #. Label of the notes (Small Text) field in DocType 'Promoter'
 #. Label of the notes (Small Text) field in DocType 'Venue'
-#: frontend/src/directory.js:24 frontend/src/gig.js:77
 #: roadie/roadie/doctype/band/band.json
 #: roadie/roadie/doctype/festival/festival.json
 #: roadie/roadie/doctype/gig/gig.json
@@ -531,12 +518,12 @@ msgstr "Rien au calendrier pour l'instant"
 msgid "Nothing sent yet"
 msgstr "Rien d'envoyé pour l'instant"
 
-#. Option for the 'Usual Month' (Select) field in DocType 'Festival'
+#. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "November"
 msgstr "Novembre"
 
-#. Option for the 'Usual Month' (Select) field in DocType 'Festival'
+#. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "October"
 msgstr "Octobre"
@@ -585,7 +572,7 @@ msgid "Outgoing"
 msgstr "Envoyés"
 
 #. Label of the gig_owner (Link) field in DocType 'Gig'
-#: frontend/src/gig.js:55 roadie/roadie/doctype/gig/gig.json
+#: roadie/roadie/doctype/gig/gig.json
 msgid "Owner"
 msgstr "Responsable"
 
@@ -617,12 +604,12 @@ msgstr "Appuyez sur / pour rechercher"
 
 #. Label of the promoter (Link) field in DocType 'Gig'
 #. Name of a DocType
-#: frontend/src/gig.js:70 roadie/roadie/doctype/gig/gig.json
+#: roadie/roadie/doctype/gig/gig.json
 #: roadie/roadie/doctype/promoter/promoter.json
 msgid "Promoter"
 msgstr "Organisateur"
 
-#: frontend/src/directory.js:52
+#: frontend/src/directory.js:4
 msgid "Promoters"
 msgstr "Organisateurs"
 
@@ -663,11 +650,11 @@ msgstr "Répondre"
 msgid "Reply all"
 msgstr "Répondre à tous"
 
-#: frontend/src/components/EntryForm.vue:92
+#: frontend/src/components/EntryForm.vue:118
 msgid "Save"
 msgstr "Enregistrer"
 
-#: frontend/src/components/EntryForm.vue:57
+#: frontend/src/components/EntryForm.vue:76
 msgid "Saved"
 msgstr "Enregistré"
 
@@ -691,7 +678,7 @@ msgstr "Envoyer"
 msgid "Sent"
 msgstr "Envoyé"
 
-#. Option for the 'Usual Month' (Select) field in DocType 'Festival'
+#. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "September"
 msgstr "Septembre"
@@ -710,7 +697,7 @@ msgid "Start date {0} is after due date {1}"
 msgstr "La date de début {0} est postérieure à l'échéance {1}"
 
 #. Label of the status (Select) field in DocType 'Gig'
-#: frontend/src/gig.js:48 roadie/roadie/doctype/gig/gig.json
+#: roadie/roadie/doctype/gig/gig.json
 msgid "Status"
 msgstr "Statut"
 
@@ -742,7 +729,7 @@ msgstr "Les candidatures pour {0} ferment le {1}, dans {2} jours, et le concert 
 
 #. Label of the title (Data) field in DocType 'Band Task'
 #. Label of the title (Data) field in DocType 'Gig'
-#: frontend/src/gig.js:45 roadie/roadie/doctype/band_task/band_task.json
+#: roadie/roadie/doctype/band_task/band_task.json
 #: roadie/roadie/doctype/gig/gig.json
 msgid "Title"
 msgstr "Titre"
@@ -780,39 +767,26 @@ msgstr "Envoi : {0} %"
 
 #. Label of the application_closes (Date) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
-msgid "Usual Application Closes"
+msgid "Usual application closes"
 msgstr "Clôture habituelle des candidatures"
 
 #. Label of the application_opens (Date) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
-msgid "Usual Application Opens"
+msgid "Usual application opens"
 msgstr "Ouverture habituelle des candidatures"
 
 #. Label of the usual_month (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
-msgid "Usual Month"
-msgstr "Mois habituel"
-
-#: frontend/src/directory.js:41
-msgid "Usual application closes"
-msgstr "Clôture habituelle des candidatures"
-
-#: frontend/src/directory.js:40
-msgid "Usual application opens"
-msgstr "Ouverture habituelle des candidatures"
-
-#: frontend/src/directory.js:35
 msgid "Usual month"
 msgstr "Mois habituel"
 
 #. Label of the venue (Link) field in DocType 'Gig'
 #. Name of a DocType
-#: frontend/src/gig.js:67 roadie/roadie/doctype/gig/gig.json
-#: roadie/roadie/doctype/venue/venue.json
+#: roadie/roadie/doctype/gig/gig.json roadie/roadie/doctype/venue/venue.json
 msgid "Venue"
 msgstr "Lieu"
 
-#: frontend/src/directory.js:46
+#: frontend/src/directory.js:3
 msgid "Venues"
 msgstr "Lieux"
 
@@ -820,7 +794,7 @@ msgstr "Lieux"
 #. Label of the website (Data) field in DocType 'Festival'
 #. Label of the website (Data) field in DocType 'Promoter'
 #. Label of the website (Data) field in DocType 'Venue'
-#: frontend/src/directory.js:21 roadie/roadie/doctype/band/band.json
+#: roadie/roadie/doctype/band/band.json
 #: roadie/roadie/doctype/festival/festival.json
 #: roadie/roadie/doctype/promoter/promoter.json
 #: roadie/roadie/doctype/venue/venue.json
