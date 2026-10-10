@@ -1,7 +1,16 @@
 <script setup>
-import { Dropdown, FrappeUIProvider, Sidebar, SidebarHeader, SidebarItem } from "frappe-ui";
-import { onMounted } from "vue";
+import {
+	Button,
+	Dropdown,
+	FrappeUIProvider,
+	KeyboardShortcut,
+	Sidebar,
+	SidebarHeader,
+	SidebarItem,
+} from "frappe-ui";
+import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
+import SearchPalette from "./components/SearchPalette.vue";
 
 const route = useRoute();
 
@@ -25,6 +34,8 @@ const phoneMenu = [
 	...(driveUrl ? [{ label: __("Drive"), icon: "lucide-hard-drive", onClick: openDrive }] : []),
 	logOut,
 ];
+
+const searchPalette = ref(null);
 
 const screens = [
 	{ name: "Pipeline", label: __("Pipeline"), shortLabel: __("Pipeline"), icon: "lucide-kanban", to: "/" },
@@ -66,6 +77,9 @@ const screens = [
 						:subtitle="currentUser"
 						:menu-items="accountMenu"
 					/>
+					<SidebarItem :label="__('Search')" icon="lucide-search" @click="searchPalette.open()">
+						<template #suffix><KeyboardShortcut combo="Mod+K" /></template>
+					</SidebarItem>
 					<SidebarItem
 						v-for="screen in screens"
 						:key="screen.name"
@@ -91,6 +105,12 @@ const screens = [
 			<header class="flex items-center gap-2 border-b px-4 py-2 md:hidden">
 				<img :src="logoUrl" alt="" class="size-7" />
 				<span class="flex-1 text-base-semibold">Roadie</span>
+				<Button
+					variant="ghost"
+					icon="lucide-search"
+					:label="__('Search')"
+					@click="searchPalette.open()"
+				/>
 				<Dropdown
 					:options="phoneMenu"
 					align="end"
@@ -113,6 +133,7 @@ const screens = [
 					<span class="max-w-full truncate">{{ screen.shortLabel }}</span>
 				</router-link>
 			</nav>
+			<SearchPalette ref="searchPalette" />
 		</div>
 	</FrappeUIProvider>
 </template>
