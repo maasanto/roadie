@@ -4,6 +4,7 @@ import {
 	Button,
 	Dropdown,
 	FrappeUIProvider,
+	KeyboardShortcut,
 	Sidebar,
 	SidebarHeader,
 	SidebarItem,
@@ -12,6 +13,7 @@ import {
 import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import NotificationPanel from "./components/NotificationPanel.vue";
+import SearchPalette from "./components/SearchPalette.vue";
 import { unreadCount } from "./notifications";
 
 const route = useRoute();
@@ -39,6 +41,8 @@ const phoneMenu = [
 	...(driveUrl ? [{ label: __("Drive"), icon: "lucide-hard-drive", onClick: openDrive }] : []),
 	logOut,
 ];
+
+const searchPalette = ref(null);
 
 const screens = [
 	{ name: "Pipeline", label: __("Pipeline"), shortLabel: __("Pipeline"), icon: "lucide-kanban", to: "/" },
@@ -80,6 +84,9 @@ const screens = [
 						:subtitle="currentUser"
 						:menu-items="accountMenu"
 					/>
+					<SidebarItem :label="__('Search')" icon="lucide-search" @click="searchPalette.open()">
+						<template #suffix><KeyboardShortcut combo="Mod+K" /></template>
+					</SidebarItem>
 					<SidebarItem
 						:label="__('Notifications')"
 						icon="lucide-bell"
@@ -116,6 +123,12 @@ const screens = [
 				<img :src="logoUrl" alt="" class="size-7" />
 				<span class="flex-1 text-base-semibold">Roadie</span>
 				<Button
+					variant="ghost"
+					icon="lucide-search"
+					:label="__('Search')"
+					@click="searchPalette.open()"
+				/>
+				<Button
 					icon="lucide-bell"
 					variant="ghost"
 					:label="__('Notifications')"
@@ -147,6 +160,7 @@ const screens = [
 					<span class="max-w-full truncate">{{ screen.shortLabel }}</span>
 				</router-link>
 			</nav>
+			<SearchPalette ref="searchPalette" />
 		</div>
 		<NotificationPanel v-model:open="showNotifications" :notifications="notifications" />
 	</FrappeUIProvider>

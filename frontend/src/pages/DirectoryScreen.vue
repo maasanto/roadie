@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { Badge, Dropdown, ErrorMessage, TabButtons, TextInput, useList } from "frappe-ui";
 import CommentThread from "../components/CommentThread.vue";
 import EmailThread from "../components/EmailThread.vue";
@@ -46,6 +47,21 @@ function openEntry(doctype, name = null) {
 	editing.value = { doctype, name };
 	isDialogOpen.value = true;
 }
+
+// The search palette sends a record through the query, and it is cleared once the dialog has it.
+const route = useRoute();
+const router = useRouter();
+watch(
+	() => route.query.entry,
+	(entry) => {
+		if (!entry || route.name !== "Directory") return;
+		const [doctype, name] = entry.split(":");
+		if (!directoryTypes.some((type) => type.doctype === doctype)) return;
+		openEntry(doctype, name);
+		router.replace({ query: { ...route.query, entry: undefined } });
+	},
+	{ immediate: true }
+);
 
 const newOptions = directoryTypes.map(({ doctype }) => ({
 	label: __(doctype),
