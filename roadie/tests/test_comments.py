@@ -1,6 +1,7 @@
 import frappe
 from frappe.desk.form.utils import add_comment
 from frappe.tests import IntegrationTestCase
+from frappe.utils import get_fullname
 
 from roadie.api import get_comments
 from roadie.roadie.doctype.gig.test_gig import MEMBER, make_member
@@ -35,7 +36,9 @@ class TestComments(IntegrationTestCase):
 		comment = add_comment("Festival", festival.name, content, "mallory@example.com", "Mallory")
 
 		frappe.set_user(BANDMATE)
-		self.assertEqual([entry.name for entry in get_comments("Festival", festival.name)], [comment.name])
+		[shown] = get_comments("Festival", festival.name)
+		self.assertEqual(shown.name, comment.name)
+		self.assertEqual((shown.comment_email, shown.comment_by), (MEMBER, get_fullname(MEMBER)))
 		notification = frappe.db.get_value(
 			"Notification Log",
 			{

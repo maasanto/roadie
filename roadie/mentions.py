@@ -44,7 +44,6 @@ def notify_mentioned_members(comment, method=None):
 			"source_doctype": comment.doctype,
 			"source_name": comment.name,
 			"link": get_url(screen),
-			# comment_email is whatever the client sent, so the author is the comment's owner.
 			"subject": _("{0} mentioned you in a comment in {1} {2}").format(
 				frappe.bold(get_fullname(comment.owner)),
 				frappe.bold(_(comment.reference_doctype)),
