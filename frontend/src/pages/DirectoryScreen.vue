@@ -3,6 +3,9 @@ import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Button, ErrorMessage, Skeleton, TextInput, useList } from "frappe-ui";
 import { List, ListCell, ListHeader, ListHeaderCell, ListRow, ListRows } from "frappe-ui/list";
+// The family's geometry (grid tracks, dividers, row insets) ships as its own stylesheet: the bundler does not
+// pick it up through the package entry, so it is imported here, where the family is used.
+import "frappe-ui/list-style.css";
 import CommentThread from "../components/CommentThread.vue";
 import EmailThread from "../components/EmailThread.vue";
 import EmptyState from "../components/EmptyState.vue";
