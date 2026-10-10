@@ -506,6 +506,10 @@ msgstr ""
 msgid "June"
 msgstr ""
 
+#: frontend/src/notifications.js:16
+msgid "Just now"
+msgstr ""
+
 #: frontend/src/components/EntryContacts.vue:97
 msgid "Last name"
 msgstr ""
@@ -548,6 +552,10 @@ msgstr ""
 #. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "March"
+msgstr ""
+
+#: frontend/src/components/NotificationPanel.vue:40
+msgid "Mark all as read"
 msgstr ""
 
 #. Option for the 'Usual month' (Select) field in DocType 'Festival'
@@ -654,6 +662,10 @@ msgstr ""
 msgid "No match for “{0}”"
 msgstr ""
 
+#: frontend/src/components/NotificationPanel.vue:50
+msgid "No notifications yet"
+msgstr ""
+
 #: frontend/src/components/GigTasks.vue:44
 msgid "No tasks yet."
 msgstr ""
@@ -685,6 +697,11 @@ msgstr ""
 
 #: frontend/src/pages/MailboxScreen.vue:58
 msgid "Nothing sent yet"
+msgstr ""
+
+#: frontend/src/App.vue:85 frontend/src/App.vue:119
+#: frontend/src/components/NotificationPanel.vue:34
+msgid "Notifications"
 msgstr ""
 
 #. Option for the 'Usual month' (Select) field in DocType 'Festival'
@@ -971,6 +988,10 @@ msgstr ""
 msgid "Task"
 msgstr ""
 
+#: frontend/src/components/NotificationPanel.vue:51
+msgid "Task assignments and deadlines show up here."
+msgstr ""
+
 #: frontend/src/App.vue:41 frontend/src/components/GigTasks.vue:34
 msgid "Tasks"
 msgstr ""
@@ -1123,8 +1144,16 @@ msgstr ""
 msgid "{0} added"
 msgstr ""
 
+#: roadie/roadie/doctype/band_task/band_task.py:36
+msgid "{0} assigned you a task: {1}"
+msgstr ""
+
 #: roadie/api.py:317
 msgid "{0} cannot be hidden: Roadie relies on it"
+msgstr ""
+
+#: frontend/src/notifications.js:18
+msgid "{0} h ago"
 msgstr ""
 
 #: roadie/api.py:336
@@ -1149,6 +1178,10 @@ msgstr ""
 
 #: roadie/mentions.py:47
 msgid "{0} mentioned you in a comment in {1} {2}"
+msgstr ""
+
+#: frontend/src/notifications.js:17
+msgid "{0} min ago"
 msgstr ""
 
 #: frontend/src/components/FormCustomiser.vue:71

@@ -508,6 +508,10 @@ msgstr "Juillet"
 msgid "June"
 msgstr "Juin"
 
+#: frontend/src/notifications.js:16
+msgid "Just now"
+msgstr "À l'instant"
+
 #: frontend/src/components/EntryContacts.vue:97
 msgid "Last name"
 msgstr "Nom"
@@ -551,6 +555,10 @@ msgstr "La boîte est soit Sent, soit Received, pas {0}"
 #: roadie/roadie/doctype/festival/festival.json
 msgid "March"
 msgstr "Mars"
+
+#: frontend/src/components/NotificationPanel.vue:40
+msgid "Mark all as read"
+msgstr "Tout marquer comme lu"
 
 #. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
@@ -656,6 +664,10 @@ msgstr "Aucun concert pour l'instant"
 msgid "No match for “{0}”"
 msgstr "Aucun résultat pour « {0} »"
 
+#: frontend/src/components/NotificationPanel.vue:50
+msgid "No notifications yet"
+msgstr "Aucune notification pour l'instant"
+
 #: frontend/src/components/GigTasks.vue:44
 msgid "No tasks yet."
 msgstr "Aucune tâche pour l'instant."
@@ -688,6 +700,11 @@ msgstr "Rien au calendrier pour l'instant"
 #: frontend/src/pages/MailboxScreen.vue:58
 msgid "Nothing sent yet"
 msgstr "Rien d'envoyé pour l'instant"
+
+#: frontend/src/App.vue:85 frontend/src/App.vue:119
+#: frontend/src/components/NotificationPanel.vue:34
+msgid "Notifications"
+msgstr "Notifications"
 
 #. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
@@ -973,6 +990,10 @@ msgstr "Responsable Système"
 msgid "Task"
 msgstr "Tâche"
 
+#: frontend/src/components/NotificationPanel.vue:51
+msgid "Task assignments and deadlines show up here."
+msgstr "Les tâches qui vous sont assignées et les échéances apparaissent ici."
+
 #: frontend/src/App.vue:41 frontend/src/components/GigTasks.vue:34
 msgid "Tasks"
 msgstr "Tâches"
@@ -1125,9 +1146,17 @@ msgstr "{0} Mo"
 msgid "{0} added"
 msgstr "Champ « {0} » ajouté"
 
+#: roadie/roadie/doctype/band_task/band_task.py:36
+msgid "{0} assigned you a task: {1}"
+msgstr "{0} vous a assigné une tâche : {1}"
+
 #: roadie/api.py:317
 msgid "{0} cannot be hidden: Roadie relies on it"
 msgstr "Le champ « {0} » ne peut pas être masqué : Roadie s'appuie dessus"
+
+#: frontend/src/notifications.js:18
+msgid "{0} h ago"
+msgstr "il y a {0} h"
 
 #: roadie/api.py:336
 msgid "{0} has no field {1} that Roadie's form shows"
@@ -1152,6 +1181,10 @@ msgstr "{0} : c'est joué. Quelle soirée !"
 #: roadie/mentions.py:47
 msgid "{0} mentioned you in a comment in {1} {2}"
 msgstr "{0} vous a mentionné dans un commentaire sur {1} {2}"
+
+#: frontend/src/notifications.js:17
+msgid "{0} min ago"
+msgstr "il y a {0} min"
 
 #: frontend/src/components/FormCustomiser.vue:71
 msgid "{0} shown again"

@@ -1,3 +1,5 @@
+from urllib.parse import urlsplit
+
 import frappe
 from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
@@ -423,6 +425,61 @@ def share_drive_link(entity_name: str) -> str:
 		# Drive overrides the File class with share(), which checks the caller's share permission.
 		entity.share(user="", read=1)
 	return frappe.utils.get_url(f"/drive/{'d' if entity.is_folder else 'f'}/{entity.name}")
+
+
+# Router paths, not site paths: the SPA's router is already mounted at /roadie.
+NOTIFICATION_ROUTES = {"Gig": "/", "Band Task": "/tasks"}
+SPA_BASE = "/roadie"
+NOTIFICATION_FIELDS = [
+	"name",
+	"type",
+	"subject",
+	"title",
+	"description",
+	"document_type",
+	"document_name",
+	"link",
+	"read",
+	"creation",
+]
+
+
+@frappe.whitelist()
+def get_notifications() -> list[dict]:
+	"""The caller's in-app notifications: unread first, newest first, capped."""
+	frappe.only_for(("Band Member", "System Manager"))
+
+	notifications = frappe.get_all(
+		"Notification Log",
+		filters={"for_user": frappe.session.user},
+		fields=NOTIFICATION_FIELDS,
+		order_by="read asc, creation desc",
+		limit=50,
+	)
+	for notification in notifications:
+		notification.route = _notification_route(notification)
+	return notifications
+
+
+def _notification_route(notification) -> str | None:
+	"""A Notification Log's own link is a site path like /roadie/tasks, which the router would double."""
+	if notification.document_type in NOTIFICATION_ROUTES:
+		return NOTIFICATION_ROUTES[notification.document_type]
+	path = urlsplit(notification.link or "").path
+	if not path.startswith(SPA_BASE):
+		return None
+	return path[len(SPA_BASE) :] or "/"
+
+
+@frappe.whitelist(methods=["POST"])
+def mark_notifications_read(names: list[str] | None = None) -> None:
+	"""Clears the unread flag on the caller's notifications, all of them or just those in `names`."""
+	frappe.only_for(("Band Member", "System Manager"))
+
+	filters = {"for_user": frappe.session.user, "read": 0}
+	if names:
+		filters["name"] = ["in", names]
+	frappe.db.set_value("Notification Log", filters, "read", 1, update_modified=False)
 
 
 def has_app_permission() -> bool:

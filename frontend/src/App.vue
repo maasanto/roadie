@@ -1,5 +1,6 @@
 <script setup>
 import {
+	Badge,
 	Button,
 	Dropdown,
 	FrappeUIProvider,
@@ -7,12 +8,18 @@ import {
 	Sidebar,
 	SidebarHeader,
 	SidebarItem,
+	useCall,
 } from "frappe-ui";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
+import NotificationPanel from "./components/NotificationPanel.vue";
 import SearchPalette from "./components/SearchPalette.vue";
+import { unreadCount } from "./notifications";
 
 const route = useRoute();
+const showNotifications = ref(false);
+const notifications = useCall({ url: "/api/v2/method/roadie.api.get_notifications" });
+const unread = computed(() => unreadCount(notifications.data || []));
 
 // An open Dialog treats any pointerdown or focus elsewhere as "outside" and closes, so Undo on a toast would close it too.
 onMounted(() => {
@@ -81,6 +88,16 @@ const screens = [
 						<template #suffix><KeyboardShortcut combo="Mod+K" /></template>
 					</SidebarItem>
 					<SidebarItem
+						:label="__('Notifications')"
+						icon="lucide-bell"
+						:active="showNotifications"
+						@click="showNotifications = true"
+					>
+						<template v-if="unread" #suffix>
+							<Badge :label="String(unread)" theme="gray" />
+						</template>
+					</SidebarItem>
+					<SidebarItem
 						v-for="screen in screens"
 						:key="screen.name"
 						:label="screen.label"
@@ -111,6 +128,16 @@ const screens = [
 					:label="__('Search')"
 					@click="searchPalette.open()"
 				/>
+				<Button
+					icon="lucide-bell"
+					variant="ghost"
+					:label="__('Notifications')"
+					@click="showNotifications = true"
+				>
+					<template v-if="unread" #suffix>
+						<Badge :label="String(unread)" theme="gray" />
+					</template>
+				</Button>
 				<Dropdown
 					:options="phoneMenu"
 					align="end"
@@ -135,5 +162,6 @@ const screens = [
 			</nav>
 			<SearchPalette ref="searchPalette" />
 		</div>
+		<NotificationPanel v-model:open="showNotifications" :notifications="notifications" />
 	</FrappeUIProvider>
 </template>
