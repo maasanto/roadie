@@ -35,6 +35,10 @@ msgstr "Un nouveau champ est de type {0}, pas {1}"
 msgid "Add"
 msgstr "Ajouter"
 
+#: frontend/src/components/ListColumnEditor.vue:77
+msgid "Add column"
+msgstr "Ajouter une colonne"
+
 #: frontend/src/components/GigTasks.vue:68
 msgid "Add task"
 msgstr "Ajouter la tâche"
@@ -50,6 +54,10 @@ msgstr "Ajoutez le premier concert que vous visez, même si ce n'est qu'une idé
 #: frontend/src/pages/DirectoryScreen.vue:111
 msgid "Add the first one"
 msgstr "Ajouter la première fiche"
+
+#: frontend/src/pages/DirectoryScreen.vue:123
+msgid "Add the {0} you deal with, and the people to talk to at each."
+msgstr "Ajoutez les {0} avec qui vous travaillez, et les personnes à contacter pour chacun."
 
 #. Label of the address (Small Text) field in DocType 'Venue'
 #: roadie/roadie/doctype/venue/venue.json
@@ -125,6 +133,10 @@ msgstr "Pièces jointes"
 #: roadie/roadie/doctype/festival/festival.json
 msgid "August"
 msgstr "Août"
+
+#: frontend/src/listView.js:70
+msgid "Back to the usual columns"
+msgstr "Retour aux colonnes habituelles"
 
 #. Name of a DocType
 #: roadie/roadie/doctype/band/band.json
@@ -218,6 +230,14 @@ msgstr "Classique"
 #: frontend/src/pages/MailboxScreen.vue:126
 msgid "Close"
 msgstr "Fermer"
+
+#: frontend/src/components/ListColumnEditor.vue:34
+msgid "Columns"
+msgstr "Colonnes"
+
+#: frontend/src/listView.js:59
+msgid "Columns saved"
+msgstr "Colonnes enregistrées"
 
 #: frontend/src/components/CommentThread.vue:103
 msgid "Comment"
@@ -582,6 +602,14 @@ msgstr "Vue"
 msgid "Month"
 msgstr "Mois"
 
+#: frontend/src/components/ListColumnEditor.vue:58
+msgid "Move {0} down"
+msgstr "Descendre {0}"
+
+#: frontend/src/components/ListColumnEditor.vue:49
+msgid "Move {0} up"
+msgstr "Monter {0}"
+
 #: frontend/src/pages/PipelineScreen.vue:81
 msgid "Moved {0} to {1}"
 msgstr "{0} passe en « {1} »"
@@ -671,6 +699,10 @@ msgstr "Aucune notification pour l'instant"
 #: frontend/src/components/GigTasks.vue:44
 msgid "No tasks yet."
 msgstr "Aucune tâche pour l'instant."
+
+#: frontend/src/pages/DirectoryScreen.vue:121
+msgid "No {0} yet"
+msgstr "Pas encore de {0}"
 
 #. Label of the notes (Small Text) field in DocType 'Band'
 #. Label of the notes (Small Text) field in DocType 'Festival'
@@ -885,6 +917,10 @@ msgstr "Répondre"
 #: frontend/src/components/EmailThread.vue:82
 msgid "Reply all"
 msgstr "Répondre à tous"
+
+#: frontend/src/components/ListColumnEditor.vue:88
+msgid "Reset to default"
+msgstr "Revenir à l'affichage par défaut"
 
 #. Genre option for the Band genre multiselect
 #: frontend/src/directory.js:40
@@ -1118,6 +1154,10 @@ msgstr "Rédigez votre e-mail…"
 msgid "Year"
 msgstr "Année"
 
+#: roadie/roadie/doctype/roadie_list_view/roadie_list_view.py:16
+msgid "You already have a saved column layout for {0}"
+msgstr "Vous avez déjà une disposition de colonnes enregistrée pour {0}"
+
 #: frontend/src/components/DriveLinkDialog.vue:123
 msgid "You are not a member of any Drive team."
 msgstr "Vous n'êtes membre d'aucune équipe Drive."
@@ -1193,4 +1233,3 @@ msgstr "Champ « {0} » de nouveau affiché"
 #: frontend/src/components/FormCustomiser.vue:59
 msgid "{0} stays visible: Roadie relies on it"
 msgstr "Le champ « {0} » reste affiché : Roadie s'appuie dessus"
-
