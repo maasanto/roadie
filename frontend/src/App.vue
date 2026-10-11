@@ -123,6 +123,7 @@ const searchPalette = ref(null);
 						:to="screen.to"
 						:active="route.name === screen.name"
 					/>
+					<SidebarLabel>{{ __("Mail") }}</SidebarLabel>
 					<SidebarItem
 						v-for="screen in mailboxScreens"
 						:key="screen.name"
