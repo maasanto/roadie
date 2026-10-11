@@ -62,6 +62,18 @@ async function setStatus(gig, status) {
 	return false;
 }
 
+async function assignOwner(gig, memberName) {
+	if (memberName === gig.gig_owner) return;
+	const previousOwner = gig.gig_owner;
+	gig.gig_owner = memberName;
+	await gigs.setValue.submit({ name: gig.name, gig_owner: memberName });
+	if (gigs.setValue.error) {
+		gig.gig_owner = previousOwner;
+		return;
+	}
+	toast.success(__("Assigned to {0}", [ownerOf(gig).full_name]));
+}
+
 async function dropGig(column, columnElement) {
 	const gig = draggedGig.value;
 	draggedGig.value = dropColumn.value = null;
@@ -167,11 +179,13 @@ watch(
 							:gig="gig"
 							:linked-titles="linkedTitles(gig)"
 							:owner="ownerOf(gig)"
+							:members="members.data || []"
 							class="cursor-grab"
 							draggable="true"
 							@dragstart="draggedGig = gig"
 							@dragend="draggedGig = dropColumn = null"
 							@click="openGig(gig.name)"
+							@assign="assignOwner(gig, $event)"
 						/>
 					</div>
 				</section>
@@ -188,7 +202,9 @@ watch(
 							:gig="gig"
 							:linked-titles="linkedTitles(gig)"
 							:owner="ownerOf(gig)"
+							:members="members.data || []"
 							@click="openGig(gig.name)"
+							@assign="assignOwner(gig, $event)"
 						/>
 					</div>
 				</section>
