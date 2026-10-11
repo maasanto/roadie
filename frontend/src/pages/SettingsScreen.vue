@@ -1,6 +1,7 @@
 <script setup>
 import { Avatar, Button, ErrorMessage, FileUploader, call, toast } from "frappe-ui";
 import { ref } from "vue";
+import BandMembers from "../components/BandMembers.vue";
 import { initials, user } from "../user";
 
 const error = ref("");
@@ -71,5 +72,7 @@ async function setPicture(fileUrl) {
 		</section>
 
 		<ErrorMessage class="mt-4" :message="error" />
+
+		<BandMembers class="mt-10" />
 	</div>
 </template>
