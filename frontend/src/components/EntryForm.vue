@@ -1,8 +1,8 @@
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
-import { Button, ErrorMessage, FormControl, Skeleton, toast, useCall } from "frappe-ui";
+import { Button, ErrorMessage, FormControl, Rating, Skeleton, toast, useCall } from "frappe-ui";
 import FormCustomiser from "./FormCustomiser.vue";
-import { joinList, splitList } from "../directory";
+import { RATING_STARS, joinList, splitList, toFraction, toStars } from "../directory";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
 
@@ -34,10 +34,14 @@ const updateEntry = useCall({ url: documentUrl, method: "PUT", immediate: false 
 let loadedForm = {};
 let loadedDoc = null;
 
-// A multiselect round-trips: an array in the form, one comma-separated string in the database.
-const toFormValue = (field, value) => (field.type === "multiselect" ? splitList(value) : value ?? "");
+// A multiselect round-trips: an array in the form, one comma-separated string in the database. A rating is a
+// count of stars in the form and a fraction in the database.
+const FORM_VALUE = { multiselect: splitList, rating: toStars };
+const STORED_VALUE = { multiselect: joinList, rating: toFraction };
 
-const toStoredValue = (field, value) => (field.type === "multiselect" ? joinList(value) : value);
+const toFormValue = (field, value) => FORM_VALUE[field.type]?.(value) ?? value ?? "";
+
+const toStoredValue = (field, value) => STORED_VALUE[field.type]?.(value) ?? value;
 
 // Two multiselections holding the same genres are unchanged, so they cannot be compared by reference.
 const sameValue = (a, b) =>
@@ -73,11 +77,14 @@ const filledFields = () =>
 			.filter(([, value]) => value !== "")
 	);
 
-// The form holds what the control shows; the database takes the string it stores.
+// The form holds what the control shows; the database takes the value it stores.
 const storedFields = (values) => {
 	const byName = Object.fromEntries(fields.value.map((field) => [field.fieldname, field]));
 	return Object.fromEntries(
-		Object.entries(values).map(([fieldname, value]) => [fieldname, toStoredValue(byName[fieldname], value)])
+		Object.entries(values).map(([fieldname, value]) => [
+			fieldname,
+			toStoredValue(byName[fieldname], value),
+		])
 	);
 };
 
@@ -135,17 +142,26 @@ defineExpose({ form, entryName });
 			@done="isCustomising = false"
 		/>
 		<form v-else class="grid grid-cols-2 gap-4" @submit.prevent="save">
-			<FormControl
-				v-for="field in visibleFields"
-				:key="field.fieldname"
-				v-model="form[field.fieldname]"
-				:type="field.type"
-				:label="field.label"
-				:required="field.required"
-				:options="field.options"
-				:disabled="field.disabled"
-				:class="field.type === 'textarea' ? 'col-span-2' : ''"
-			/>
+			<template v-for="field in visibleFields" :key="field.fieldname">
+				<!-- FormControl has no rating type, so the stars are frappe-ui's own Rating. -->
+				<Rating
+					v-if="field.type === 'rating'"
+					v-model="form[field.fieldname]"
+					:label="field.label"
+					:max="RATING_STARS"
+					:disabled="field.disabled"
+				/>
+				<FormControl
+					v-else
+					v-model="form[field.fieldname]"
+					:type="field.type"
+					:label="field.label"
+					:required="field.required"
+					:options="field.options"
+					:disabled="field.disabled"
+					:class="field.type === 'textarea' ? 'col-span-2' : ''"
+				/>
+			</template>
 			<ErrorMessage class="col-span-2" :message="saveCall.error" />
 			<div class="col-span-2 flex justify-between">
 				<Button
