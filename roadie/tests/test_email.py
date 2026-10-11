@@ -5,7 +5,7 @@ from frappe.core.doctype.communication.email import make
 from frappe.email.receive import InboundMail
 from frappe.tests import IntegrationTestCase
 
-from roadie.api import get_emails, get_mailbox, mark_seen
+from roadie.api import get_emails, get_mailbox, mark_thread_seen
 from roadie.install import grant_communication_access
 from roadie.roadie.doctype.gig.test_gig import MEMBER, blank_pdf, make_member
 
@@ -132,8 +132,39 @@ class TestEmail(IntegrationTestCase):
 		self.assertEqual(inbox[reply.name].seen, 0)
 		self.assertEqual(inbox[reply.name].thread, {"doctype": "Gig", "name": gig.name})
 
-		mark_seen(reply.name)
+		mark_thread_seen("Gig", gig.name)
 		self.assertEqual(frappe.db.get_value("Communication", reply.name, "seen"), 1)
+
+	def test_inbox_lists_one_row_per_thread_with_its_latest_email(self):
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Festival 2027"}).insert()
+		sent = make(
+			doctype="Gig",
+			name=gig.name,
+			subject="Acme Festival 2027",
+			content="<p>Are you still booking?</p>",
+			recipients=[VENUE],
+			send_email=True,
+		)
+		frappe.set_user("Administrator")
+		sent_message_id = frappe.db.get_value("Communication", sent["name"], "message_id")
+		# Unique per run: make() commits, so a fixed Message-ID would be a duplicate the next time the suite runs.
+		for message_id in (f"first-reply-{sent['name']}", f"second-reply-{sent['name']}"):
+			reply = incoming_email(f"Le Petit Club <{VENUE}>", "Re: Acme Festival 2027", message_id)
+			reply["In-Reply-To"] = f"<{sent_message_id}>"
+			InboundMail(reply.as_string(), self.mailbox).process()
+		replies = frappe.get_all(
+			"Communication", filters={"in_reply_to": sent["name"]}, order_by="creation asc", pluck="name"
+		)
+		frappe.db.set_value("Communication", replies[1], "communication_date", frappe.utils.add_days(None, 1))
+
+		frappe.set_user(MEMBER)
+		rows = [row for row in get_mailbox("Received") if row.thread == {"doctype": "Gig", "name": gig.name}]
+		self.assertEqual([(row.name, row.count, row.unread) for row in rows], [(replies[1], 2, 2)])
+
+		mark_thread_seen("Gig", gig.name)
+		row = next(row for row in get_mailbox("Received") if row.name == replies[1])
+		self.assertEqual(row.unread, 0)
 
 	def test_mail_linked_to_no_record_threads_on_itself(self):
 		enquiry = incoming_email("Jane Doe <jane.promoter@example.com>", "Booking enquiry", "enquiry-1")
@@ -155,6 +186,25 @@ class TestEmail(IntegrationTestCase):
 			[email.name for email in get_emails("Communication", received.name)],
 			[received.name, reply["name"]],
 		)
+
+	def test_new_email_from_the_inbox_needs_no_record(self):
+		frappe.set_user(MEMBER)
+		# Its own content: Frappe dedupes files by hash, and make() commits, so a shared blank PDF leaks into other tests.
+		flyer = frappe.get_doc(
+			{"doctype": "File", "file_name": "flyer.txt", "content": "Spring tour flyer", "is_private": 1}
+		).insert()
+		sent = make(
+			subject="Booking enquiry for spring",
+			content="<p>Would the band fit your programme?</p>",
+			recipients=["jane.roe@example.com"],
+			send_email=True,
+			attachments=[flyer.name],
+		)
+
+		outbox = {row.name: row for row in get_mailbox("Sent")}
+		self.assertEqual(outbox[sent["name"]].thread, {"doctype": "Communication", "name": sent["name"]})
+		thread = get_emails("Communication", sent["name"])
+		self.assertEqual([file.file_name for file in thread[0].attachments], ["flyer.txt"])
 
 	def test_reminders_stay_out_of_the_gig_thread(self):
 		frappe.set_user(MEMBER)

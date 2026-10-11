@@ -28,6 +28,7 @@ EMAIL_SUMMARY_FIELDS = [
 	"sent_or_received",
 	"delivery_status",
 	"communication_date",
+	"seen",
 ]
 
 
@@ -171,7 +172,8 @@ def get_comments(doctype: str, name: str) -> list[dict]:
 
 @frappe.whitelist()
 def get_mailbox(sent_or_received: str) -> list[dict]:
-	"""The shared account's mail, newest first, each with the record whose thread it belongs to."""
+	"""The shared account's threads, newest first: each one's latest email in this direction, with how many
+	emails and unread emails it holds in that direction."""
 	frappe.only_for(("Band Member", "System Manager"))
 	if sent_or_received not in ("Sent", "Received"):
 		frappe.throw(_("Mailbox is either Sent or Received, not {0}").format(sent_or_received))
@@ -184,7 +186,7 @@ def get_mailbox(sent_or_received: str) -> list[dict]:
 			"communication_type": "Communication",
 			"sent_or_received": sent_or_received,
 		},
-		fields=[*EMAIL_SUMMARY_FIELDS, "seen", "reference_doctype", "reference_name"],
+		fields=[*EMAIL_SUMMARY_FIELDS, "reference_doctype", "reference_name"],
 		order_by="communication_date desc",
 		limit=200,
 	)
@@ -198,9 +200,15 @@ def get_mailbox(sent_or_received: str) -> list[dict]:
 		fields=["parent", "link_doctype", "link_name"],
 		order_by="idx asc",
 	)
+	threads = {}
 	for email in emails:
-		email.thread = _thread_of(email, [link for link in links if link.parent == email.name])
-	return emails
+		thread = _thread_of(email, [link for link in links if link.parent == email.name])
+		latest = threads.setdefault(
+			(thread["doctype"], thread["name"]), {**email, "thread": thread, "count": 0, "unread": 0}
+		)
+		latest["count"] += 1
+		latest["unread"] += not email.seen
+	return [frappe._dict(thread) for thread in threads.values()]
 
 
 def _thread_of(email, directory_links):
@@ -212,11 +220,15 @@ def _thread_of(email, directory_links):
 
 
 @frappe.whitelist(methods=["POST"])
-def mark_seen(name: str) -> None:
-	"""Frappe only marks mail seen when it was fetched over IMAP, so opening it in the Inbox does it here."""
-	email = frappe.get_doc("Communication", name)
-	email.check_permission("read")
-	email.db_set("seen", 1, update_modified=False)
+def mark_thread_seen(doctype: str, name: str) -> None:
+	"""Frappe only marks mail seen when it was fetched over IMAP, so opening a thread in the Inbox does it here."""
+	unseen = [
+		email.name
+		for email in get_emails(doctype, name)
+		if email.sent_or_received == "Received" and not email.seen
+	]
+	if unseen:
+		frappe.db.set_value("Communication", {"name": ["in", unseen]}, "seen", 1, update_modified=False)
 
 
 @frappe.whitelist()
