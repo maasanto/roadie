@@ -308,9 +308,9 @@ def delete_threads(names: list[str]) -> None:
 		emails = _mailbox_thread({"doctype": "Communication", "name": name})
 		if name not in [email.name for email in emails] or any(_is_filed(email) for email in emails):
 			frappe.throw(
-				_("Only conversations filed under no gig, task or directory entry can be deleted in bulk, not {0}").format(
-					name
-				)
+				_(
+					"Only conversations filed under no gig, task or directory entry can be deleted in bulk, not {0}"
+				).format(name)
 			)
 		for email in emails:
 			_delete_email(email.name)
@@ -352,7 +352,10 @@ def _promote(email, promoted, other_replies):
 	frappe.db.set_value("Communication", {"name": ["in", [promoted, *other_replies]]}, reference)
 	# Frappe threads an inbound reply through the queue row of the email it answers.
 	frappe.db.set_value(
-		"Email Queue", {"reference_doctype": "Communication", "reference_name": email.name}, "reference_name", promoted
+		"Email Queue",
+		{"reference_doctype": "Communication", "reference_name": email.name},
+		"reference_name",
+		promoted,
 	)
 
 

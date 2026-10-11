@@ -197,7 +197,12 @@ class TestEmail(IntegrationTestCase):
 		)
 		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Festival 2027"}).insert()
 		gig_email = make(
-			doctype="Gig", name=gig.name, subject="Dates", content="<p>Hi</p>", recipients=[VENUE], send_email=True
+			doctype="Gig",
+			name=gig.name,
+			subject="Dates",
+			content="<p>Hi</p>",
+			recipients=[VENUE],
+			send_email=True,
 		)
 
 		delete_threads([received.name])
@@ -208,7 +213,9 @@ class TestEmail(IntegrationTestCase):
 		self.assertTrue(frappe.db.exists("Communication", gig_email["name"]))
 
 	def test_deleting_a_conversations_first_email_hands_it_to_the_next(self):
-		enquiry = incoming_email("Jane Doe <jane.promoter@example.com>", "Summer dates", frappe.generate_hash())
+		enquiry = incoming_email(
+			"Jane Doe <jane.promoter@example.com>", "Summer dates", frappe.generate_hash()
+		)
 		InboundMail(enquiry.as_string(), self.mailbox).process()
 		first = frappe.get_last_doc("Communication", filters={"subject": "Summer dates"})
 		frappe.set_user(MEMBER)

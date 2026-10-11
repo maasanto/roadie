@@ -42,7 +42,8 @@ const isOpen = (row) => Boolean(openThread.value) && threadKey(row.thread) === t
 const rows = computed(() =>
 	(mailbox.data || []).filter(
 		(row) =>
-			!deletedKeys.value.has(threadKey(row.thread)) && (!isUnreadOnly.value || row.unread || isOpen(row))
+			!deletedKeys.value.has(threadKey(row.thread)) &&
+			(!isUnreadOnly.value || row.unread || isOpen(row))
 	)
 );
 
@@ -117,7 +118,9 @@ function deleteSelection() {
 }
 
 async function deleteForGood(threads) {
-	const names = threads.filter((thread) => deletedKeys.value.has(threadKey(thread))).map(({ name }) => name);
+	const names = threads
+		.filter((thread) => deletedKeys.value.has(threadKey(thread)))
+		.map(({ name }) => name);
 	if (!names.length) return;
 	try {
 		await call("roadie.api.delete_threads", { names });
@@ -241,7 +244,9 @@ onKey("Escape", () => !hasDraft() && close());
 					:text="
 						canDeleteSelection
 							? __('Delete')
-							: __('Only conversations linked to no gig, task or directory entry can be deleted together')
+							: __(
+									'Only conversations linked to no gig, task or directory entry can be deleted together'
+							  )
 					"
 				>
 					<span>
@@ -254,7 +259,12 @@ onKey("Escape", () => !hasDraft() && close());
 						/>
 					</span>
 				</Tooltip>
-				<Button icon="lucide-x" variant="ghost" :label="__('Clear selection')" @click="clearSelection" />
+				<Button
+					icon="lucide-x"
+					variant="ghost"
+					:label="__('Clear selection')"
+					@click="clearSelection"
+				/>
 			</header>
 			<header v-else class="flex h-12 shrink-0 items-center gap-2 px-4">
 				<h1 class="flex-1 text-2xl-semibold">{{ isInbox ? __("Inbox") : __("Outbox") }}</h1>
@@ -308,7 +318,7 @@ onKey("Escape", () => !hasDraft() && close());
 						class="group flex items-start hover:bg-surface-gray-2"
 						:class="{ 'bg-surface-gray-2': isOpen(row) || isSelected(row) }"
 					>
-							<label class="flex shrink-0 cursor-pointer items-start gap-3 py-3 pl-4">
+						<label class="flex shrink-0 cursor-pointer items-start gap-3 py-3 pl-4">
 							<span
 								class="mt-3 size-2 shrink-0 rounded-full"
 								:class="isInbox && row.unread ? 'bg-surface-blue-7' : 'bg-transparent'"
@@ -322,7 +332,10 @@ onKey("Escape", () => !hasDraft() && close());
 								/>
 								<input
 									type="checkbox"
-									:class="[CHECKBOX_CLASS, selectedRows.length ? '' : 'hidden group-hover:block']"
+									:class="[
+										CHECKBOX_CLASS,
+										selectedRows.length ? '' : 'hidden group-hover:block',
+									]"
 									:checked="isSelected(row)"
 									:aria-label="__('Select {0}', [row.subject])"
 									@click="toggleSelection(row, $event)"
