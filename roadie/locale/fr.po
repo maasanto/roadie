@@ -172,7 +172,7 @@ msgstr "Blues"
 msgid "Booked"
 msgstr "Confirmé"
 
-#: frontend/src/components/DriveLinkDialog.vue:132
+#: frontend/src/components/DriveLinkDialog.vue:128
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -318,7 +318,7 @@ msgid "Done: {0}"
 msgstr "Fait : {0}"
 
 #: frontend/src/App.vue:25 frontend/src/App.vue:79
-#: frontend/src/components/DriveLinkDialog.vue:73
+#: frontend/src/components/DriveLinkDialog.vue:69
 msgid "Drive"
 msgstr "Drive"
 
@@ -386,7 +386,7 @@ msgstr "Festivals"
 msgid "First name"
 msgstr "Prénom"
 
-#: frontend/src/components/DriveLinkDialog.vue:70
+#: frontend/src/components/DriveLinkDialog.vue:66
 msgid "Folder path"
 msgstr "Chemin du dossier"
 
@@ -450,7 +450,7 @@ msgstr "Masquer {0}"
 msgid "Hip Hop"
 msgstr "Hip-hop"
 
-#: frontend/src/components/DriveLinkDialog.vue:20
+#: frontend/src/components/DriveLinkDialog.vue:18
 msgid "Home"
 msgstr "Accueil"
 
@@ -473,11 +473,11 @@ msgstr "Boîte de réception"
 msgid "Indie"
 msgstr "Indé"
 
-#: frontend/src/components/DriveLinkDialog.vue:135
+#: frontend/src/components/DriveLinkDialog.vue:131
 msgid "Insert link"
 msgstr "Insérer le lien"
 
-#: frontend/src/components/DriveLinkDialog.vue:128
+#: frontend/src/components/DriveLinkDialog.vue:124
 msgid "Inserting the link makes the item public: anyone who has the link can open it."
 msgstr "Insérer le lien rend l'élément public : toute personne qui a le lien pourra l'ouvrir."
 
@@ -537,13 +537,13 @@ msgstr "Latin"
 msgid "Link from Drive"
 msgstr "Lien depuis le Drive"
 
-#: frontend/src/components/DriveLinkDialog.vue:67
+#: frontend/src/components/DriveLinkDialog.vue:63
 msgid "Link to a Drive item"
 msgstr "Lien vers un élément du Drive"
 
-#: roadie/api.py:370
-msgid "Linking Drive items needs Frappe Drive and the Drive User role"
-msgstr "Pour insérer des liens Drive, il faut Frappe Drive et le rôle Drive User"
+#: roadie/api.py:424
+msgid "Linking Drive items needs Frappe Suite and the Suite User role"
+msgstr "Pour insérer des liens Drive, il faut Frappe Suite et le rôle Suite User"
 
 #: frontend/src/components/EntryForm.vue:97
 #: frontend/src/components/ListSkeleton.vue:8
@@ -740,11 +740,11 @@ msgstr "Le {0}, {1} a écrit :"
 msgid "Only band members can open Roadie"
 msgstr "Seuls les membres du groupe peuvent ouvrir Roadie"
 
-#: roadie/api.py:377
-msgid "Only files and folders from a Drive team can be linked, not {0}"
-msgstr "Seuls les fichiers et dossiers d'une équipe Drive peuvent être liés, pas {0}"
+#: roadie/api.py:430
+msgid "Only files and folders in Drive can be linked, not {0}"
+msgstr "Seuls les fichiers et dossiers du Drive peuvent être liés, pas {0}"
 
-#: frontend/src/components/DriveLinkDialog.vue:100
+#: frontend/src/components/DriveLinkDialog.vue:96
 msgid "Only its owner can share this item."
 msgstr "Seul son propriétaire peut partager cet élément."
 
@@ -775,7 +775,7 @@ msgstr "Ouvrir mes tâches"
 msgid "Open the pipeline"
 msgstr "Ouvrir le pipeline"
 
-#: frontend/src/components/DriveLinkDialog.vue:117
+#: frontend/src/components/DriveLinkDialog.vue:113
 msgid "Open {0}"
 msgstr "Ouvrir {0}"
 
@@ -973,6 +973,10 @@ msgstr "Paramètres"
 msgid "Show"
 msgstr "Afficher"
 
+#: frontend/src/components/DriveLinkDialog.vue:17
+msgid "Site"
+msgstr "Site"
+
 #. Genre option for the Band genre multiselect
 #: frontend/src/directory.js:41
 msgid "Ska"
@@ -1040,7 +1044,7 @@ msgstr "Texte"
 msgid "The application for {0} closes on {1}, in {2} days, and the gig is still at {3}."
 msgstr "Les candidatures pour {0} ferment le {1}, dans {2} jours, et le concert est toujours au statut « {3} »."
 
-#: frontend/src/components/DriveLinkDialog.vue:123
+#: frontend/src/components/DriveLinkDialog.vue:119
 msgid "This folder is empty."
 msgstr "Ce dossier est vide."
 
@@ -1154,10 +1158,6 @@ msgstr "Rédigez votre e-mail…"
 #: frontend/src/pages/PlanningScreen.vue:32
 msgid "Year"
 msgstr "Année"
-
-#: frontend/src/components/DriveLinkDialog.vue:123
-msgid "You are not a member of any Drive team."
-msgstr "Vous n'êtes membre d'aucune équipe Drive."
 
 #: frontend/src/pages/DirectoryScreen.vue:102
 msgid "Your address book starts here"
