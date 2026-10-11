@@ -1,17 +1,26 @@
 <script setup>
 import { computed } from "vue";
-import { Avatar, Badge } from "frappe-ui";
-import { daysUntil, formatDate, isDeadlineClose, pipelineColumns } from "../gig";
+import { Avatar, Badge, Dropdown } from "frappe-ui";
+import { daysUntil, formatDate, isDeadlineClose, memberOptions, pipelineColumns } from "../gig";
 
 const props = defineProps({
 	gig: { type: Object, required: true },
 	linkedTitles: { type: Array, default: () => [] },
 	owner: { type: Object, default: null },
+	members: { type: Array, default: () => [] },
 });
+const emit = defineEmits(["assign"]);
 
 const closedStatuses = pipelineColumns.at(-1).statuses;
 const hasOpenDeadline = computed(
 	() => props.gig.application_closes && daysUntil(props.gig.application_closes) >= 0
+);
+
+const assignOptions = computed(() =>
+	memberOptions(props.members).map((option) => ({
+		...option,
+		onClick: () => emit("assign", option.value),
+	}))
 );
 </script>
 
@@ -31,6 +40,13 @@ const hasOpenDeadline = computed(
 				size="sm"
 				:title="owner.full_name"
 			/>
+			<span class="contents" @click.stop>
+				<Dropdown
+					:options="assignOptions"
+					align="end"
+					:button="{ icon: 'lucide-user-plus', variant: 'ghost', label: __('Assign to') }"
+				/>
+			</span>
 		</div>
 		<p v-if="linkedTitles.length" class="truncate text-sm text-ink-gray-6">
 			{{ linkedTitles.join(" · ") }}

@@ -12,13 +12,15 @@ import {
 	useCall,
 } from "frappe-ui";
 import { computed, onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import NotificationPanel from "./components/NotificationPanel.vue";
 import SearchPalette from "./components/SearchPalette.vue";
 import { directoryTypes } from "./directory";
 import { unreadCount } from "./notifications";
+import { user } from "./user";
 
 const route = useRoute();
+const router = useRouter();
 const showNotifications = ref(false);
 const notifications = useCall({ url: "/api/v2/method/roadie.api.get_notifications" });
 const unread = computed(() => unreadCount(notifications.data || []));
@@ -30,7 +32,6 @@ onMounted(() => {
 		toaster.addEventListener(eventType, (event) => event.stopPropagation());
 });
 const logoUrl = "/assets/roadie/logo.svg";
-const currentUser = window.user;
 const driveUrl = window.drive_url;
 const openDrive = () => window.open(driveUrl, "_blank", "noopener");
 const logOut = {
@@ -38,7 +39,12 @@ const logOut = {
 	icon: "lucide-log-out",
 	onClick: () => (window.location.href = "/?cmd=web_logout"),
 };
-const accountMenu = [logOut];
+const settings = {
+	label: __("Settings"),
+	icon: "lucide-settings",
+	onClick: () => router.push("/settings"),
+};
+const accountMenu = [settings, logOut];
 
 // Each directory type is its own screen, listed under the sidebar's Directory heading.
 const directoryScreens = directoryTypes.map((type) => ({
@@ -71,10 +77,11 @@ const mailboxScreens = [
 	{ name: "Outbox", label: __("Outbox"), shortLabel: __("Outgoing"), icon: "lucide-send", to: "/outbox" },
 ];
 
-// The phone menu carries the four types: the bar along the bottom has room for the screens it started with.
+// The phone menu carries the four types, then the screens the bar along the bottom has no room for.
 const phoneMenu = [
 	...directoryScreens.map(({ label, icon, to }) => ({ label, icon, route: to })),
 	...(driveUrl ? [{ label: __("Drive"), icon: "lucide-hard-drive", onClick: openDrive }] : []),
+	settings,
 	logOut,
 ];
 
@@ -90,7 +97,7 @@ const searchPalette = ref(null);
 					<SidebarHeader
 						title="Roadie"
 						:logo="logoUrl"
-						:subtitle="currentUser"
+						:subtitle="user.fullName"
 						:menu-items="accountMenu"
 					/>
 					<SidebarItem :label="__('Search')" icon="lucide-search" @click="searchPalette.open()">
