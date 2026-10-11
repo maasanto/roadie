@@ -20,6 +20,7 @@ use_json_request_body = True
 require_type_annotated_api_methods = True
 
 website_route_rules = [{"from_route": "/roadie/<path:app_path>", "to_route": "roadie"}]
+page_renderer = ["roadie.page_renderers.RoadieServiceWorker"]
 
 # The app was called Band CRM and served at /band: keep old bookmarks working
 website_redirects = [{"source": r"/band(/.*)?", "target": r"/roadie\1", "forward_query_parameters": True}]
