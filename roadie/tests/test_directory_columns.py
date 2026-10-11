@@ -2,6 +2,7 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from roadie.api import get_directory_columns, set_directory_columns
+from roadie.patches import add_relevance_column
 from roadie.roadie.doctype.gig.test_gig import MEMBER, OTHER_MEMBER, make_member
 
 DOCTYPE = "Festival"
@@ -57,6 +58,21 @@ class TestDirectoryColumns(IntegrationTestCase):
 
 		frappe.set_user(OTHER_MEMBER)
 		self.assertEqual([column["fieldname"] for column in self.columns()], ["instagram"])
+
+	def test_a_layout_saved_before_relevance_existed_gains_it_next_to_the_name(self):
+		set_directory_columns(
+			DOCTYPE, '[{"fieldname": "title", "label": "Name"}, {"fieldname": "city", "label": "City"}]'
+		)
+		set_directory_columns(
+			"Venue", '[{"fieldname": "title"}, {"fieldname": "relevance", "format": "rating"}]'
+		)
+
+		add_relevance_column.execute()
+		add_relevance_column.execute()
+
+		self.assertEqual([column["fieldname"] for column in self.columns()], ["title", "relevance", "city"])
+		self.assertEqual([column["fieldname"] for column in self.columns("Venue")], ["title", "relevance"])
+		self.assertEqual(self.columns("Band"), [])
 
 	def test_a_guest_reads_and_writes_nothing(self):
 		frappe.set_user("Guest")
