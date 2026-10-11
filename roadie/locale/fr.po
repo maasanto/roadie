@@ -102,6 +102,14 @@ msgstr "Candidater avant le {0}"
 msgid "April"
 msgstr "Avril"
 
+#: frontend/src/components/GigCard.vue:47
+msgid "Assign to"
+msgstr "Assigner à"
+
+#: frontend/src/pages/PipelineScreen.vue:74
+msgid "Assigned to {0}"
+msgstr "Assigné à {0}"
+
 #. Label of the assignee (Link) field in DocType 'Band Task'
 #: frontend/src/components/GigTasks.vue:59
 #: roadie/roadie/doctype/band_task/band_task.json
