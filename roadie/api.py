@@ -13,7 +13,7 @@ PROTECTED_FIELDS = ("title", "status", "gig_owner", "gig_date", "application_ope
 # Text, long text, number, date, checkbox and choice list: the types a form edits without a picker.
 NEW_FIELD_TYPES = ("Data", "Small Text", "Float", "Date", "Check", "Select")
 # Mirrors the controls of frontend/src/metaFields.js, plus Link for the gig's pickers.
-FORM_FIELD_TYPES = (*NEW_FIELD_TYPES, "Text", "Long Text", "Int", "Currency", "Link")
+FORM_FIELD_TYPES = (*NEW_FIELD_TYPES, "Text", "Long Text", "Int", "Currency", "Rating", "Link")
 EMAIL_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
 COMMENT_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 # Frappe roots a thread linked to no record on its first Communication, so that Communication is a thread too.
