@@ -1241,6 +1241,46 @@ msgstr "Courrier"
 msgid "{0} is not a directory list"
 msgstr "{0} n'est pas une liste d'annuaire"
 
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Back"
+msgstr "Retour"
+
+#: frontend/src/components/EmailBody.vue
+msgid "Email content"
+msgstr "Contenu de l'e-mail"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Email sent"
+msgstr "E-mail envoyé"
+
+#: frontend/src/components/EmailThread.vue
+msgid "Expand all"
+msgstr "Tout déplier"
+
+#: frontend/src/components/EmailBody.vue
+msgid "Hide quoted text"
+msgstr "Masquer le texte cité"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "New email"
+msgstr "Nouvel e-mail"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "No email selected"
+msgstr "Aucun e-mail sélectionné"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "No unread emails."
+msgstr "Aucun e-mail non lu."
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Pick a conversation on the left, or move through them with J and K."
+msgstr "Choisissez une conversation à gauche, ou passez de l'une à l'autre avec J et K."
+
+#: frontend/src/components/EmailBody.vue
+msgid "Show quoted text"
+msgstr "Afficher le texte cité"
+
 #: frontend/src/components/BandMembers.vue
 msgid "Members"
 msgstr "Membres"
@@ -1448,4 +1488,3 @@ msgstr "Au moins {0} ★"
 #: frontend/src/directoryQuickFilters.js
 msgid "Quick filters saved"
 msgstr "Filtres rapides enregistrés"
-

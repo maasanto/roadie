@@ -23,11 +23,39 @@ export function deliveryState(status) {
 	return { label: __("Sent"), theme: "green" };
 }
 
+const parseServerDate = (value) => new Date(value.replace(" ", "T"));
+
 export const formatDateTime = (value) =>
-	new Date(value.replace(" ", "T")).toLocaleString(window.lang, {
+	parseServerDate(value).toLocaleString(window.lang, {
 		dateStyle: "medium",
 		timeStyle: "short",
 	});
+
+export function formatListDate(value) {
+	const date = parseServerDate(value);
+	const isToday = date.toDateString() === new Date().toDateString();
+	return date.toLocaleString(window.lang, isToday ? { timeStyle: "short" } : { dateStyle: "medium" });
+}
+
+// Gmail, Thunderbird and Apple Mail mark their quotes. Roadie's own replies end on a bare blockquote and its
+// attribution, so only one closing the email folds: a blockquote anywhere else is the sender's own content.
+// ponytail: Outlook marks quotes with ids per version, add its markers if the band's correspondents use it.
+export const QUOTE_SELECTOR = [
+	".gmail_quote",
+	".moz-cite-prefix",
+	"blockquote[type=cite]",
+	"body > blockquote:last-child",
+	"body > p:has(+ blockquote:last-child)",
+].join(", ");
+
+export const isUnread = (email) => email.sent_or_received === "Received" && !email.seen;
+
+export function openByDefault(emails) {
+	const isLatest = (index) => index === emails.length - 1;
+	return new Set(
+		emails.filter((email, index) => isLatest(index) || isUnread(email)).map((email) => email.name)
+	);
+}
 
 // Plain-text emails are stored as escaped text with every CRLF doubled, which the rich-text renderer would collapse.
 export function asHtml(content) {
