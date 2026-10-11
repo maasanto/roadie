@@ -179,6 +179,10 @@ msgstr ""
 msgid "Cc / Bcc"
 msgstr ""
 
+#: frontend/src/pages/SettingsScreen.vue
+msgid "Change"
+msgstr ""
+
 #. Genre option for the Band genre multiselect
 #: frontend/src/directory.js:22
 msgid "Chanson"
@@ -813,6 +817,14 @@ msgstr ""
 msgid "Press / to search"
 msgstr ""
 
+#: frontend/src/pages/SettingsScreen.vue
+msgid "Profile picture removed"
+msgstr ""
+
+#: frontend/src/pages/SettingsScreen.vue
+msgid "Profile picture updated"
+msgstr ""
+
 #. Label of the promoter (Link) field in DocType 'Gig'
 #. Name of a DocType
 #: roadie/roadie/doctype/gig/gig.json
@@ -853,6 +865,10 @@ msgstr ""
 
 #: frontend/src/components/EntryContacts.vue:83
 msgid "Remove contact"
+msgstr ""
+
+#: frontend/src/pages/SettingsScreen.vue
+msgid "Remove picture"
 msgstr ""
 
 #: frontend/src/components/EmailComposer.vue:136
@@ -936,6 +952,11 @@ msgstr ""
 #. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "September"
+msgstr ""
+
+#: frontend/src/App.vue
+#: frontend/src/pages/SettingsScreen.vue
+msgid "Settings"
 msgstr ""
 
 #: frontend/src/components/FormCustomiser.vue:123
@@ -1050,9 +1071,17 @@ msgstr ""
 msgid "Unread"
 msgstr ""
 
+#: frontend/src/pages/SettingsScreen.vue
+msgid "Upload"
+msgstr ""
+
 #: frontend/src/components/EmailComposer.vue:152
 #: frontend/src/components/GigAttachments.vue:28
 msgid "Uploading {0}%"
+msgstr ""
+
+#: frontend/src/pages/SettingsScreen.vue
+msgid "Uploading…"
 msgstr ""
 
 #. Label of the application_closes (Date) field in DocType 'Festival'
