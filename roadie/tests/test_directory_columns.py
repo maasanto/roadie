@@ -4,8 +4,8 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from roadie.api import delete_list_view
-from roadie.patches.v1_0.add_unique_list_view import names_to_drop
 from roadie.roadie.doctype.gig.test_gig import MEMBER, OTHER_MEMBER, make_member
+from roadie.roadie.doctype.roadie_list_view.roadie_list_view import ensure_unique_index, names_to_drop
 
 
 class TestDirectoryColumns(IntegrationTestCase):
@@ -91,6 +91,11 @@ class TestDirectoryColumns(IntegrationTestCase):
 
 		with self.assertRaisesRegex(Exception, "Duplicate entry 'Festival-"):
 			duplicate.db_insert()
+
+	def test_the_constraint_can_be_asked_for_more_than_once(self):
+		"""after_install asks on every install and the patch asks on every migrate, so the call has to be safe."""
+		ensure_unique_index()
+		ensure_unique_index()
 
 	def test_a_second_layout_for_the_same_doctype_is_refused(self):
 		frappe.set_user(MEMBER)

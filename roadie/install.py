@@ -9,6 +9,12 @@ def after_install():
 	grant_contact_access()
 	grant_communication_access()
 
+	# Installing an app marks its patches as completed instead of running them, so on a fresh site the patch
+	# that backfills existing ones never fires and the constraint has to be created here too.
+	from roadie.roadie.doctype.roadie_list_view.roadie_list_view import ensure_unique_index
+
+	ensure_unique_index()
+
 
 def after_uninstall():
 	for doctype in GRANTED_DOCTYPES:
