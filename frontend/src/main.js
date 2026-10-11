@@ -41,3 +41,10 @@ document.documentElement.lang = window.lang;
 const app = createApp(App).use(router);
 app.config.globalProperties.__ = __;
 app.mount("#app");
+
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+	// After load, so precaching every chunk doesn't compete with the first screen for bandwidth
+	window.addEventListener("load", () =>
+		navigator.serviceWorker.register("/roadie/sw.js", { scope: "/roadie" })
+	);
+}

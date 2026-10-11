@@ -4,7 +4,8 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "directory_columns"
+  "directory_columns",
+  "directory_quick_filters"
  ],
  "fields": [
   {
@@ -13,12 +14,19 @@
    "fieldtype": "Code",
    "label": "Directory Columns",
    "options": "JSON"
+  },
+  {
+   "description": "The fields each directory list offers as quick filters, as JSON lists of fieldnames keyed by DocType. A DocType left out gets the name and the city.",
+   "fieldname": "directory_quick_filters",
+   "fieldtype": "Code",
+   "label": "Directory Quick Filters",
+   "options": "JSON"
   }
  ],
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-11 12:00:00.000000",
+ "modified": "2026-10-11 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Roadie",
  "name": "Roadie Settings",

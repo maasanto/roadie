@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roadie VERSION\n"
 "Report-Msgid-Bugs-To: antoine.maas@okte.io\n"
-"POT-Creation-Date: 2026-10-10 21:36+0009\n"
-"PO-Revision-Date: 2026-10-10 21:36+0009\n"
+"POT-Creation-Date: 2026-10-11 23:03+0009\n"
+"PO-Revision-Date: 2026-10-11 23:03+0009\n"
 "Last-Translator: antoine.maas@okte.io\n"
 "Language-Team: antoine.maas@okte.io\n"
 "MIME-Version: 1.0\n"
@@ -16,15 +16,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
 
-#: roadie/api.py:289
+#: roadie/api.py:376
 msgid "A choice list needs at least one choice"
 msgstr ""
 
-#: roadie/api.py:357
+#: roadie/api.py:444
 msgid "A field needs a label"
 msgstr ""
 
-#: roadie/api.py:286
+#: roadie/api.py:373
 msgid "A new field is one of {0}, not {1}"
 msgstr ""
 
@@ -33,19 +33,24 @@ msgstr ""
 msgid "Add"
 msgstr ""
 
+#: frontend/src/components/ListColumnEditor.vue:87
+msgid "Add column"
+msgstr ""
+
+#: frontend/src/components/ListFilter.vue:134
+#: frontend/src/components/QuickFilterBar.vue:53
+msgid "Add filter"
+msgstr ""
+
 #: frontend/src/components/GigTasks.vue:68
 msgid "Add task"
 msgstr ""
 
-#: frontend/src/pages/DirectoryScreen.vue:104
-msgid "Add the festivals, venues, promoters and bands you deal with, and the people to talk to at each."
-msgstr ""
-
-#: frontend/src/pages/PipelineScreen.vue:128
+#: frontend/src/pages/PipelineScreen.vue:154
 msgid "Add the first gig you are chasing, even if it is only an idea. Drag it from column to column as things move."
 msgstr ""
 
-#: frontend/src/pages/DirectoryScreen.vue:111
+#: frontend/src/pages/DirectoryScreen.vue:219
 msgid "Add the first one"
 msgstr ""
 
@@ -54,13 +59,8 @@ msgstr ""
 msgid "Address"
 msgstr ""
 
-#: frontend/src/pages/DirectoryScreen.vue:26
-msgid "All"
-msgstr ""
-
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:20
-msgid "Alternative"
+#: frontend/src/components/ListFilter.vue:97
+msgid "And"
 msgstr ""
 
 #. Label of the application_url (Data) field in DocType 'Festival'
@@ -73,7 +73,7 @@ msgstr ""
 msgid "Application closes"
 msgstr ""
 
-#: roadie/fixtures/notification.json:24
+#: roadie/fixtures/notification.json:26
 msgid "Application for {0} closes in {1} days"
 msgstr ""
 
@@ -82,7 +82,7 @@ msgstr ""
 msgid "Application opens"
 msgstr ""
 
-#: frontend/src/pages/PlanningScreen.vue:17 roadie/api.py:202
+#: frontend/src/pages/PlanningScreen.vue:17 roadie/api.py:245
 msgid "Application window"
 msgstr ""
 
@@ -91,13 +91,17 @@ msgstr ""
 msgid "Applied"
 msgstr ""
 
-#: frontend/src/components/GigCard.vue:48
+#: frontend/src/components/GigCard.vue:64
 msgid "Apply by {0}"
 msgstr ""
 
 #. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "April"
+msgstr ""
+
+#: frontend/src/components/ListSort.vue:45
+msgid "Ascending"
 msgstr ""
 
 #: frontend/src/components/GigCard.vue:47
@@ -118,6 +122,10 @@ msgstr ""
 msgid "Assignee: {0}"
 msgstr ""
 
+#: frontend/src/components/QuickFilterField.vue:22
+msgid "At least {0} ★"
+msgstr ""
+
 #: frontend/src/components/EmailComposer.vue:152
 #: frontend/src/components/GigAttachments.vue:28
 msgid "Attach"
@@ -132,6 +140,10 @@ msgstr ""
 msgid "August"
 msgstr ""
 
+#: frontend/src/directoryColumns.js:41
+msgid "Back to the usual columns"
+msgstr ""
+
 #. Name of a DocType
 #: roadie/roadie/doctype/band/band.json
 msgid "Band"
@@ -143,6 +155,7 @@ msgstr ""
 #: roadie/roadie/doctype/festival/festival.json
 #: roadie/roadie/doctype/gig/gig.json
 #: roadie/roadie/doctype/promoter/promoter.json
+#: roadie/roadie/doctype/roadie_settings/roadie_settings.json
 #: roadie/roadie/doctype/venue/venue.json
 msgid "Band Member"
 msgstr ""
@@ -152,17 +165,12 @@ msgstr ""
 msgid "Band Task"
 msgstr ""
 
-#: frontend/src/directory.js:5
+#: frontend/src/directory.js:44 frontend/src/search.js:12
 msgid "Bands"
 msgstr ""
 
 #: frontend/src/components/EmailComposer.vue:108
 msgid "Bcc"
-msgstr ""
-
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:21
-msgid "Blues"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Gig'
@@ -171,7 +179,12 @@ msgid "Booked"
 msgstr ""
 
 #: frontend/src/components/DriveLinkDialog.vue:128
+#: frontend/src/components/QuickFilterBar.vue:57
 msgid "Cancel"
+msgstr ""
+
+#: frontend/src/components/BandMembers.vue:81
+msgid "Cancel invitation"
 msgstr ""
 
 #. Label of the capacity (Int) field in DocType 'Venue'
@@ -187,13 +200,8 @@ msgstr ""
 msgid "Cc / Bcc"
 msgstr ""
 
-#: frontend/src/pages/SettingsScreen.vue
+#: frontend/src/pages/SettingsScreen.vue:54
 msgid "Change"
-msgstr ""
-
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:22
-msgid "Chanson"
 msgstr ""
 
 #: frontend/src/components/FormCustomiser.vue:17
@@ -219,14 +227,28 @@ msgstr ""
 msgid "City"
 msgstr ""
 
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:23
-msgid "Classical"
+#: frontend/src/components/ListFilter.vue:84
+#: frontend/src/components/ListFilter.vue:136
+#: frontend/src/pages/DirectoryScreen.vue:206
+msgid "Clear all filters"
 msgstr ""
 
 #: frontend/src/components/GigPanel.vue:29
+#: frontend/src/components/NotificationPanel.vue:49
 #: frontend/src/pages/MailboxScreen.vue:126
 msgid "Close"
+msgstr ""
+
+#: frontend/src/components/ListColumnEditor.vue:47
+msgid "Columns"
+msgstr ""
+
+#: roadie/roadie/doctype/roadie_settings/roadie_settings.py:13
+msgid "Columns has to be a list of columns"
+msgstr ""
+
+#: frontend/src/directoryColumns.js:35
+msgid "Columns saved"
 msgstr ""
 
 #: frontend/src/components/CommentThread.vue:103
@@ -237,7 +259,7 @@ msgstr ""
 msgid "Comments"
 msgstr ""
 
-#: roadie/api.py:117
+#: roadie/api.py:160
 msgid "Comments can only be listed for {0}, not {1}"
 msgstr ""
 
@@ -250,21 +272,28 @@ msgstr ""
 msgid "Contacts"
 msgstr ""
 
-#: roadie/api.py:34
+#: roadie/api.py:77
 msgid "Contacts can only be listed for {0}, not {1}"
 msgstr ""
 
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:24
-msgid "Country"
+#: frontend/src/listFilters.js:28
+msgid "Contains"
 msgstr ""
 
-#: frontend/src/components/EntryForm.vue:138
+#: frontend/src/components/EntryForm.vue:177
 msgid "Create"
 msgstr ""
 
-#: frontend/src/components/EntryForm.vue:131
+#: frontend/src/pages/DirectoryScreen.vue:47
+msgid "Created"
+msgstr ""
+
+#: frontend/src/components/EntryForm.vue:170
 msgid "Customise form"
+msgstr ""
+
+#: frontend/src/pages/DirectoryScreen.vue:188
+msgid "Customise quick filters"
 msgstr ""
 
 #: frontend/src/components/FormCustomiser.vue:16
@@ -289,18 +318,35 @@ msgstr ""
 msgid "Declined / Dropped"
 msgstr ""
 
-#: frontend/src/App.vue:47 frontend/src/App.vue:48
-#: frontend/src/pages/DirectoryScreen.vue:59
+#: frontend/src/components/ListSort.vue:29
+msgid "Default order"
+msgstr ""
+
+#: frontend/src/components/ListSort.vue:45
+msgid "Descending"
+msgstr ""
+
+#: frontend/src/App.vue:132
 msgid "Directory"
+msgstr ""
+
+#. Label of the directory_columns (Code) field in DocType 'Roadie Settings'
+#: roadie/roadie/doctype/roadie_settings/roadie_settings.json
+msgid "Directory Columns"
+msgstr ""
+
+#. Label of the directory_quick_filters (Code) field in DocType 'Roadie
+#. Settings'
+#: roadie/roadie/doctype/roadie_settings/roadie_settings.json
+msgid "Directory Quick Filters"
 msgstr ""
 
 #: frontend/src/components/EmailComposer.vue:168
 msgid "Discard"
 msgstr ""
 
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:25
-msgid "Disco"
+#: frontend/src/listFilters.js:29
+msgid "Does not contain"
 msgstr ""
 
 #. Label of the done (Check) field in DocType 'Band Task'
@@ -315,7 +361,7 @@ msgstr ""
 msgid "Done: {0}"
 msgstr ""
 
-#: frontend/src/App.vue:25 frontend/src/App.vue:79
+#: frontend/src/App.vue:84 frontend/src/App.vue:152
 #: frontend/src/components/DriveLinkDialog.vue:69
 msgid "Drive"
 msgstr ""
@@ -334,13 +380,8 @@ msgstr ""
 msgid "Due date"
 msgstr ""
 
-#: roadie/fixtures/notification.json:48
+#: roadie/fixtures/notification.json:52
 msgid "Due today: {0}"
-msgstr ""
-
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:26
-msgid "Electronic"
 msgstr ""
 
 #: frontend/src/components/EntryContacts.vue:98
@@ -351,8 +392,12 @@ msgstr ""
 msgid "Emails"
 msgstr ""
 
-#: roadie/api.py:74
+#: roadie/api.py:117
 msgid "Emails can only be listed for {0}, not {1}"
+msgstr ""
+
+#: frontend/src/listFilters.js:30
+msgid "Equals"
 msgstr ""
 
 #: frontend/src/email.js:21
@@ -376,8 +421,12 @@ msgstr ""
 msgid "Festival"
 msgstr ""
 
-#: frontend/src/directory.js:2
+#: frontend/src/directory.js:9 frontend/src/search.js:9
 msgid "Festivals"
+msgstr ""
+
+#: frontend/src/components/ListFilter.vue:72
+msgid "Filter"
 msgstr ""
 
 #: frontend/src/components/EntryContacts.vue:96
@@ -388,17 +437,7 @@ msgstr ""
 msgid "Folder path"
 msgstr ""
 
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:27
-msgid "Folk"
-msgstr ""
-
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:28
-msgid "Funk"
-msgstr ""
-
-#. Label of the genre (Data) field in DocType 'Band'
+#. Label of the genre (Small Text) field in DocType 'Band'
 #: roadie/roadie/doctype/band/band.json
 msgid "Genre"
 msgstr ""
@@ -406,7 +445,7 @@ msgstr ""
 #. Label of the gig (Link) field in DocType 'Band Task'
 #. Name of a DocType
 #: frontend/src/components/GigPanel.vue:27
-#: frontend/src/pages/PlanningScreen.vue:18 roadie/api.py:211
+#: frontend/src/pages/PlanningScreen.vue:18 roadie/api.py:254
 #: roadie/roadie/doctype/band_task/band_task.json
 #: roadie/roadie/doctype/gig/gig.json
 msgid "Gig"
@@ -421,18 +460,8 @@ msgstr ""
 msgid "Gigs"
 msgstr ""
 
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:29
-msgid "Gospel"
-msgstr ""
-
 #: frontend/src/pages/PlanningScreen.vue:28
 msgid "Half Day"
-msgstr ""
-
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:30
-msgid "Hardcore"
 msgstr ""
 
 #: frontend/src/components/FormCustomiser.vue:115
@@ -441,11 +470,6 @@ msgstr ""
 
 #: frontend/src/components/FormCustomiser.vue:60
 msgid "Hide {0}"
-msgstr ""
-
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:31
-msgid "Hip Hop"
 msgstr ""
 
 #: frontend/src/components/DriveLinkDialog.vue:18
@@ -462,13 +486,8 @@ msgstr ""
 msgid "Idea"
 msgstr ""
 
-#: frontend/src/App.vue:52 frontend/src/pages/MailboxScreen.vue:42
+#: frontend/src/App.vue:77 frontend/src/pages/MailboxScreen.vue:42
 msgid "Inbox"
-msgstr ""
-
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:32
-msgid "Indie"
 msgstr ""
 
 #: frontend/src/components/DriveLinkDialog.vue:131
@@ -494,18 +513,37 @@ msgstr ""
 msgid "Internal to the band, never emailed. Type @ to mention a bandmate."
 msgstr ""
 
-#: roadie/roadie/doctype/band_task/band_task.py:12
+#: roadie/roadie/doctype/band_task/band_task.py:13
 msgid "Invalid dates"
+msgstr ""
+
+#: frontend/src/components/BandMembers.vue:41
+msgid "Invitation sent to {0}"
+msgstr ""
+
+#: frontend/src/components/BandMembers.vue:57
+msgid "Invitation to {0} cancelled"
+msgstr ""
+
+#: frontend/src/components/BandMembers.vue:98
+msgid "Invite"
+msgstr ""
+
+#: frontend/src/components/BandMembers.vue:92
+msgid "Invite someone to the band"
+msgstr ""
+
+#: frontend/src/components/BandMembers.vue:77
+msgid "Invited"
+msgstr ""
+
+#: frontend/src/listFilters.js:36
+msgid "Is"
 msgstr ""
 
 #. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "January"
-msgstr ""
-
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:33
-msgid "Jazz"
 msgstr ""
 
 #. Option for the 'Usual month' (Select) field in DocType 'Festival'
@@ -518,17 +556,16 @@ msgstr ""
 msgid "June"
 msgstr ""
 
-#: frontend/src/notifications.js:16
+#: frontend/src/notifications.js:11
 msgid "Just now"
+msgstr ""
+
+#: frontend/src/pages/DirectoryScreen.vue:46
+msgid "Last modified"
 msgstr ""
 
 #: frontend/src/components/EntryContacts.vue:97
 msgid "Last name"
-msgstr ""
-
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:34
-msgid "Latin"
 msgstr ""
 
 #: frontend/src/components/EmailComposer.vue:163
@@ -539,17 +576,17 @@ msgstr ""
 msgid "Link to a Drive item"
 msgstr ""
 
-#: roadie/api.py:424
+#: roadie/api.py:465
 msgid "Linking Drive items needs Frappe Suite and the Suite User role"
 msgstr ""
 
-#: frontend/src/components/EntryForm.vue:97
+#: frontend/src/components/EntryForm.vue:127
 #: frontend/src/components/ListSkeleton.vue:8
-#: frontend/src/pages/PipelineScreen.vue:110
+#: frontend/src/pages/PipelineScreen.vue:136
 msgid "Loading"
 msgstr ""
 
-#: frontend/src/App.vue:19
+#: frontend/src/App.vue:39
 msgid "Log out"
 msgstr ""
 
@@ -557,7 +594,15 @@ msgstr ""
 msgid "Long text"
 msgstr ""
 
-#: roadie/api.py:134
+#: frontend/src/pages/DirectoryScreen.vue:204
+msgid "Loosen a filter, or add the entry."
+msgstr ""
+
+#: frontend/src/App.vue:141
+msgid "Mail"
+msgstr ""
+
+#: roadie/api.py:177
 msgid "Mailbox is either Sent or Received, not {0}"
 msgstr ""
 
@@ -566,7 +611,7 @@ msgstr ""
 msgid "March"
 msgstr ""
 
-#: frontend/src/components/NotificationPanel.vue:40
+#: frontend/src/components/NotificationPanel.vue:46
 msgid "Mark all as read"
 msgstr ""
 
@@ -575,13 +620,12 @@ msgstr ""
 msgid "May"
 msgstr ""
 
-#: frontend/src/App.vue:97
-msgid "Menu"
+#: frontend/src/components/BandMembers.vue:63
+msgid "Members"
 msgstr ""
 
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:35
-msgid "Metal"
+#: frontend/src/App.vue:188
+msgid "Menu"
 msgstr ""
 
 #: frontend/src/pages/PlanningScreen.vue:25
@@ -592,11 +636,23 @@ msgstr ""
 msgid "Month"
 msgstr ""
 
-#: frontend/src/pages/PipelineScreen.vue:81
+#: frontend/src/pages/DirectoryScreen.vue:194
+msgid "More options"
+msgstr ""
+
+#: frontend/src/components/ListColumnEditor.vue:70
+msgid "Move {0} down"
+msgstr ""
+
+#: frontend/src/components/ListColumnEditor.vue:62
+msgid "Move {0} up"
+msgstr ""
+
+#: frontend/src/pages/PipelineScreen.vue:94
 msgid "Moved {0} to {1}"
 msgstr ""
 
-#: frontend/src/App.vue:40 frontend/src/pages/MyTasksScreen.vue:28
+#: frontend/src/App.vue:69 frontend/src/pages/MyTasksScreen.vue:28
 msgid "My tasks"
 msgstr ""
 
@@ -620,7 +676,7 @@ msgstr ""
 msgid "Negotiating"
 msgstr ""
 
-#: frontend/src/pages/DirectoryScreen.vue:63
+#: frontend/src/pages/DirectoryScreen.vue:163
 msgid "New"
 msgstr ""
 
@@ -633,8 +689,8 @@ msgid "New field"
 msgstr ""
 
 #: frontend/src/components/GigPanel.vue:27
-#: frontend/src/pages/PipelineScreen.vue:102
-#: frontend/src/pages/PipelineScreen.vue:133
+#: frontend/src/pages/PipelineScreen.vue:128
+#: frontend/src/pages/PipelineScreen.vue:159
 msgid "New gig"
 msgstr ""
 
@@ -642,8 +698,12 @@ msgstr ""
 msgid "New task"
 msgstr ""
 
-#: frontend/src/components/EntryDialog.vue:19
+#: frontend/src/components/EntryDialog.vue:20
 msgid "New {0}"
+msgstr ""
+
+#: frontend/src/components/ListFilter.vue:38
+msgid "No"
 msgstr ""
 
 #: frontend/src/components/GigAttachments.vue:52
@@ -666,20 +726,41 @@ msgstr ""
 msgid "No emails yet."
 msgstr ""
 
-#: frontend/src/pages/PipelineScreen.vue:126
+#: frontend/src/components/ListFilter.vue:128
+msgid "No filters yet: choose a field to filter by."
+msgstr ""
+
+#: frontend/src/pages/PipelineScreen.vue:152
 msgid "No gigs yet"
 msgstr ""
 
-#: frontend/src/pages/DirectoryScreen.vue:95
+#: frontend/src/components/SearchPalette.vue:108
 msgid "No match for “{0}”"
 msgstr ""
 
-#: frontend/src/components/NotificationPanel.vue:50
+#: frontend/src/components/NotificationPanel.vue:57
 msgid "No notifications yet"
 msgstr ""
 
 #: frontend/src/components/GigTasks.vue:44
 msgid "No tasks yet."
+msgstr ""
+
+#: frontend/src/pages/DirectoryScreen.vue:203
+msgid "No {0} match these filters"
+msgstr ""
+
+#: frontend/src/pages/DirectoryScreen.vue:116
+#: frontend/src/pages/DirectoryScreen.vue:212
+msgid "No {0} yet"
+msgstr ""
+
+#: frontend/src/listFilters.js:31
+msgid "Not equals"
+msgstr ""
+
+#: frontend/src/components/ListFilter.vue:34
+msgid "Not set"
 msgstr ""
 
 #. Label of the notes (Small Text) field in DocType 'Band'
@@ -711,8 +792,9 @@ msgstr ""
 msgid "Nothing sent yet"
 msgstr ""
 
-#: frontend/src/App.vue:85 frontend/src/App.vue:119
-#: frontend/src/components/NotificationPanel.vue:34
+#: frontend/src/App.vue:115 frontend/src/App.vue:178
+#: frontend/src/components/NotificationPanel.vue:39
+#: frontend/src/components/NotificationPanel.vue:42
 msgid "Notifications"
 msgstr ""
 
@@ -738,7 +820,7 @@ msgstr ""
 msgid "Only band members can open Roadie"
 msgstr ""
 
-#: roadie/api.py:430
+#: roadie/api.py:471
 msgid "Only files and folders in Drive can be linked, not {0}"
 msgstr ""
 
@@ -746,11 +828,11 @@ msgstr ""
 msgid "Only its owner can share this item."
 msgstr ""
 
-#: roadie/api.py:325
+#: roadie/api.py:412
 msgid "Only the forms of {0} can be customised, not {1}"
 msgstr ""
 
-#: roadie/api.py:258
+#: roadie/api.py:301
 msgid "Only {0} bars can be rescheduled, not {1}"
 msgstr ""
 
@@ -762,7 +844,7 @@ msgstr ""
 msgid "Open a gig and write to its contacts. Every email the band sends shows here with its delivery status."
 msgstr ""
 
-#: roadie/fixtures/notification.json:38
+#: roadie/fixtures/notification.json:40
 msgid "Open my tasks"
 msgstr ""
 
@@ -777,15 +859,15 @@ msgstr ""
 msgid "Open {0}"
 msgstr ""
 
-#: roadie/api.py:221
+#: roadie/api.py:264
 msgid "Other"
 msgstr ""
 
-#: frontend/src/App.vue:53 frontend/src/pages/MailboxScreen.vue:42
+#: frontend/src/App.vue:78 frontend/src/pages/MailboxScreen.vue:42
 msgid "Outbox"
 msgstr ""
 
-#: frontend/src/App.vue:53
+#: frontend/src/App.vue:78
 msgid "Outgoing"
 msgstr ""
 
@@ -802,11 +884,11 @@ msgstr ""
 msgid "Phone"
 msgstr ""
 
-#: frontend/src/App.vue:30 frontend/src/pages/PipelineScreen.vue:97
+#: frontend/src/App.vue:59 frontend/src/pages/PipelineScreen.vue:123
 msgid "Pipeline"
 msgstr ""
 
-#: frontend/src/App.vue:33 frontend/src/App.vue:34
+#: frontend/src/App.vue:62 frontend/src/App.vue:63
 #: frontend/src/pages/PlanningScreen.vue:175
 msgid "Planning"
 msgstr ""
@@ -816,20 +898,11 @@ msgstr ""
 msgid "Played"
 msgstr ""
 
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:36
-msgid "Pop"
-msgstr ""
-
-#: frontend/src/pages/DirectoryScreen.vue:80
-msgid "Press / to search"
-msgstr ""
-
-#: frontend/src/pages/SettingsScreen.vue
+#: frontend/src/pages/SettingsScreen.vue:20
 msgid "Profile picture removed"
 msgstr ""
 
-#: frontend/src/pages/SettingsScreen.vue
+#: frontend/src/pages/SettingsScreen.vue:20
 msgid "Profile picture updated"
 msgstr ""
 
@@ -840,13 +913,8 @@ msgstr ""
 msgid "Promoter"
 msgstr ""
 
-#: frontend/src/directory.js:4
+#: frontend/src/directory.js:33 frontend/src/search.js:11
 msgid "Promoters"
-msgstr ""
-
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:37
-msgid "Punk"
 msgstr ""
 
 #: frontend/src/pages/PlanningScreen.vue:27
@@ -857,30 +925,49 @@ msgstr ""
 msgid "Queued"
 msgstr ""
 
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:38
-msgid "Rap"
+#: roadie/roadie/doctype/roadie_settings/roadie_settings.py:31
+msgid "Quick filters have to be a list of fieldnames"
 msgstr ""
 
-#: frontend/src/App.vue:52
+#: frontend/src/directoryQuickFilters.js:25
+msgid "Quick filters saved"
+msgstr ""
+
+#: frontend/src/App.vue:77
 msgid "Received"
 msgstr ""
 
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:39
-msgid "Reggae"
+#: frontend/src/pages/DirectoryScreen.vue:177
+msgid "Refresh"
+msgstr ""
+
+#. Label of the relevance (Rating) field in DocType 'Band'
+#. Label of the relevance (Rating) field in DocType 'Festival'
+#. Label of the relevance (Rating) field in DocType 'Promoter'
+#. Label of the relevance (Rating) field in DocType 'Venue'
+#: roadie/roadie/doctype/band/band.json
+#: roadie/roadie/doctype/festival/festival.json
+#: roadie/roadie/doctype/promoter/promoter.json
+#: roadie/roadie/doctype/venue/venue.json
+msgid "Relevance"
 msgstr ""
 
 #: frontend/src/components/EntryContacts.vue:83
 msgid "Remove contact"
 msgstr ""
 
-#: frontend/src/pages/SettingsScreen.vue
+#: frontend/src/components/ListFilter.vue:125
+msgid "Remove filter"
+msgstr ""
+
+#: frontend/src/pages/SettingsScreen.vue:68
 msgid "Remove picture"
 msgstr ""
 
 #: frontend/src/components/EmailComposer.vue:136
 #: frontend/src/components/EmailRecipients.vue:45
+#: frontend/src/components/ListColumnEditor.vue:78
+#: frontend/src/components/QuickFilterBar.vue:47
 msgid "Remove {0}"
 msgstr ""
 
@@ -908,44 +995,45 @@ msgstr ""
 msgid "Reply all"
 msgstr ""
 
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:40
-msgid "Rock"
+#: frontend/src/components/ListSort.vue:27
+msgid "Reset"
 msgstr ""
 
-#: frontend/src/components/EntryForm.vue:138
+#: frontend/src/components/ListColumnEditor.vue:99
+msgid "Reset to default"
+msgstr ""
+
+#. Name of a DocType
+#: roadie/roadie/doctype/roadie_settings/roadie_settings.json
+msgid "Roadie Settings"
+msgstr ""
+
+#: frontend/src/components/EntryForm.vue:177
+#: frontend/src/components/QuickFilterBar.vue:56
 msgid "Save"
 msgstr ""
 
-#: frontend/src/components/EntryForm.vue:84
+#: frontend/src/components/EntryForm.vue:114
 msgid "Saved"
 msgstr ""
 
-#: frontend/src/App.vue:103
+#: frontend/src/App.vue:195
 msgid "Screens"
 msgstr ""
 
-#: frontend/src/App.vue:74 frontend/src/App.vue:102
+#: frontend/src/App.vue:108 frontend/src/App.vue:172
 msgid "Search"
 msgstr ""
 
-#: frontend/src/pages/DirectoryScreen.vue:74
-msgid "Search by name or city"
-msgstr ""
-
-#: frontend/src/components/SearchPalette.vue
+#: frontend/src/components/SearchPalette.vue:84
 msgid "Search gigs, venues, promoters, bands and tasks"
 msgstr ""
 
-#: roadie/api.py:34
+#: roadie/api.py:47
 msgid "Search is limited to {0} characters, not {1}"
 msgstr ""
 
-#: frontend/src/pages/DirectoryScreen.vue:96
-msgid "Search looks at names and cities. Try a shorter word, or add the entry."
-msgstr ""
-
-#: frontend/src/components/SearchPalette.vue
+#: frontend/src/components/SearchPalette.vue:89
 msgid "Search results"
 msgstr ""
 
@@ -962,8 +1050,11 @@ msgstr ""
 msgid "September"
 msgstr ""
 
-#: frontend/src/App.vue
-#: frontend/src/pages/SettingsScreen.vue
+#: frontend/src/components/ListFilter.vue:33
+msgid "Set"
+msgstr ""
+
+#: frontend/src/App.vue:44 frontend/src/pages/SettingsScreen.vue:29
 msgid "Settings"
 msgstr ""
 
@@ -975,14 +1066,12 @@ msgstr ""
 msgid "Site"
 msgstr ""
 
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:41
-msgid "Ska"
+#: frontend/src/components/ListSort.vue:52
+msgid "Sort"
 msgstr ""
 
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:42
-msgid "Soul"
+#: frontend/src/components/ListSort.vue:16
+msgid "Sort by"
 msgstr ""
 
 #. Label of the start_date (Date) field in DocType 'Band Task'
@@ -994,7 +1083,7 @@ msgstr ""
 msgid "Start date"
 msgstr ""
 
-#: roadie/roadie/doctype/band_task/band_task.py:11
+#: roadie/roadie/doctype/band_task/band_task.py:12
 msgid "Start date {0} is after due date {1}"
 msgstr ""
 
@@ -1013,6 +1102,7 @@ msgstr ""
 #: roadie/roadie/doctype/festival/festival.json
 #: roadie/roadie/doctype/gig/gig.json
 #: roadie/roadie/doctype/promoter/promoter.json
+#: roadie/roadie/doctype/roadie_settings/roadie_settings.json
 #: roadie/roadie/doctype/venue/venue.json
 msgid "System Manager"
 msgstr ""
@@ -1021,17 +1111,13 @@ msgstr ""
 msgid "Task"
 msgstr ""
 
-#: frontend/src/components/NotificationPanel.vue:51
+#: frontend/src/components/NotificationPanel.vue:58
 msgid "Task assignments and deadlines show up here."
 msgstr ""
 
-#: frontend/src/App.vue:41 frontend/src/components/GigTasks.vue:34
+#: frontend/src/App.vue:70 frontend/src/components/GigTasks.vue:34
+#: frontend/src/search.js:13
 msgid "Tasks"
-msgstr ""
-
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:43
-msgid "Techno"
 msgstr ""
 
 #: frontend/src/components/FormCustomiser.vue:13
@@ -1040,6 +1126,22 @@ msgstr ""
 
 #: roadie/fixtures/notification.json:14
 msgid "The application for {0} closes on {1}, in {2} days, and the gig is still at {3}."
+msgstr ""
+
+#. Description of the 'Directory Columns' (Code) field in DocType 'Roadie
+#. Settings'
+#: roadie/roadie/doctype/roadie_settings/roadie_settings.json
+msgid "The columns each directory list shows, as JSON keyed by DocType. Set from the screens' Columns menu; hand-editing it in Desk is allowed."
+msgstr ""
+
+#. Description of the 'Directory Quick Filters' (Code) field in DocType 'Roadie
+#. Settings'
+#: roadie/roadie/doctype/roadie_settings/roadie_settings.json
+msgid "The fields each directory list offers as quick filters, as JSON lists of fieldnames keyed by DocType. A DocType left out gets the name and the city."
+msgstr ""
+
+#: frontend/src/components/BandMembers.vue:105
+msgid "They get an email with a link to join the band."
 msgstr ""
 
 #: frontend/src/components/DriveLinkDialog.vue:119
@@ -1074,16 +1176,17 @@ msgid "Type"
 msgstr ""
 
 #: frontend/src/components/EntryContacts.vue:52
-#: frontend/src/pages/PipelineScreen.vue:74
+#: frontend/src/pages/PipelineScreen.vue:87
 #: frontend/src/pages/PlanningScreen.vue:108
 msgid "Undo"
 msgstr ""
 
+#: frontend/src/components/NotificationPanel.vue:69
 #: frontend/src/pages/MailboxScreen.vue:77
 msgid "Unread"
 msgstr ""
 
-#: frontend/src/pages/SettingsScreen.vue
+#: frontend/src/pages/SettingsScreen.vue:54
 msgid "Upload"
 msgstr ""
 
@@ -1092,7 +1195,7 @@ msgstr ""
 msgid "Uploading {0}%"
 msgstr ""
 
-#: frontend/src/pages/SettingsScreen.vue
+#: frontend/src/pages/SettingsScreen.vue:54
 msgid "Uploading…"
 msgstr ""
 
@@ -1117,7 +1220,7 @@ msgstr ""
 msgid "Venue"
 msgstr ""
 
-#: frontend/src/directory.js:3
+#: frontend/src/directory.js:21 frontend/src/search.js:10
 msgid "Venues"
 msgstr ""
 
@@ -1136,9 +1239,8 @@ msgstr ""
 msgid "Week"
 msgstr ""
 
-#. Genre option for the Band genre multiselect
-#: frontend/src/directory.js:44
-msgid "World"
+#: frontend/src/components/ListFilter.vue:97
+msgid "Where"
 msgstr ""
 
 #: frontend/src/components/EmailThread.vue:35
@@ -1157,8 +1259,8 @@ msgstr ""
 msgid "Year"
 msgstr ""
 
-#: frontend/src/pages/DirectoryScreen.vue:102
-msgid "Your address book starts here"
+#: frontend/src/components/ListFilter.vue:37
+msgid "Yes"
 msgstr ""
 
 #: frontend/src/components/EmailThread.vue:47
@@ -1181,19 +1283,27 @@ msgstr ""
 msgid "{0} added"
 msgstr ""
 
-#: roadie/roadie/doctype/band_task/band_task.py:36
+#: frontend/src/components/BandMembers.vue:49
+msgid "{0} already accepted an invitation"
+msgstr ""
+
+#: roadie/roadie/doctype/band_task/band_task.py:37
 msgid "{0} assigned you a task: {1}"
 msgstr ""
 
-#: roadie/api.py:317
+#: roadie/api.py:404
 msgid "{0} cannot be hidden: Roadie relies on it"
 msgstr ""
 
-#: frontend/src/notifications.js:18
+#: frontend/src/notifications.js:13
 msgid "{0} h ago"
 msgstr ""
 
-#: roadie/api.py:336
+#: frontend/src/components/BandMembers.vue:47
+msgid "{0} has a disabled account"
+msgstr ""
+
+#: roadie/api.py:423
 msgid "{0} has no field {1} that Roadie's form shows"
 msgstr ""
 
@@ -1201,23 +1311,35 @@ msgstr ""
 msgid "{0} hidden"
 msgstr ""
 
-#: frontend/src/pages/PipelineScreen.vue:51
-msgid "{0} is booked. Time to rehearse!"
+#: frontend/src/components/BandMembers.vue:30
+msgid "{0} is already a member"
 msgstr ""
 
-#: roadie/fixtures/notification.json:38
-msgid "{0} is due today."
+#: frontend/src/components/BandMembers.vue:45
+msgid "{0} is already invited"
 msgstr ""
 
 #: frontend/src/pages/PipelineScreen.vue:52
+msgid "{0} is booked. Time to rehearse!"
+msgstr ""
+
+#: roadie/fixtures/notification.json:40
+msgid "{0} is due today."
+msgstr ""
+
+#: frontend/src/pages/PipelineScreen.vue:53
 msgid "{0} is in the books. What a night!"
 msgstr ""
 
-#: roadie/mentions.py:47
+#: roadie/api.py:337 roadie/api.py:359
+msgid "{0} is not a directory list"
+msgstr ""
+
+#: roadie/mentions.py:52
 msgid "{0} mentioned you in a comment in {1} {2}"
 msgstr ""
 
-#: frontend/src/notifications.js:17
+#: frontend/src/notifications.js:12
 msgid "{0} min ago"
 msgstr ""
 
@@ -1229,11 +1351,3 @@ msgstr ""
 msgid "{0} stays visible: Roadie relies on it"
 msgstr ""
 
-
-#: frontend/src/App.vue:124
-msgid "Mail"
-msgstr ""
-
-#: roadie/api.py:336
-msgid "{0} is not a directory list"
-msgstr ""

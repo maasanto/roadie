@@ -11,6 +11,7 @@ export const directoryTypes = [
 		route: { name: "Festivals", path: "/directory/festivals" },
 		columns: [
 			{ fieldname: "title", label: "Name" },
+			{ fieldname: "relevance", label: "Relevance", format: "rating" },
 			{ fieldname: "city", label: "City" },
 			{ fieldname: "usual_month", label: "Usual month", format: "label" },
 		],
@@ -22,6 +23,7 @@ export const directoryTypes = [
 		route: { name: "Venues", path: "/directory/venues" },
 		columns: [
 			{ fieldname: "title", label: "Name" },
+			{ fieldname: "relevance", label: "Relevance", format: "rating" },
 			{ fieldname: "city", label: "City" },
 			{ fieldname: "capacity", label: "Capacity", format: "number" },
 		],
@@ -33,6 +35,7 @@ export const directoryTypes = [
 		route: { name: "Promoters", path: "/directory/promoters" },
 		columns: [
 			{ fieldname: "title", label: "Name" },
+			{ fieldname: "relevance", label: "Relevance", format: "rating" },
 			{ fieldname: "city", label: "City" },
 		],
 	},
@@ -43,6 +46,7 @@ export const directoryTypes = [
 		route: { name: "Bands", path: "/directory/bands" },
 		columns: [
 			{ fieldname: "title", label: "Name" },
+			{ fieldname: "relevance", label: "Relevance", format: "rating" },
 			{ fieldname: "city", label: "City" },
 			{ fieldname: "genre", label: "Genre", format: "list" },
 		],
@@ -94,3 +98,11 @@ export const splitList = (value) =>
 		.filter(Boolean);
 
 export const joinList = (values) => (values || []).join(", ");
+
+// A Rating field stores the fraction of the stars lit, 0.6 for three of five, so the SPA counts stars and the
+// database keeps the fraction Desk reads.
+export const RATING_STARS = 5;
+
+export const toStars = (fraction) => Math.round((Number(fraction) || 0) * RATING_STARS);
+
+export const toFraction = (stars) => (Number(stars) || 0) / RATING_STARS;

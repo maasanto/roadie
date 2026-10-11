@@ -23,3 +23,17 @@ def clean_columns(doctype, columns: list) -> list:
 		for column in columns
 		if isinstance(column, dict) and column.get("fieldname") in fields
 	]
+
+
+def clean_quick_filters(doctype, fieldnames: list) -> list:
+	"""Keep the fields the DocType still has, once each and in order."""
+	if not isinstance(fieldnames, list):
+		frappe.throw(_("Quick filters have to be a list of fieldnames"))
+
+	fields = {field.fieldname for field in frappe.get_meta(doctype).fields}
+
+	return list(
+		dict.fromkeys(
+			fieldname for fieldname in fieldnames if isinstance(fieldname, str) and fieldname in fields
+		)
+	)

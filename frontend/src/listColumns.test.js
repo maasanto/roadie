@@ -20,16 +20,16 @@ const {
 const fieldnames = (columns) => columns.map((column) => column.fieldname);
 
 test("a type opens with the columns that suit it", () => {
-	assert.deepEqual(fieldnames(defaultColumns("Festival")), ["title", "city", "usual_month"]);
-	assert.deepEqual(fieldnames(defaultColumns("Venue")), ["title", "city", "capacity"]);
-	assert.deepEqual(fieldnames(defaultColumns("Promoter")), ["title", "city"]);
-	assert.deepEqual(fieldnames(defaultColumns("Band")), ["title", "city", "genre"]);
+	assert.deepEqual(fieldnames(defaultColumns("Festival")), ["title", "relevance", "city", "usual_month"]);
+	assert.deepEqual(fieldnames(defaultColumns("Venue")), ["title", "relevance", "city", "capacity"]);
+	assert.deepEqual(fieldnames(defaultColumns("Promoter")), ["title", "relevance", "city"]);
+	assert.deepEqual(fieldnames(defaultColumns("Band")), ["title", "relevance", "city", "genre"]);
 	assert.deepEqual(defaultColumns("Unknown"), []);
 });
 
 test("a member with no saved layout gets the defaults", () => {
 	for (const saved of [null, undefined, "", "[]", "not json at all", "{}"]) {
-		assert.deepEqual(fieldnames(columnsFor("Venue", saved)), ["title", "city", "capacity"]);
+		assert.deepEqual(fieldnames(columnsFor("Venue", saved)), ["title", "relevance", "city", "capacity"]);
 		assert.equal(columnsFor("Venue", saved)[0].format, "text");
 	}
 });
@@ -92,28 +92,30 @@ test("the list fetches the row's name first, then each column once", () => {
 	assert.deepEqual(fetchFields(columns), ["name", "city", "title"]);
 });
 
-test("the list fetches what the search reads, whether or not those columns are shown", () => {
-	const columns = [{ fieldname: "title" }, { fieldname: "genre" }];
-
-	assert.deepEqual(fetchFields(columns, ["title", "city"]), ["name", "city", "genre", "title"]);
-});
-
 test("reordering columns leaves what is fetched, and so the request, alone", () => {
 	const columns = defaultColumns("Venue");
 	const reordered = moveColumn(columns, "capacity", -1);
 
-	assert.deepEqual(fetchFields(reordered, ["title", "city"]), fetchFields(columns, ["title", "city"]));
+	assert.deepEqual(fetchFields(reordered), fetchFields(columns));
 });
 
 test("a column moves one slot at a time, and never displaces the name column", () => {
-	const columns = columnsFor("Venue", null);
+	const columns = columnsFor("Venue", [
+		{ fieldname: "title" },
+		{ fieldname: "city" },
+		{ fieldname: "capacity" },
+	]);
 
 	assert.deepEqual(fieldnames(moveColumn(columns, "capacity", -1)), ["title", "capacity", "city"]);
 	assert.deepEqual(fieldnames(moveColumn(columns, "city", 1)), ["title", "capacity", "city"]);
 });
 
 test("the name column cannot move, and neither end can be stepped past", () => {
-	const columns = columnsFor("Venue", null);
+	const columns = columnsFor("Venue", [
+		{ fieldname: "title" },
+		{ fieldname: "city" },
+		{ fieldname: "capacity" },
+	]);
 
 	assert.deepEqual(moveColumn(columns, "title", 1), columns);
 	assert.deepEqual(fieldnames(moveColumn(columns, "city", -1)), ["title", "city", "capacity"]);
@@ -130,6 +132,7 @@ test("a field picked from the meta becomes a column that reads its value", () =>
 	});
 	assert.equal(columnFromField({ type: "select" }).format, "label");
 	assert.equal(columnFromField({ type: "multiselect" }).format, "list");
+	assert.equal(columnFromField({ type: "rating" }).format, "rating");
 	assert.equal(columnFromField({ type: "date" }).format, "text");
 });
 

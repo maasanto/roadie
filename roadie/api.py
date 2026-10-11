@@ -4,7 +4,7 @@ import frappe
 from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 
-from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns
+from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns, clean_quick_filters
 
 DIRECTORY_DOCTYPES = ("Festival", "Venue", "Promoter", "Band")
 CUSTOMISABLE_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
@@ -13,7 +13,7 @@ PROTECTED_FIELDS = ("title", "status", "gig_owner", "gig_date", "application_ope
 # Text, long text, number, date, checkbox and choice list: the types a form edits without a picker.
 NEW_FIELD_TYPES = ("Data", "Small Text", "Float", "Date", "Check", "Select")
 # Mirrors the controls of frontend/src/metaFields.js, plus Link for the gig's pickers.
-FORM_FIELD_TYPES = (*NEW_FIELD_TYPES, "Text", "Long Text", "Int", "Currency", "Link")
+FORM_FIELD_TYPES = (*NEW_FIELD_TYPES, "Text", "Long Text", "Int", "Currency", "Rating", "Link")
 EMAIL_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
 COMMENT_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 # Frappe roots a thread linked to no record on its first Communication, so that Communication is a thread too.
@@ -352,6 +352,31 @@ def set_directory_columns(doctype: str, columns: str) -> None:
 	all_columns = frappe.parse_json(settings.directory_columns or "{}") or {}
 	all_columns[doctype] = clean_columns(doctype, frappe.parse_json(columns))
 	settings.directory_columns = frappe.as_json(all_columns)
+	settings.save()
+
+
+@frappe.whitelist()
+def get_directory_quick_filters() -> dict:
+	"""The quick filters each directory list offers, keyed by DocType: one setting for the whole site."""
+	frappe.only_for(("Band Member", "System Manager"))
+
+	return (
+		frappe.parse_json(frappe.db.get_single_value("Roadie Settings", "directory_quick_filters") or "{}")
+		or {}
+	)
+
+
+@frappe.whitelist(methods=["POST"])
+def set_directory_quick_filters(doctype: str, fieldnames: str) -> None:
+	"""Replace one type's quick filters. An empty list leaves that type with none."""
+	frappe.only_for(("Band Member", "System Manager"))
+	if doctype not in DIRECTORY_DOCTYPES:
+		frappe.throw(_("{0} is not a directory list").format(doctype))
+
+	settings = frappe.get_doc("Roadie Settings")
+	all_filters = frappe.parse_json(settings.directory_quick_filters or "{}") or {}
+	all_filters[doctype] = clean_quick_filters(doctype, frappe.parse_json(fieldnames))
+	settings.directory_quick_filters = frappe.as_json(all_filters)
 	settings.save()
 
 

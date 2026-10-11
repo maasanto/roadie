@@ -26,6 +26,10 @@ msgstr "Une liste de choix a besoin d'au moins un choix"
 msgid "A field needs a label"
 msgstr "Un champ a besoin d'un nom"
 
+#: roadie/roadie/doctype/roadie_settings/roadie_settings.py
+msgid "Quick filters have to be a list of fieldnames"
+msgstr "Les filtres rapides doivent être une liste de noms de champs"
+
 #: roadie/api.py:286
 msgid "A new field is one of {0}, not {1}"
 msgstr "Un nouveau champ est de type {0}, pas {1}"
@@ -823,10 +827,6 @@ msgstr "Joué"
 msgid "Pop"
 msgstr "Pop"
 
-#: frontend/src/pages/DirectoryScreen.vue:80
-msgid "Press / to search"
-msgstr "Appuyez sur / pour rechercher"
-
 #: frontend/src/pages/SettingsScreen.vue
 msgid "Profile picture removed"
 msgstr "Photo de profil retirée"
@@ -872,6 +872,17 @@ msgstr "Reçus"
 #: frontend/src/directory.js:39
 msgid "Reggae"
 msgstr "Reggae"
+
+#. Label of the relevance (Rating) field in DocType 'Band'
+#. Label of the relevance (Rating) field in DocType 'Festival'
+#. Label of the relevance (Rating) field in DocType 'Promoter'
+#. Label of the relevance (Rating) field in DocType 'Venue'
+#: roadie/roadie/doctype/band/band.json
+#: roadie/roadie/doctype/festival/festival.json
+#: roadie/roadie/doctype/promoter/promoter.json
+#: roadie/roadie/doctype/venue/venue.json
+msgid "Relevance"
+msgstr "Pertinence"
 
 #: frontend/src/components/EntryContacts.vue:83
 msgid "Remove contact"
@@ -931,10 +942,6 @@ msgstr "Écrans"
 msgid "Search"
 msgstr "Rechercher"
 
-#: frontend/src/pages/DirectoryScreen.vue:74
-msgid "Search by name or city"
-msgstr "Rechercher par nom ou ville"
-
 #: frontend/src/components/SearchPalette.vue
 msgid "Search gigs, venues, promoters, bands and tasks"
 msgstr "Rechercher des concerts, salles, promoteurs, groupes et tâches"
@@ -942,10 +949,6 @@ msgstr "Rechercher des concerts, salles, promoteurs, groupes et tâches"
 #: roadie/api.py:34
 msgid "Search is limited to {0} characters, not {1}"
 msgstr "La recherche est limitée à {0} caractères, pas {1}"
-
-#: frontend/src/pages/DirectoryScreen.vue:96
-msgid "Search looks at names and cities. Try a shorter word, or add the entry."
-msgstr "La recherche porte sur les noms et les villes. Essayez un mot plus court, ou ajoutez la fiche."
 
 #: frontend/src/components/SearchPalette.vue
 msgid "Search results"
@@ -964,8 +967,7 @@ msgstr "Envoyé"
 msgid "September"
 msgstr "Septembre"
 
-#: frontend/src/App.vue
-#: frontend/src/pages/SettingsScreen.vue
+#: frontend/src/App.vue frontend/src/pages/SettingsScreen.vue
 msgid "Settings"
 msgstr "Paramètres"
 
@@ -1231,7 +1233,6 @@ msgstr "Champ « {0} » de nouveau affiché"
 msgid "{0} stays visible: Roadie relies on it"
 msgstr "Le champ « {0} » reste affiché : Roadie s'appuie dessus"
 
-
 #: frontend/src/App.vue:124
 msgid "Mail"
 msgstr "Courrier"
@@ -1279,3 +1280,211 @@ msgstr "Choisissez une conversation à gauche, ou passez de l'une à l'autre ave
 #: frontend/src/components/EmailBody.vue
 msgid "Show quoted text"
 msgstr "Afficher le texte cité"
+
+#: frontend/src/components/BandMembers.vue
+msgid "Members"
+msgstr "Membres"
+
+#: frontend/src/components/BandMembers.vue
+msgid "Invited"
+msgstr "Invité"
+
+#: frontend/src/components/BandMembers.vue
+msgid "Cancel invitation"
+msgstr "Annuler l'invitation"
+
+#: frontend/src/components/BandMembers.vue
+msgid "Invite someone to the band"
+msgstr "Inviter quelqu'un dans le groupe"
+
+#: frontend/src/components/BandMembers.vue
+msgid "Invite"
+msgstr "Inviter"
+
+#: frontend/src/components/BandMembers.vue
+msgid "They get an email with a link to join the band."
+msgstr "La personne reçoit un e-mail avec un lien pour rejoindre le groupe."
+
+#: frontend/src/components/BandMembers.vue
+msgid "Invitation sent to {0}"
+msgstr "Invitation envoyée à {0}"
+
+#: frontend/src/components/BandMembers.vue
+msgid "Invitation to {0} cancelled"
+msgstr "Invitation pour {0} annulée"
+
+#: frontend/src/components/BandMembers.vue
+msgid "{0} is already invited"
+msgstr "{0} est déjà invité"
+
+#: frontend/src/components/BandMembers.vue
+msgid "{0} is already a member"
+msgstr "{0} est déjà membre du groupe"
+
+#: frontend/src/components/BandMembers.vue
+msgid "{0} has a disabled account"
+msgstr "Le compte de {0} est désactivé"
+
+#: frontend/src/components/BandMembers.vue
+msgid "{0} already accepted an invitation"
+msgstr "{0} a déjà accepté une invitation"
+
+#: frontend/src/components/ListColumnEditor.vue
+msgid "Add column"
+msgstr "Ajouter une colonne"
+
+#: frontend/src/components/ListColumnEditor.vue
+msgid "Columns"
+msgstr "Colonnes"
+
+#: frontend/src/components/ListColumnEditor.vue
+msgid "Move {0} down"
+msgstr "Descendre {0}"
+
+#: frontend/src/components/ListColumnEditor.vue
+msgid "Move {0} up"
+msgstr "Monter {0}"
+
+#: frontend/src/components/ListColumnEditor.vue
+msgid "Reset to default"
+msgstr "Rétablir par défaut"
+
+#: frontend/src/directoryColumns.js
+msgid "Back to the usual columns"
+msgstr "Retour aux colonnes habituelles"
+
+#: frontend/src/directoryColumns.js
+msgid "Columns saved"
+msgstr "Colonnes enregistrées"
+
+#: frontend/src/pages/DirectoryScreen.vue
+msgid "Add the {0} you deal with, and the people to talk to at each."
+msgstr "Ajoutez les {0} avec lesquels vous travaillez, et les personnes à contacter pour chacun."
+
+#: frontend/src/pages/DirectoryScreen.vue
+msgid "Clear all filters"
+msgstr "Effacer tous les filtres"
+
+#: frontend/src/pages/DirectoryScreen.vue
+msgid "Created"
+msgstr "Date de création"
+
+#: frontend/src/pages/DirectoryScreen.vue
+msgid "Customise quick filters"
+msgstr "Personnaliser les filtres rapides"
+
+#: frontend/src/pages/DirectoryScreen.vue
+msgid "Last modified"
+msgstr "Dernière modification"
+
+#: frontend/src/pages/DirectoryScreen.vue
+msgid "Loosen a filter, or add the entry."
+msgstr "Assouplissez un filtre, ou ajoutez la fiche."
+
+#: frontend/src/pages/DirectoryScreen.vue
+msgid "More options"
+msgstr "Plus d'options"
+
+#: frontend/src/pages/DirectoryScreen.vue
+msgid "No {0} match these filters"
+msgstr "Aucune fiche ne correspond à ces filtres"
+
+#: frontend/src/pages/DirectoryScreen.vue
+msgid "No {0} yet"
+msgstr "Pas encore de {0}"
+
+#: frontend/src/pages/DirectoryScreen.vue
+msgid "Refresh"
+msgstr "Actualiser"
+
+#: frontend/src/components/ListFilter.vue
+msgid "Add filter"
+msgstr "Ajouter un filtre"
+
+#: frontend/src/components/ListFilter.vue
+msgid "And"
+msgstr "Et"
+
+#: frontend/src/components/ListFilter.vue
+msgid "Filter"
+msgstr "Filtre"
+
+#: frontend/src/components/ListFilter.vue
+msgid "No"
+msgstr "Non"
+
+#: frontend/src/components/ListFilter.vue
+msgid "No filters yet: choose a field to filter by."
+msgstr "Aucun filtre pour l'instant : choisissez un champ à filtrer."
+
+#: frontend/src/components/ListFilter.vue
+msgid "Not set"
+msgstr "Non renseigné"
+
+#: frontend/src/components/ListFilter.vue
+msgid "Remove filter"
+msgstr "Retirer le filtre"
+
+#: frontend/src/components/ListFilter.vue
+msgid "Set"
+msgstr "Renseigné"
+
+#: frontend/src/components/ListFilter.vue
+msgid "Where"
+msgstr "Où"
+
+#: frontend/src/components/ListFilter.vue
+msgid "Yes"
+msgstr "Oui"
+
+#: frontend/src/listFilters.js
+msgid "Contains"
+msgstr "Contient"
+
+#: frontend/src/listFilters.js
+msgid "Does not contain"
+msgstr "Ne contient pas"
+
+#: frontend/src/listFilters.js
+msgid "Equals"
+msgstr "Égal à"
+
+#: frontend/src/listFilters.js
+msgid "Not equals"
+msgstr "Différent de"
+
+#: frontend/src/listFilters.js
+msgid "Is"
+msgstr "Est"
+
+#: frontend/src/components/ListSort.vue
+msgid "Ascending"
+msgstr "Croissant"
+
+#: frontend/src/components/ListSort.vue
+msgid "Default order"
+msgstr "Ordre par défaut"
+
+#: frontend/src/components/ListSort.vue
+msgid "Descending"
+msgstr "Décroissant"
+
+#: frontend/src/components/ListSort.vue
+msgid "Reset"
+msgstr "Réinitialiser"
+
+#: frontend/src/components/ListSort.vue
+msgid "Sort"
+msgstr "Trier"
+
+#: frontend/src/components/ListSort.vue
+msgid "Sort by"
+msgstr "Trier par"
+
+#: frontend/src/components/QuickFilterField.vue
+msgid "At least {0} ★"
+msgstr "Au moins {0} ★"
+
+#: frontend/src/directoryQuickFilters.js
+msgid "Quick filters saved"
+msgstr "Filtres rapides enregistrés"

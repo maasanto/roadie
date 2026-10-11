@@ -1,8 +1,9 @@
 import { directoryType, splitList } from "./directory.js";
 
 // How a column reads the value behind it: `number` groups digits, `label` translates a value the database
-// keeps in English, `list` joins a comma-separated one. Anything else shows as stored.
-const FORMATS = ["text", "number", "label", "list"];
+// keeps in English, `list` joins a comma-separated one, and the list draws a `rating` as stars. Anything else
+// shows as stored.
+const FORMATS = ["text", "number", "label", "list", "rating"];
 
 // The column that names the row. It leads every list and cannot be moved or removed.
 export const isNameColumn = (column) => column.fieldname === "title";
@@ -60,11 +61,11 @@ export function columnsFor(doctype, saved) {
 	return [saved_name ?? cleanColumn(name), ...columns.filter((column) => !isNameColumn(column))];
 }
 
-// What the list fetches: the row's name, which is its identity and key, then every field a column reads and
-// whatever the screen needs regardless of the columns it shows. Sorted, because reordering columns changes
-// neither what is read nor the response, and an unsorted list would re-request the whole type.
-export function fetchFields(columns, extraFields = []) {
-	const fields = new Set([...columns.map((column) => column.fieldname), ...extraFields]);
+// What the list fetches: the row's name, which is its identity and key, then every field a column reads.
+// Sorted, because reordering columns changes neither what is read nor the response, and an unsorted list
+// would re-request the whole type.
+export function fetchFields(columns) {
+	const fields = new Set(columns.map((column) => column.fieldname));
 	fields.delete("name");
 	return ["name", ...[...fields].sort()];
 }
@@ -82,17 +83,15 @@ export function moveColumn(columns, fieldname, offset) {
 }
 
 // A field picked from the DocType's meta becomes a column: digits group, a choice's stored value translates,
-// a multiselect joins.
+// a multiselect joins, a rating draws stars.
+const FORMAT_BY_CONTROL = { number: "number", multiselect: "list", select: "label", rating: "rating" };
+
 export function columnFromField(field) {
-	const format =
-		field.type === "number"
-			? "number"
-			: field.type === "multiselect"
-			? "list"
-			: field.type === "select"
-			? "label"
-			: "text";
-	return { fieldname: field.fieldname, label: field.label, format };
+	return {
+		fieldname: field.fieldname,
+		label: field.label,
+		format: FORMAT_BY_CONTROL[field.type] ?? "text",
+	};
 }
 
 export function formatCell(column, row) {
