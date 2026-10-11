@@ -975,8 +975,7 @@ msgstr "Envoyé"
 msgid "September"
 msgstr "Septembre"
 
-#: frontend/src/App.vue
-#: frontend/src/pages/SettingsScreen.vue
+#: frontend/src/App.vue frontend/src/pages/SettingsScreen.vue
 msgid "Settings"
 msgstr "Paramètres"
 
@@ -1242,7 +1241,6 @@ msgstr "Champ « {0} » de nouveau affiché"
 msgid "{0} stays visible: Roadie relies on it"
 msgstr "Le champ « {0} » reste affiché : Roadie s'appuie dessus"
 
-
 #: frontend/src/App.vue:124
 msgid "Mail"
 msgstr "Courrier"
@@ -1298,3 +1296,40 @@ msgstr "Le compte de {0} est désactivé"
 #: frontend/src/components/BandMembers.vue
 msgid "{0} already accepted an invitation"
 msgstr "{0} a déjà accepté une invitation"
+
+#: frontend/src/components/ListColumnEditor.vue
+msgid "Add column"
+msgstr "Ajouter une colonne"
+
+#: frontend/src/components/ListColumnEditor.vue
+msgid "Columns"
+msgstr "Colonnes"
+
+#: frontend/src/components/ListColumnEditor.vue
+msgid "Move {0} down"
+msgstr "Descendre {0}"
+
+#: frontend/src/components/ListColumnEditor.vue
+msgid "Move {0} up"
+msgstr "Monter {0}"
+
+#: frontend/src/components/ListColumnEditor.vue
+msgid "Reset to default"
+msgstr "Rétablir par défaut"
+
+#: frontend/src/directoryColumns.js
+msgid "Back to the usual columns"
+msgstr "Retour aux colonnes habituelles"
+
+#: frontend/src/directoryColumns.js
+msgid "Columns saved"
+msgstr "Colonnes enregistrées"
+
+#: frontend/src/pages/DirectoryScreen.vue
+msgid "Add the {0} you deal with, and the people to talk to at each."
+msgstr "Ajoutez les {0} avec lesquels vous travaillez, et les personnes à contacter pour chacun."
+
+#: frontend/src/pages/DirectoryScreen.vue
+msgid "No {0} yet"
+msgstr "Pas encore de {0}"
+
