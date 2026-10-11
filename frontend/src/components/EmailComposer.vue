@@ -5,8 +5,9 @@ import DriveLinkDialog from "./DriveLinkDialog.vue";
 import EmailRecipients from "./EmailRecipients.vue";
 
 const props = defineProps({
-	doctype: { type: String, required: true },
-	name: { type: String, required: true },
+	// Left out for a new email from the Inbox: Frappe then threads it on the recipient's contact, or on itself.
+	doctype: { type: String, default: null },
+	name: { type: String, default: null },
 	draft: { type: Object, default: () => ({}) },
 });
 const emit = defineEmits(["sent", "discard"]);
@@ -142,7 +143,7 @@ function submit() {
 		<div class="mt-3 flex items-center justify-between">
 			<div class="flex items-start gap-1">
 				<FileUploader
-					:upload-args="{ doctype, docname: name, private: true }"
+					:upload-args="doctype ? { doctype, docname: name, private: true } : { private: true }"
 					@success="attachments.push($event)"
 				>
 					<template #default="{ openFileSelector, uploading, progress, error }">
