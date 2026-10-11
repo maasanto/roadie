@@ -1,26 +1,22 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Button, ErrorMessage, Skeleton, TextInput, useList } from "frappe-ui";
-import { List, ListCell, ListHeader, ListHeaderCell, ListRow, ListRows } from "frappe-ui/list";
-// The family's geometry (grid tracks, dividers, row insets) ships as its own stylesheet: the bundler does not
-// pick it up through the package entry, so it is imported here, where the family is used.
-import "frappe-ui/list-style.css";
+import { Button, ErrorMessage, ListView, Skeleton, TextInput, useList } from "frappe-ui";
 import CommentThread from "../components/CommentThread.vue";
 import EmailThread from "../components/EmailThread.vue";
 import EmptyState from "../components/EmptyState.vue";
 import EntryContacts from "../components/EntryContacts.vue";
 import EntryDialog from "../components/EntryDialog.vue";
 import ListColumnEditor from "../components/ListColumnEditor.vue";
+import { useDirectoryColumns } from "../directoryColumns";
 import { directoryControls, directoryType } from "../directory";
 import { fetchFields, formatCell } from "../listColumns";
-import { useListView } from "../listView";
 import { onKey } from "../keyboard";
 
 const props = defineProps({ doctype: { type: String, required: true } });
 
 const type = directoryType(props.doctype);
-const { columns, ready } = useListView(props.doctype);
+const { columns, loaded } = useDirectoryColumns(props.doctype);
 
 // The search reads the name and the city whether or not those columns are on screen, so they are always fetched.
 const SEARCH_FIELDS = ["title", "city"];
@@ -41,9 +37,9 @@ const entries = useList({
 
 let fetched = null;
 watch(
-	[ready, fields],
+	[loaded, fields],
 	() => {
-		if (!ready.value) return;
+		if (!loaded.value) return;
 		const key = fields.value.join(",");
 		if (key === fetched) return;
 		fetched = key;
@@ -52,9 +48,8 @@ watch(
 	{ immediate: true }
 );
 
-const isLoading = computed(() => !ready.value || (entries.loading && !entries.data));
+const isLoading = computed(() => !loaded.value || (entries.loading && !entries.data));
 const loadError = computed(() => (entries.loading || entries.data ? null : entries.error));
-const placeholderRows = Array.from({ length: 4 }, (unused, index) => ({ name: `row-${index}` }));
 
 const query = ref("");
 const searchInput = ref(null);
@@ -67,10 +62,42 @@ const rows = computed(() => {
 	);
 });
 
-// The name column takes the room and the rest are fixed, so a column means the same width on every row. A
-// phone drops to the name and its first extra column, as a two-track feed.
-const tracks = computed(() => columns.value.map((column, index) => (index === 0 ? "minmax(0,1fr)" : "8rem")));
-const isExtra = (index) => index > 1;
+// The list owns its grid, so a phone drops the trailing columns rather than hiding their cells: two tracks are
+// what a phone can read.
+const phone = window.matchMedia("(max-width: 639px)");
+const isPhone = ref(phone.matches);
+const onPhoneChange = (event) => (isPhone.value = event.matches);
+phone.addEventListener("change", onPhoneChange);
+onUnmounted(() => phone.removeEventListener("change", onPhoneChange));
+
+const listColumns = computed(() =>
+	columns.value.slice(0, isPhone.value ? 2 : undefined).map((column) => ({
+		key: column.fieldname,
+		label: __(column.label),
+		// The name takes the room; the rest share what is left.
+		width: column.fieldname === "title" ? 3 : 1,
+		format: column.format,
+	}))
+);
+
+const placeholderRows = Array.from({ length: 4 }, (unused, index) => ({
+	name: `row-${index}`,
+	__skeleton: true,
+}));
+
+const listRows = computed(() => (isLoading.value ? placeholderRows : rows.value));
+
+const options = computed(() => ({
+	// A skeleton row is not an entry, so it opens nothing.
+	onRowClick: (row) => !row.__skeleton && openEntry(row.name),
+	selectable: false,
+	showTooltip: true,
+	rowHeight: 44,
+	emptyState: {
+		title: __("No {0} yet", [type.plural.toLowerCase()]),
+		description: "",
+	},
+}));
 
 const isDialogOpen = ref(false);
 const editingName = ref(null);
@@ -146,40 +173,25 @@ watch(
 		>
 			<Button icon-left="lucide-plus" :label="__('Add the first one')" @click="openEntry()" />
 		</EmptyState>
-		<List v-else :columns="tracks" class="mt-4 list-row-px-3 max-sm:[--list-columns:minmax(0,1fr)_auto]">
-			<ListHeader class="max-sm:hidden">
-				<ListHeaderCell
-					v-for="(column, index) in columns"
-					:key="column.fieldname"
-					:class="isExtra(index) && 'max-sm:hidden'"
-				>
-					{{ __(column.label) }}
-				</ListHeaderCell>
-			</ListHeader>
-			<ListRows v-if="isLoading" :items="placeholderRows" v-slot="{ item }">
-				<ListRow class="py-2">
-					<ListCell
-						v-for="(column, index) in columns"
-						:key="column.fieldname"
-						:class="isExtra(index) && 'max-sm:hidden'"
-					>
-						<Skeleton class="h-4 rounded" :class="index === 0 ? 'w-40' : 'w-16'" />
-					</ListCell>
-				</ListRow>
-			</ListRows>
-			<ListRows v-else :items="rows" v-slot="{ item }">
-				<ListRow class="py-2" :on-click="() => openEntry(item.name)">
-					<ListCell
-						v-for="(column, index) in columns"
-						:key="column.fieldname"
-						class="text-base"
-						:class="[isExtra(index) && 'max-sm:hidden', index > 0 && 'text-sm text-ink-gray-5']"
-					>
-						<span class="truncate">{{ formatCell(column, item) }}</span>
-					</ListCell>
-				</ListRow>
-			</ListRows>
-		</List>
+		<ListView
+			v-else
+			class="mt-4"
+			:columns="listColumns"
+			:rows="listRows"
+			row-key="name"
+			:options="options"
+		>
+			<template #cell="{ column, row }">
+				<Skeleton
+					v-if="row.__skeleton"
+					class="h-4 rounded"
+					:class="column.key === 'title' ? 'w-40' : 'w-16'"
+				/>
+				<span v-else class="truncate">{{
+					formatCell({ fieldname: column.key, format: column.format }, row)
+				}}</span>
+			</template>
+		</ListView>
 		<EntryDialog
 			v-model:open="isDialogOpen"
 			:doctype="doctype"

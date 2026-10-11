@@ -3,13 +3,13 @@ import { computed } from "vue";
 import { Button, Dropdown, Popover } from "frappe-ui";
 import { directoryControls } from "../directory";
 import { columnFromField, isNameColumn, moveColumn } from "../listColumns";
-import { useListView } from "../listView";
+import { useDirectoryColumns } from "../directoryColumns";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
 
 const props = defineProps({ doctype: { type: String, required: true } });
 
-const { columns, loaded, saved, saving, save, reset } = useListView(props.doctype);
+const { columns, loaded, saved, saving, save, reset } = useDirectoryColumns(props.doctype);
 const meta = useMeta(props.doctype);
 const metaFields = computed(() => meta.data?.fields ?? []);
 // The DocType's own word for a field, so a saved column does not carry one language's translation into another.
@@ -42,9 +42,8 @@ const remove = (column) => save(columns.value.filter((entry) => entry.fieldname 
 <template>
 	<Popover align="end">
 		<template #trigger>
-			<!-- A save inserts or updates depending on the layout already loaded, so the editor stays shut
-			     until that is known — a failed fetch included, since saving on top of one would write the
-			     defaults over the layout the member actually has. -->
+			<!-- The columns are one setting for the whole site, so the editor stays shut until it has been read:
+			     a save on top of a failed fetch would write the defaults over it. -->
 			<Button icon="lucide-columns-3" :label="__('Columns')" :disabled="!loaded" />
 		</template>
 		<template #default>
