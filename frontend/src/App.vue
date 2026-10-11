@@ -1,5 +1,6 @@
 <script setup>
 import {
+	Avatar,
 	Badge,
 	Button,
 	Dropdown,
@@ -11,12 +12,14 @@ import {
 	useCall,
 } from "frappe-ui";
 import { computed, onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import NotificationPanel from "./components/NotificationPanel.vue";
 import SearchPalette from "./components/SearchPalette.vue";
 import { unreadCount } from "./notifications";
+import { initials, user } from "./user";
 
 const route = useRoute();
+const router = useRouter();
 const showNotifications = ref(false);
 const notifications = useCall({ url: "/api/v2/method/roadie.api.get_notifications" });
 const unread = computed(() => unreadCount(notifications.data || []));
@@ -28,7 +31,6 @@ onMounted(() => {
 		toaster.addEventListener(eventType, (event) => event.stopPropagation());
 });
 const logoUrl = "/assets/roadie/logo.svg";
-const currentUser = window.user;
 const driveUrl = window.drive_url;
 const openDrive = () => window.open(driveUrl, "_blank", "noopener");
 const logOut = {
@@ -36,9 +38,15 @@ const logOut = {
 	icon: "lucide-log-out",
 	onClick: () => (window.location.href = "/?cmd=web_logout"),
 };
-const accountMenu = [logOut];
+const settings = {
+	label: __("Settings"),
+	icon: "lucide-settings",
+	onClick: () => router.push("/settings"),
+};
+const accountMenu = [settings, logOut];
 const phoneMenu = [
 	...(driveUrl ? [{ label: __("Drive"), icon: "lucide-hard-drive", onClick: openDrive }] : []),
+	settings,
 	logOut,
 ];
 
@@ -78,12 +86,13 @@ const screens = [
 			<!-- frappe-ui casts SidebarItem's absent `active` prop to false, so route matching is passed explicitly. -->
 			<div class="hidden md:flex">
 				<Sidebar disable-collapse>
-					<SidebarHeader
-						title="Roadie"
-						:logo="logoUrl"
-						:subtitle="currentUser"
-						:menu-items="accountMenu"
-					/>
+					<SidebarHeader title="Roadie" :subtitle="user.fullName" :menu-items="accountMenu">
+						<template #logo>
+							<Avatar :image="user.image" :label="user.fullName" class="size-full">
+								<span class="text-sm-medium">{{ initials(user.fullName) }}</span>
+							</Avatar>
+						</template>
+					</SidebarHeader>
 					<SidebarItem :label="__('Search')" icon="lucide-search" @click="searchPalette.open()">
 						<template #suffix><KeyboardShortcut combo="Mod+K" /></template>
 					</SidebarItem>
