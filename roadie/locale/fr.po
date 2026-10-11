@@ -1488,3 +1488,55 @@ msgstr "Au moins {0} ★"
 #: frontend/src/directoryQuickFilters.js
 msgid "Quick filters saved"
 msgstr "Filtres rapides enregistrés"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Clear selection"
+msgstr "Annuler la sélection"
+
+#: frontend/src/components/EmailThread.vue frontend/src/pages/MailboxScreen.vue
+msgid "Delete"
+msgstr "Supprimer"
+
+#: frontend/src/components/EmailThread.vue
+msgid "Email deleted"
+msgstr "E-mail supprimé"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Conversation deleted"
+msgstr "Conversation supprimée"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "{0} conversations deleted"
+msgstr "{0} conversations supprimées"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Mark as read"
+msgstr "Marquer comme lu"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Mark as unread"
+msgstr "Marquer comme non lu"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Only conversations linked to no gig, task or directory entry can be deleted together"
+msgstr "Seules les conversations liées à aucun concert, aucune tâche ni aucune fiche de l'annuaire se suppriment ensemble"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Select all"
+msgstr "Tout sélectionner"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Select {0}"
+msgstr "Sélectionner {0}"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "{0} selected"
+msgstr "{0} sélectionnée(s)"
+
+#: roadie/api.py
+msgid "Only conversations filed under no gig, task or directory entry can be deleted in bulk, not {0}"
+msgstr "Seules les conversations rattachées à aucun concert, aucune tâche ni aucune fiche de l'annuaire se suppriment en masse, pas {0}"
+
+#: roadie/api.py
+msgid "Only the emails Roadie lists can be deleted here, not {0}"
+msgstr "Seuls les e-mails que Roadie affiche se suppriment ici, pas {0}"
