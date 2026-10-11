@@ -111,7 +111,7 @@ watch(
 				v-model="query"
 				type="search"
 				:placeholder="__('Search by name or city')"
-				class="w-full sm:w-64"
+				class="w-full sm:w-80"
 			>
 				<template #suffix>
 					<kbd
