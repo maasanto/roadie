@@ -871,6 +871,17 @@ msgstr ""
 msgid "Reggae"
 msgstr ""
 
+#. Label of the relevance (Rating) field in DocType 'Band'
+#. Label of the relevance (Rating) field in DocType 'Festival'
+#. Label of the relevance (Rating) field in DocType 'Promoter'
+#. Label of the relevance (Rating) field in DocType 'Venue'
+#: roadie/roadie/doctype/band/band.json
+#: roadie/roadie/doctype/festival/festival.json
+#: roadie/roadie/doctype/promoter/promoter.json
+#: roadie/roadie/doctype/venue/venue.json
+msgid "Relevance"
+msgstr ""
+
 #: frontend/src/components/EntryContacts.vue:83
 msgid "Remove contact"
 msgstr ""

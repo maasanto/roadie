@@ -13,6 +13,7 @@ const CONTROL_TYPES = {
 	Date: "date",
 	Check: "checkbox",
 	Select: "select",
+	Rating: "rating",
 };
 
 // Defaults such as "Today", "__user" or ":Company" are resolved by the server on insert, never by the browser.

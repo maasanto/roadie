@@ -6,6 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "title",
+  "relevance",
   "city",
   "website",
   "instagram",
@@ -19,6 +20,11 @@
    "in_list_view": 1,
    "label": "Name",
    "reqd": 1
+  },
+  {
+   "fieldname": "relevance",
+   "fieldtype": "Rating",
+   "label": "Relevance"
   },
   {
    "fieldname": "city",
@@ -49,7 +55,7 @@
   }
  ],
  "links": [],
- "modified": "2026-10-10 21:31:00.000000",
+ "modified": "2026-10-11 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Roadie",
  "name": "Band",

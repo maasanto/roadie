@@ -22,7 +22,11 @@ class TestFormCustomisation(IntegrationTestCase):
 
 	def tearDown(self):
 		frappe.set_user("Administrator")
-		for doctype, fieldname, property in (("Gig", "fee", "label"), ("Venue", "instagram", "hidden")):
+		for doctype, fieldname, property in (
+			("Gig", "fee", "label"),
+			("Venue", "instagram", "hidden"),
+			("Band", "relevance", "hidden"),
+		):
 			frappe.db.delete(
 				"Property Setter", {"doc_type": doctype, "field_name": fieldname, "property": property}
 			)
@@ -68,6 +72,11 @@ class TestFormCustomisation(IntegrationTestCase):
 
 		set_form_field_hidden("Venue", "instagram", False)
 		self.assertFalse(frappe.get_meta("Venue").get_field("instagram").hidden)
+
+	def test_member_hides_the_relevance_stars_the_form_offers(self):
+		set_form_field_hidden("Band", "relevance", True)
+
+		self.assertTrue(frappe.get_meta("Band").get_field("relevance").hidden)
 
 	def test_fields_the_pipeline_and_planning_rely_on_cannot_be_hidden(self):
 		for fieldname in ("status", "gig_date", "application_closes"):

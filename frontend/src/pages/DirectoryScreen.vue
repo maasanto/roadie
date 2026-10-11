@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Button, ErrorMessage, ListView, Skeleton, TextInput, useList } from "frappe-ui";
+import { Button, ErrorMessage, ListView, Rating, Skeleton, TextInput, call, toast, useList } from "frappe-ui";
 import CommentThread from "../components/CommentThread.vue";
 import EmailThread from "../components/EmailThread.vue";
 import EmptyState from "../components/EmptyState.vue";
@@ -9,7 +9,7 @@ import EntryContacts from "../components/EntryContacts.vue";
 import EntryDialog from "../components/EntryDialog.vue";
 import ListColumnEditor from "../components/ListColumnEditor.vue";
 import { useDirectoryColumns } from "../directoryColumns";
-import { directoryControls, directoryType } from "../directory";
+import { RATING_STARS, directoryControls, directoryType, toFraction, toStars } from "../directory";
 import { fetchFields, formatCell } from "../listColumns";
 import { onKey } from "../keyboard";
 
@@ -26,7 +26,7 @@ const fields = computed(() => fetchFields(columns.value, SEARCH_FIELDS));
 const entries = useList({
 	doctype: props.doctype,
 	fields: () => fields.value,
-	orderBy: "title asc",
+	orderBy: "relevance desc, title asc",
 	limit: 500,
 	immediate: false,
 	// The fields change when the columns do, and each change would otherwise fire a request that the next one
@@ -74,8 +74,9 @@ const listColumns = computed(() =>
 	columns.value.slice(0, isPhone.value ? 2 : undefined).map((column) => ({
 		key: column.fieldname,
 		label: __(column.label),
-		// The name takes the room; the rest share what is left.
-		width: column.fieldname === "title" ? 3 : 1,
+		// The name takes the room; the rest share what is left. Stars keep the width of five, or a phone's
+		// narrow track would clip the last ones.
+		width: column.fieldname === "title" ? 3 : column.format === "rating" ? "6rem" : 1,
 		format: column.format,
 	}))
 );
@@ -98,6 +99,20 @@ const options = computed(() => ({
 		description: "",
 	},
 }));
+
+// Rated in place and kept in place: the row only moves to its new rank on the next load, never from under the
+// pointer that rated it.
+async function rate(row, fieldname, stars) {
+	const previous = row[fieldname];
+	const value = toFraction(stars);
+	entries.updateRow({ name: row.name, [fieldname]: value });
+	try {
+		await call("frappe.client.set_value", { doctype: props.doctype, name: row.name, fieldname, value });
+	} catch (error) {
+		entries.updateRow({ name: row.name, [fieldname]: previous });
+		toast.error(error.messages?.join("\n") || error.message);
+	}
+}
 
 const isDialogOpen = ref(false);
 const editingName = ref(null);
@@ -187,6 +202,15 @@ watch(
 					class="h-4 rounded"
 					:class="column.key === 'title' ? 'w-40' : 'w-16'"
 				/>
+				<!-- Rating a row is not opening it. -->
+				<div v-else-if="column.format === 'rating'" class="inline-flex" @click.stop>
+					<Rating
+						:model-value="toStars(row[column.key])"
+						:max="RATING_STARS"
+						size="sm"
+						@update:model-value="(stars) => rate(row, column.key, stars)"
+					/>
+				</div>
 				<span v-else class="truncate">{{
 					formatCell({ fieldname: column.key, format: column.format }, row)
 				}}</span>
