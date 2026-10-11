@@ -18,6 +18,7 @@ EMAIL_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
 COMMENT_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 # Frappe roots a thread linked to no record on its first Communication, so that Communication is a thread too.
 THREAD_DOCTYPES = (*EMAIL_DOCTYPES, "Communication")
+MAILBOX_ROLES = ("Band Member", "System Manager")
 EMAIL_SUMMARY_FIELDS = [
 	"name",
 	"subject",
@@ -113,31 +114,12 @@ def get_attachments(gig: str) -> list[dict]:
 @frappe.whitelist()
 def get_emails(doctype: str, name: str) -> list[dict]:
 	"""A record's thread, oldest first: emails written from it, plus those Frappe linked to it through a contact."""
-	if doctype not in THREAD_DOCTYPES:
-		frappe.throw(
-			_("Emails can only be listed for {0}, not {1}").format(", ".join(THREAD_DOCTYPES), doctype)
-		)
-	frappe.get_doc(doctype, name).check_permission("read")
-
-	referencing = frappe.get_all(
-		"Communication", filters={"reference_doctype": doctype, "reference_name": name}, pluck="name"
-	)
-	linked = frappe.get_all(
-		"Communication Link",
-		filters={"parenttype": "Communication", "link_doctype": doctype, "link_name": name},
-		pluck="parent",
-	)
-	thread_root = [name] if doctype == "Communication" else []
-	emails = frappe.get_all(
-		"Communication",
-		filters={
-			"communication_medium": "Email",
-			"communication_type": "Communication",
-			"name": ["in", [*thread_root, *referencing, *linked]],
-		},
+	_check_readable_thread(doctype, name)
+	emails = _thread_emails(
+		doctype,
+		name,
 		# Reply all leaves out the shared account's own address
 		fields=[*EMAIL_SUMMARY_FIELDS, "content", "email_account.email_id as account_email"],
-		order_by="communication_date asc",
 	)
 	attachments = frappe.get_all(
 		"File",
@@ -151,6 +133,36 @@ def get_emails(doctype: str, name: str) -> list[dict]:
 	for email in emails:
 		email.attachments = [file for file in attachments if file.attached_to_name == email.name]
 	return emails
+
+
+def _check_readable_thread(doctype, name):
+	if doctype not in THREAD_DOCTYPES:
+		frappe.throw(
+			_("Emails can only be listed for {0}, not {1}").format(", ".join(THREAD_DOCTYPES), doctype)
+		)
+	frappe.get_doc(doctype, name).check_permission("read")
+
+
+def _thread_emails(doctype, name, fields):
+	referencing = frappe.get_all(
+		"Communication", filters={"reference_doctype": doctype, "reference_name": name}, pluck="name"
+	)
+	linked = frappe.get_all(
+		"Communication Link",
+		filters={"parenttype": "Communication", "link_doctype": doctype, "link_name": name},
+		pluck="parent",
+	)
+	thread_root = [name] if doctype == "Communication" else []
+	return frappe.get_all(
+		"Communication",
+		filters={
+			"communication_medium": "Email",
+			"communication_type": "Communication",
+			"name": ["in", [*thread_root, *referencing, *linked]],
+		},
+		fields=fields,
+		order_by="communication_date asc",
+	)
 
 
 @frappe.whitelist()
@@ -174,7 +186,7 @@ def get_comments(doctype: str, name: str) -> list[dict]:
 def get_mailbox(sent_or_received: str) -> list[dict]:
 	"""The shared account's threads, newest first: each one's latest email in this direction, with how many
 	emails and unread emails it holds in that direction."""
-	frappe.only_for(("Band Member", "System Manager"))
+	frappe.only_for(MAILBOX_ROLES)
 	if sent_or_received not in ("Sent", "Received"):
 		frappe.throw(_("Mailbox is either Sent or Received, not {0}").format(sent_or_received))
 
@@ -190,24 +202,19 @@ def get_mailbox(sent_or_received: str) -> list[dict]:
 		order_by="communication_date desc",
 		limit=200,
 	)
-	links = frappe.get_all(
-		"Communication Link",
-		filters={
-			"parenttype": "Communication",
-			"parent": ["in", [email.name for email in emails]],
-			"link_doctype": ["in", DIRECTORY_DOCTYPES],
-		},
-		fields=["parent", "link_doctype", "link_name"],
-		order_by="idx asc",
-	)
+	links = _directory_links([email.name for email in emails])
 	threads = {}
 	for email in emails:
-		thread = _thread_of(email, [link for link in links if link.parent == email.name])
+		email.directory_links = links.get(email.name, [])
+		thread = _thread_of(email, email.directory_links)
 		latest = threads.setdefault(
-			(thread["doctype"], thread["name"]), {**email, "thread": thread, "count": 0, "unread": 0}
+			(thread["doctype"], thread["name"]),
+			{**email, "thread": thread, "count": 0, "unread": 0, "holds_filed_mail": False},
 		)
 		latest["count"] += 1
 		latest["unread"] += not email.seen
+		# Bulk delete refuses a conversation holding mail filed under a record, so the list can say so upfront.
+		latest["holds_filed_mail"] = latest["holds_filed_mail"] or _is_filed(email)
 	return [frappe._dict(thread) for thread in threads.values()]
 
 
@@ -217,6 +224,39 @@ def _thread_of(email, directory_links):
 	if directory_links:
 		return {"doctype": directory_links[0].link_doctype, "name": directory_links[0].link_name}
 	return {"doctype": "Communication", "name": email.name}
+
+
+def _directory_links(email_names):
+	links = frappe.get_all(
+		"Communication Link",
+		filters={
+			"parenttype": "Communication",
+			"parent": ["in", email_names],
+			"link_doctype": ["in", DIRECTORY_DOCTYPES],
+		},
+		fields=["parent", "link_doctype", "link_name"],
+		order_by="idx asc",
+	)
+	by_email = {}
+	for link in links:
+		by_email.setdefault(link.parent, []).append(link)
+	return by_email
+
+
+def _mailbox_thread(thread):
+	"""The emails a mailbox row stands for. A record's own thread shows more: the mail its contacts are copied on,
+	which the mailbox files under the thread that mail replies to, so acting on the row must not reach it."""
+	thread = {"doctype": thread["doctype"], "name": thread["name"]}
+	_check_readable_thread(thread["doctype"], thread["name"])
+	emails = _thread_emails(
+		thread["doctype"],
+		thread["name"],
+		fields=["name", "sent_or_received", "seen", "reference_doctype", "reference_name"],
+	)
+	links = _directory_links([email.name for email in emails])
+	for email in emails:
+		email.directory_links = links.get(email.name, [])
+	return [email for email in emails if _thread_of(email, email.directory_links) == thread]
 
 
 @frappe.whitelist(methods=["POST"])
@@ -229,6 +269,99 @@ def mark_thread_seen(doctype: str, name: str) -> None:
 	]
 	if unseen:
 		frappe.db.set_value("Communication", {"name": ["in", unseen]}, "seen", 1, update_modified=False)
+
+
+def _set_seen(emails, seen):
+	names = [email.name for email in emails if email.seen != seen]
+	if names:
+		frappe.db.set_value("Communication", {"name": ["in", names]}, "seen", seen, update_modified=False)
+
+
+def _received(thread):
+	return [email for email in _mailbox_thread(thread) if email.sent_or_received == "Received"]
+
+
+# Bulk read and unread act on what a mailbox row stands for, while opening a thread marks all it shows. In Roadie
+# only: the mailbox server already holds every fetched email as read, and Frappe pushes no flag back to it.
+@frappe.whitelist(methods=["POST"])
+def mark_threads_read(threads: list[dict]) -> None:
+	frappe.only_for(MAILBOX_ROLES)
+	_set_seen([email for thread in threads for email in _received(thread)], 1)
+
+
+@frappe.whitelist(methods=["POST"])
+def mark_threads_unread(threads: list[dict]) -> None:
+	"""Only each thread's latest received email: enough to bring the thread back as unread."""
+	frappe.only_for(MAILBOX_ROLES)
+	_set_seen([email for thread in threads for email in _received(thread)[-1:]], 0)
+
+
+@frappe.whitelist(methods=["POST"])
+def delete_threads(names: list[str]) -> None:
+	"""Bulk delete clears conversations filed under nothing. Mail of a gig, a venue or any other document goes
+	one email at a time. Roadie's copy only: the mailbox server keeps its own."""
+	frappe.only_for(MAILBOX_ROLES)
+	for name in names:
+		# Gone already: a bandmate deleted it during the undo window.
+		if not frappe.db.exists("Communication", name):
+			continue
+		emails = _mailbox_thread({"doctype": "Communication", "name": name})
+		if name not in [email.name for email in emails] or any(_is_filed(email) for email in emails):
+			frappe.throw(
+				_("Only conversations filed under no gig, task or directory entry can be deleted in bulk, not {0}").format(
+					name
+				)
+			)
+		for email in emails:
+			_delete_email(email.name)
+
+
+def _is_filed(email):
+	return bool(email.directory_links) or email.reference_doctype not in (None, "", "Communication")
+
+
+@frappe.whitelist(methods=["POST"])
+def delete_email(name: str) -> dict:
+	"""Deleting an email its replies hang on hands its place to the next reply, which the caller gets back as
+	`promoted`. Roadie's copy only: the mailbox server keeps its own."""
+	frappe.only_for(MAILBOX_ROLES)
+	email = frappe.get_doc("Communication", name)
+	directory_links = [link for link in email.timeline_links if link.link_doctype in DIRECTORY_DOCTYPES]
+	if name not in [each.name for each in _mailbox_thread(_thread_of(email, directory_links))]:
+		frappe.throw(_("Only the emails Roadie lists can be deleted here, not {0}").format(name))
+
+	replies = frappe.get_all(
+		"Communication",
+		filters={"reference_doctype": "Communication", "reference_name": name, "name": ["!=", name]},
+		order_by="communication_date asc",
+		pluck="name",
+	)
+	promoted = replies[0] if replies else None
+	if promoted:
+		_promote(email, promoted, replies[1:])
+	_delete_email(name)
+	return {"promoted": promoted}
+
+
+def _promote(email, promoted, other_replies):
+	# A first email references nothing, or itself; the reply taking its place references itself, the convention
+	# Frappe uses for a root, so a contact link on it can't pull it into that contact's thread.
+	is_root = email.reference_doctype in (None, "") or email.reference_name == email.name
+	parent = ("Communication", promoted) if is_root else (email.reference_doctype, email.reference_name)
+	reference = {"reference_doctype": parent[0], "reference_name": parent[1]}
+	frappe.db.set_value("Communication", {"name": ["in", [promoted, *other_replies]]}, reference)
+	# Frappe threads an inbound reply through the queue row of the email it answers.
+	frappe.db.set_value(
+		"Email Queue", {"reference_doctype": "Communication", "reference_name": email.name}, "reference_name", promoted
+	)
+
+
+def _delete_email(name):
+	# A reply's in_reply_to would otherwise keep pointing here and fail link validation on its next save.
+	frappe.db.set_value("Communication", {"in_reply_to": name}, "in_reply_to", None, update_modified=False)
+	# Members have no delete right on Communication: these endpoints are the only way in, and they check access.
+	# force skips the link check that in_reply_to and reference_name would trip.
+	frappe.delete_doc("Communication", name, ignore_permissions=True, force=True)
 
 
 @frappe.whitelist()
