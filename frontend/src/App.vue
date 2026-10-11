@@ -1,6 +1,5 @@
 <script setup>
 import {
-	Avatar,
 	Badge,
 	Button,
 	Dropdown,
@@ -16,7 +15,7 @@ import { useRoute, useRouter } from "vue-router";
 import NotificationPanel from "./components/NotificationPanel.vue";
 import SearchPalette from "./components/SearchPalette.vue";
 import { unreadCount } from "./notifications";
-import { initials, user } from "./user";
+import { user } from "./user";
 
 const route = useRoute();
 const router = useRouter();
@@ -86,13 +85,12 @@ const screens = [
 			<!-- frappe-ui casts SidebarItem's absent `active` prop to false, so route matching is passed explicitly. -->
 			<div class="hidden md:flex">
 				<Sidebar disable-collapse>
-					<SidebarHeader title="Roadie" :subtitle="user.fullName" :menu-items="accountMenu">
-						<template #logo>
-							<Avatar :image="user.image" :label="user.fullName" class="size-full">
-								<span class="text-sm-medium">{{ initials(user.fullName) }}</span>
-							</Avatar>
-						</template>
-					</SidebarHeader>
+					<SidebarHeader
+						title="Roadie"
+						:logo="logoUrl"
+						:subtitle="user.fullName"
+						:menu-items="accountMenu"
+					/>
 					<SidebarItem :label="__('Search')" icon="lucide-search" @click="searchPalette.open()">
 						<template #suffix><KeyboardShortcut combo="Mod+K" /></template>
 					</SidebarItem>
