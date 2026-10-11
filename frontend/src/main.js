@@ -19,14 +19,15 @@ const router = createRouter({
 		})),
 		// The directory's own address, from old bookmarks and the mention notifications, opens on its first type.
 		{ path: "/directory", redirect: directoryTypes[0].route.path },
+		// The open thread is the record it belongs to, so a refresh or a shared link reopens it.
 		{
-			path: "/inbox",
+			path: "/inbox/:doctype?/:name?",
 			name: "Inbox",
 			component: () => import("./pages/MailboxScreen.vue"),
 			props: { sentOrReceived: "Received" },
 		},
 		{
-			path: "/outbox",
+			path: "/outbox/:doctype?/:name?",
 			name: "Outbox",
 			component: () => import("./pages/MailboxScreen.vue"),
 			props: { sentOrReceived: "Sent" },
