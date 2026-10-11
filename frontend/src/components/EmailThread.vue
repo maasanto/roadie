@@ -1,13 +1,24 @@
-<script setup>
+<script>
 import { computed, ref, watch } from "vue";
-import { Avatar, Button, ErrorMessage, useCall } from "frappe-ui";
+
+// Module scope: a delete still waiting on its toast must outlive this thread, which remounts when the reader
+// moves on. An email stays hidden once deleted, its name never comes back.
+const deletedEmails = ref(new Set());
+</script>
+
+<script setup>
+import { Avatar, Button, ErrorMessage, call, toast, useCall } from "frappe-ui";
 import EmailBody from "./EmailBody.vue";
 import EmailComposer from "./EmailComposer.vue";
 import { QUOTE_SELECTOR, asHtml, formatDateTime, openByDefault, replyDraft } from "../email";
+import { toastWithUndo } from "../undo";
 
 const props = defineProps({
 	doctype: { type: String, required: true },
 	name: { type: String, required: true },
+	// A callback rather than an event: Vue drops events from an unmounted component, and the delete lands once
+	// its toast closes, often after the reader has moved to another thread.
+	onDeleted: { type: Function, default: null },
 });
 const emit = defineEmits(["loaded"]);
 
@@ -34,7 +45,35 @@ function toggle(email) {
 	openEmails.value = next;
 }
 
-const expandAll = () => (openEmails.value = new Set(emails.data.map((email) => email.name)));
+const shownEmails = computed(() =>
+	(emails.data || []).filter((email) => !deletedEmails.value.has(email.name))
+);
+
+const expandAll = () => (openEmails.value = new Set(shownEmails.value.map((email) => email.name)));
+
+function deleteEmail(email) {
+	deletedEmails.value.add(email.name);
+	toastWithUndo(__("Email deleted"), {
+		undo: () => deletedEmails.value.delete(email.name),
+		commit: () => deleteForGood(email.name),
+	});
+}
+
+async function deleteForGood(name) {
+	if (!deletedEmails.value.has(name)) return;
+	const thread = { doctype: props.doctype, name: props.name };
+	try {
+		const { promoted } = await call("roadie.api.delete_email", { name });
+		// Deleting the email this thread is keyed on ends the thread, or re-keys it on the promoted reply.
+		const isKeyDeleted = thread.name === name;
+		const remaining = isKeyDeleted && !promoted ? 0 : shownEmails.value.length;
+		props.onDeleted?.({ thread, name, promoted, remaining });
+		if (!isKeyDeleted) emails.reload();
+	} catch (error) {
+		deletedEmails.value.delete(name);
+		toast.error(error.messages?.join("\n") || error.message);
+	}
+}
 
 // A DOMParser document is inert: unlike an element's innerHTML, it loads no image and fires no handler.
 function textOf(content, selectorToDrop) {
@@ -75,7 +114,7 @@ function onSent() {
 		<div class="flex items-center gap-2">
 			<h2 class="flex-1 text-lg-semibold">{{ __("Emails") }}</h2>
 			<Button
-				v-if="emails.data?.length > openEmails.size"
+				v-if="shownEmails.some((email) => !openEmails.has(email.name))"
 				variant="ghost"
 				icon-left="lucide-chevrons-up-down"
 				:label="__('Expand all')"
@@ -83,8 +122,8 @@ function onSent() {
 			/>
 			<Button icon-left="lucide-mail-plus" :label="__('Write')" @click="compose({})" />
 		</div>
-		<ul v-if="emails.data?.length" class="mt-3 space-y-2">
-			<li v-for="email in emails.data" :key="email.name" data-email class="rounded-6 border">
+		<ul v-if="shownEmails.length" class="mt-3 space-y-2">
+			<li v-for="email in shownEmails" :key="email.name" data-email class="rounded-6 border">
 				<button
 					class="flex w-full items-start gap-2 rounded-6 px-3 py-2.5 text-left hover:bg-surface-gray-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-3"
 					:aria-expanded="openEmails.has(email.name)"
@@ -137,6 +176,13 @@ function onSent() {
 							variant="ghost"
 							:label="__('Reply all')"
 							@click="compose(replyDraft(email, 'reply-all'))"
+						/>
+						<Button
+							class="ml-auto"
+							icon-left="lucide-trash-2"
+							variant="ghost"
+							:label="__('Delete')"
+							@click="deleteEmail(email)"
 						/>
 					</footer>
 				</div>
