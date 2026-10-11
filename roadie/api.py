@@ -4,6 +4,8 @@ import frappe
 from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 
+from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns
+
 DIRECTORY_DOCTYPES = ("Festival", "Venue", "Promoter", "Band")
 CUSTOMISABLE_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 # The pipeline, the planning and the reminders read these, so hiding one would quietly break them.
@@ -319,14 +321,26 @@ def get_members() -> list[dict]:
 	)
 
 
-@frappe.whitelist(methods=["POST"])
-def delete_list_view(dt: str) -> None:
-	"""Drop the layout this member has for one DocType, which is what the editor's reset does.
+@frappe.whitelist()
+def get_directory_columns() -> dict:
+	"""The columns each directory list shows, keyed by DocType: one setting for the whole site."""
+	frappe.only_for(("Band Member", "System Manager"))
 
-	Scoped on the session user rather than left to the DocType's own permissions: a member who also holds a
-	role with plain read (System Manager) would otherwise be able to clear someone else's layout.
-	"""
-	frappe.db.delete("Roadie List View", {"dt": dt, "owner": frappe.session.user})
+	return frappe.parse_json(frappe.db.get_single_value("Roadie Settings", "directory_columns") or "{}") or {}
+
+
+@frappe.whitelist(methods=["POST"])
+def set_directory_columns(doctype: str, columns: str) -> None:
+	"""Replace one type's columns. An empty list puts that type back on the columns the app ships."""
+	frappe.only_for(("Band Member", "System Manager"))
+	if doctype not in DIRECTORY_DOCTYPES:
+		frappe.throw(_("{0} is not a directory list").format(doctype))
+
+	settings = frappe.get_doc("Roadie Settings")
+	all_columns = frappe.parse_json(settings.directory_columns or "{}") or {}
+	all_columns[doctype] = clean_columns(doctype, frappe.parse_json(columns))
+	settings.directory_columns = frappe.as_json(all_columns)
+	settings.save()
 
 
 @frappe.whitelist(methods=["POST"])
