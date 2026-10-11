@@ -157,7 +157,7 @@ watch(
 				</ListHeaderCell>
 			</ListHeader>
 			<ListRows v-if="isLoading" :items="placeholderRows" v-slot="{ item }">
-				<ListRow>
+				<ListRow class="py-2">
 					<ListCell
 						v-for="(column, index) in columns"
 						:key="column.fieldname"
@@ -168,7 +168,7 @@ watch(
 				</ListRow>
 			</ListRows>
 			<ListRows v-else :items="rows" v-slot="{ item }">
-				<ListRow :on-click="() => openEntry(item.name)">
+				<ListRow class="py-2" :on-click="() => openEntry(item.name)">
 					<ListCell
 						v-for="(column, index) in columns"
 						:key="column.fieldname"
