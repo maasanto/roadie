@@ -8,12 +8,14 @@ import {
 	Sidebar,
 	SidebarHeader,
 	SidebarItem,
+	SidebarLabel,
 	useCall,
 } from "frappe-ui";
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import NotificationPanel from "./components/NotificationPanel.vue";
 import SearchPalette from "./components/SearchPalette.vue";
+import { directoryTypes } from "./directory";
 import { unreadCount } from "./notifications";
 import { user } from "./user";
 
@@ -43,13 +45,14 @@ const settings = {
 	onClick: () => router.push("/settings"),
 };
 const accountMenu = [settings, logOut];
-const phoneMenu = [
-	...(driveUrl ? [{ label: __("Drive"), icon: "lucide-hard-drive", onClick: openDrive }] : []),
-	settings,
-	logOut,
-];
 
-const searchPalette = ref(null);
+// Each directory type is its own screen, listed under the sidebar's Directory heading.
+const directoryScreens = directoryTypes.map((type) => ({
+	name: type.route.name,
+	label: type.plural,
+	icon: type.icon,
+	to: type.route.path,
+}));
 
 const screens = [
 	{ name: "Pipeline", label: __("Pipeline"), shortLabel: __("Pipeline"), icon: "lucide-kanban", to: "/" },
@@ -67,16 +70,22 @@ const screens = [
 		icon: "lucide-list-checks",
 		to: "/tasks",
 	},
-	{
-		name: "Directory",
-		label: __("Directory"),
-		shortLabel: __("Directory"),
-		icon: "lucide-book-user",
-		to: "/directory",
-	},
+];
+
+const mailboxScreens = [
 	{ name: "Inbox", label: __("Inbox"), shortLabel: __("Received"), icon: "lucide-inbox", to: "/inbox" },
 	{ name: "Outbox", label: __("Outbox"), shortLabel: __("Outgoing"), icon: "lucide-send", to: "/outbox" },
 ];
+
+// The phone menu carries the four types, then the screens the bar along the bottom has no room for.
+const phoneMenu = [
+	...directoryScreens.map(({ label, icon, to }) => ({ label, icon, route: to })),
+	...(driveUrl ? [{ label: __("Drive"), icon: "lucide-hard-drive", onClick: openDrive }] : []),
+	settings,
+	logOut,
+];
+
+const searchPalette = ref(null);
 </script>
 
 <template>
@@ -106,6 +115,24 @@ const screens = [
 					</SidebarItem>
 					<SidebarItem
 						v-for="screen in screens"
+						:key="screen.name"
+						:label="screen.label"
+						:icon="screen.icon"
+						:to="screen.to"
+						:active="route.name === screen.name"
+					/>
+					<SidebarLabel>{{ __("Directory") }}</SidebarLabel>
+					<SidebarItem
+						v-for="screen in directoryScreens"
+						:key="screen.name"
+						:label="screen.label"
+						:icon="screen.icon"
+						:to="screen.to"
+						:active="route.name === screen.name"
+					/>
+					<SidebarLabel>{{ __("Mail") }}</SidebarLabel>
+					<SidebarItem
+						v-for="screen in mailboxScreens"
 						:key="screen.name"
 						:label="screen.label"
 						:icon="screen.icon"
@@ -152,11 +179,12 @@ const screens = [
 				/>
 			</header>
 			<main class="min-w-0 flex-1 overflow-auto">
-				<router-view />
+				<!-- Keyed so the four directory screens, which share one component, remount on a type change. -->
+				<router-view :key="route.name" />
 			</main>
 			<nav class="flex border-t bg-surface-base md:hidden" :aria-label="__('Screens')">
 				<router-link
-					v-for="screen in screens"
+					v-for="screen in [...screens, ...mailboxScreens]"
 					:key="screen.name"
 					:to="screen.to"
 					class="flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-3"

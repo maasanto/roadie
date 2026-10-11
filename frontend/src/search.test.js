@@ -50,7 +50,11 @@ test("a result routes to the screen that opens it", () => {
 	});
 	assert.deepEqual(resultRoute({ doctype: "Band Task", name: "task-1" }), { name: "MyTasks" });
 	assert.deepEqual(resultRoute({ doctype: "Venue", name: "venue-1" }), {
-		name: "Directory",
+		name: "Venues",
 		query: { entry: "Venue:venue-1" },
+	});
+	assert.deepEqual(resultRoute({ doctype: "Festival", name: "festival-1" }), {
+		name: "Festivals",
+		query: { entry: "Festival:festival-1" },
 	});
 });

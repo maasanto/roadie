@@ -1,4 +1,5 @@
 import { __ } from "./translation.js";
+import { directoryType } from "./directory.js";
 
 export const RESULTS_PER_GROUP = 5;
 
@@ -27,9 +28,10 @@ export function searchGroups(query, groupedResults, limit = RESULTS_PER_GROUP) {
 }
 
 // Where a result takes the user: a gig opens its panel on the Pipeline, a task the tasks screen, and every
-// directory record its entry dialog on the Directory. The screens read the record back from the query.
+// directory record the screen for its own type, which reads the record back from the query.
 export function resultRoute({ doctype, name }) {
 	if (doctype === "Gig") return { name: "Pipeline", query: { gig: name } };
 	if (doctype === "Band Task") return { name: "MyTasks" };
-	return { name: "Directory", query: { entry: `${doctype}:${name}` } };
+	const type = directoryType(doctype);
+	return { name: type.route.name, query: { entry: `${doctype}:${name}` } };
 }

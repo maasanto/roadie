@@ -33,8 +33,13 @@ def notify_mentioned_members(comment, method=None):
 		return
 
 	title = get_title(comment.reference_doctype, comment.reference_name)
-	# Members can't open the Desk form Frappe links to by default.
-	screen = "/roadie" if comment.reference_doctype == "Gig" else "/roadie/directory"
+	# Members can't open the Desk form Frappe links to by default. Each directory type has its own screen,
+	# named after the DocType (see the routes in frontend/src/directory.js): /roadie/directory/venues.
+	screen = (
+		"/roadie"
+		if comment.reference_doctype == "Gig"
+		else f"/roadie/directory/{comment.reference_doctype.lower()}s"
+	)
 	enqueue_create_notification(
 		members,
 		{

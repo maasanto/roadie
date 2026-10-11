@@ -51,7 +51,7 @@ class TestComments(IntegrationTestCase):
 			as_dict=True,
 		)
 		self.assertEqual(notification.from_user, MEMBER)
-		self.assertTrue(notification.link.endswith("/roadie/directory"))
+		self.assertTrue(notification.link.endswith("/roadie/directory/festivals"))
 		self.assertFalse(frappe.db.exists("Email Queue Recipient", {"recipient": FESTIVAL_CONTACT}))
 
 	def test_comments_are_only_listed_for_band_records(self):
