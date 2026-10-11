@@ -176,7 +176,7 @@ function submit() {
 				/>
 			</div>
 		</div>
-		<!-- Mounted per opening, so each one starts from the team list with no stale error. -->
+		<!-- Mounted per opening, so each one starts from the Drive roots with no stale error. -->
 		<DriveLinkDialog v-if="isPickingDriveItem" v-model:open="isPickingDriveItem" @pick="insertLink" />
 	</form>
 </template>

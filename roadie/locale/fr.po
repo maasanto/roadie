@@ -35,10 +35,6 @@ msgstr "Un nouveau champ est de type {0}, pas {1}"
 msgid "Add"
 msgstr "Ajouter"
 
-#: frontend/src/components/ListColumnEditor.vue:77
-msgid "Add column"
-msgstr "Ajouter une colonne"
-
 #: frontend/src/components/GigTasks.vue:68
 msgid "Add task"
 msgstr "Ajouter la tâche"
@@ -54,10 +50,6 @@ msgstr "Ajoutez le premier concert que vous visez, même si ce n'est qu'une idé
 #: frontend/src/pages/DirectoryScreen.vue:111
 msgid "Add the first one"
 msgstr "Ajouter la première fiche"
-
-#: frontend/src/pages/DirectoryScreen.vue:123
-msgid "Add the {0} you deal with, and the people to talk to at each."
-msgstr "Ajoutez les {0} avec qui vous travaillez, et les personnes à contacter pour chacun."
 
 #. Label of the address (Small Text) field in DocType 'Venue'
 #: roadie/roadie/doctype/venue/venue.json
@@ -142,10 +134,6 @@ msgstr "Pièces jointes"
 msgid "August"
 msgstr "Août"
 
-#: frontend/src/listView.js:70
-msgid "Back to the usual columns"
-msgstr "Retour aux colonnes habituelles"
-
 #. Name of a DocType
 #: roadie/roadie/doctype/band/band.json
 msgid "Band"
@@ -184,7 +172,7 @@ msgstr "Blues"
 msgid "Booked"
 msgstr "Confirmé"
 
-#: frontend/src/components/DriveLinkDialog.vue:132
+#: frontend/src/components/DriveLinkDialog.vue:128
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -242,14 +230,6 @@ msgstr "Classique"
 #: frontend/src/pages/MailboxScreen.vue:126
 msgid "Close"
 msgstr "Fermer"
-
-#: frontend/src/components/ListColumnEditor.vue:34
-msgid "Columns"
-msgstr "Colonnes"
-
-#: frontend/src/listView.js:59
-msgid "Columns saved"
-msgstr "Colonnes enregistrées"
 
 #: frontend/src/components/CommentThread.vue:103
 msgid "Comment"
@@ -338,7 +318,7 @@ msgid "Done: {0}"
 msgstr "Fait : {0}"
 
 #: frontend/src/App.vue:25 frontend/src/App.vue:79
-#: frontend/src/components/DriveLinkDialog.vue:73
+#: frontend/src/components/DriveLinkDialog.vue:69
 msgid "Drive"
 msgstr "Drive"
 
@@ -406,7 +386,7 @@ msgstr "Festivals"
 msgid "First name"
 msgstr "Prénom"
 
-#: frontend/src/components/DriveLinkDialog.vue:70
+#: frontend/src/components/DriveLinkDialog.vue:66
 msgid "Folder path"
 msgstr "Chemin du dossier"
 
@@ -470,7 +450,7 @@ msgstr "Masquer {0}"
 msgid "Hip Hop"
 msgstr "Hip-hop"
 
-#: frontend/src/components/DriveLinkDialog.vue:20
+#: frontend/src/components/DriveLinkDialog.vue:18
 msgid "Home"
 msgstr "Accueil"
 
@@ -493,11 +473,11 @@ msgstr "Boîte de réception"
 msgid "Indie"
 msgstr "Indé"
 
-#: frontend/src/components/DriveLinkDialog.vue:135
+#: frontend/src/components/DriveLinkDialog.vue:131
 msgid "Insert link"
 msgstr "Insérer le lien"
 
-#: frontend/src/components/DriveLinkDialog.vue:128
+#: frontend/src/components/DriveLinkDialog.vue:124
 msgid "Inserting the link makes the item public: anyone who has the link can open it."
 msgstr "Insérer le lien rend l'élément public : toute personne qui a le lien pourra l'ouvrir."
 
@@ -557,13 +537,13 @@ msgstr "Latin"
 msgid "Link from Drive"
 msgstr "Lien depuis le Drive"
 
-#: frontend/src/components/DriveLinkDialog.vue:67
+#: frontend/src/components/DriveLinkDialog.vue:63
 msgid "Link to a Drive item"
 msgstr "Lien vers un élément du Drive"
 
-#: roadie/api.py:370
-msgid "Linking Drive items needs Frappe Drive and the Drive User role"
-msgstr "Pour insérer des liens Drive, il faut Frappe Drive et le rôle Drive User"
+#: roadie/api.py:424
+msgid "Linking Drive items needs Frappe Suite and the Suite User role"
+msgstr "Pour insérer des liens Drive, il faut Frappe Suite et le rôle Suite User"
 
 #: frontend/src/components/EntryForm.vue:97
 #: frontend/src/components/ListSkeleton.vue:8
@@ -613,14 +593,6 @@ msgstr "Vue"
 #: frontend/src/pages/PlanningScreen.vue:31
 msgid "Month"
 msgstr "Mois"
-
-#: frontend/src/components/ListColumnEditor.vue:58
-msgid "Move {0} down"
-msgstr "Descendre {0}"
-
-#: frontend/src/components/ListColumnEditor.vue:49
-msgid "Move {0} up"
-msgstr "Monter {0}"
 
 #: frontend/src/pages/PipelineScreen.vue:81
 msgid "Moved {0} to {1}"
@@ -712,10 +684,6 @@ msgstr "Aucune notification pour l'instant"
 msgid "No tasks yet."
 msgstr "Aucune tâche pour l'instant."
 
-#: frontend/src/pages/DirectoryScreen.vue:121
-msgid "No {0} yet"
-msgstr "Pas encore de {0}"
-
 #. Label of the notes (Small Text) field in DocType 'Band'
 #. Label of the notes (Small Text) field in DocType 'Festival'
 #. Label of the notes (Small Text) field in DocType 'Gig'
@@ -772,11 +740,11 @@ msgstr "Le {0}, {1} a écrit :"
 msgid "Only band members can open Roadie"
 msgstr "Seuls les membres du groupe peuvent ouvrir Roadie"
 
-#: roadie/api.py:377
-msgid "Only files and folders from a Drive team can be linked, not {0}"
-msgstr "Seuls les fichiers et dossiers d'une équipe Drive peuvent être liés, pas {0}"
+#: roadie/api.py:430
+msgid "Only files and folders in Drive can be linked, not {0}"
+msgstr "Seuls les fichiers et dossiers du Drive peuvent être liés, pas {0}"
 
-#: frontend/src/components/DriveLinkDialog.vue:100
+#: frontend/src/components/DriveLinkDialog.vue:96
 msgid "Only its owner can share this item."
 msgstr "Seul son propriétaire peut partager cet élément."
 
@@ -807,7 +775,7 @@ msgstr "Ouvrir mes tâches"
 msgid "Open the pipeline"
 msgstr "Ouvrir le pipeline"
 
-#: frontend/src/components/DriveLinkDialog.vue:117
+#: frontend/src/components/DriveLinkDialog.vue:113
 msgid "Open {0}"
 msgstr "Ouvrir {0}"
 
@@ -942,10 +910,6 @@ msgstr "Répondre"
 msgid "Reply all"
 msgstr "Répondre à tous"
 
-#: frontend/src/components/ListColumnEditor.vue:88
-msgid "Reset to default"
-msgstr "Revenir à l'affichage par défaut"
-
 #. Genre option for the Band genre multiselect
 #: frontend/src/directory.js:40
 msgid "Rock"
@@ -1008,6 +972,10 @@ msgstr "Paramètres"
 #: frontend/src/components/FormCustomiser.vue:123
 msgid "Show"
 msgstr "Afficher"
+
+#: frontend/src/components/DriveLinkDialog.vue:17
+msgid "Site"
+msgstr "Site"
 
 #. Genre option for the Band genre multiselect
 #: frontend/src/directory.js:41
@@ -1076,7 +1044,7 @@ msgstr "Texte"
 msgid "The application for {0} closes on {1}, in {2} days, and the gig is still at {3}."
 msgstr "Les candidatures pour {0} ferment le {1}, dans {2} jours, et le concert est toujours au statut « {3} »."
 
-#: frontend/src/components/DriveLinkDialog.vue:123
+#: frontend/src/components/DriveLinkDialog.vue:119
 msgid "This folder is empty."
 msgstr "Ce dossier est vide."
 
@@ -1191,14 +1159,6 @@ msgstr "Rédigez votre e-mail…"
 msgid "Year"
 msgstr "Année"
 
-#: roadie/roadie/doctype/roadie_list_view/roadie_list_view.py:16
-msgid "You already have a saved column layout for {0}"
-msgstr "Vous avez déjà une disposition de colonnes enregistrée pour {0}"
-
-#: frontend/src/components/DriveLinkDialog.vue:123
-msgid "You are not a member of any Drive team."
-msgstr "Vous n'êtes membre d'aucune équipe Drive."
-
 #: frontend/src/pages/DirectoryScreen.vue:102
 msgid "Your address book starts here"
 msgstr "Votre carnet d'adresses commence ici"
@@ -1270,6 +1230,7 @@ msgstr "Champ « {0} » de nouveau affiché"
 #: frontend/src/components/FormCustomiser.vue:59
 msgid "{0} stays visible: Roadie relies on it"
 msgstr "Le champ « {0} » reste affiché : Roadie s'appuie dessus"
+
 
 #: frontend/src/App.vue:124
 msgid "Mail"
