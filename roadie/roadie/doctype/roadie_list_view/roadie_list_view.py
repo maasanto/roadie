@@ -11,10 +11,14 @@ class RoadieListView(Document):
 		self.drop_unknown_columns()
 
 	def check_one_view_per_doctype(self):
-		"""A second row for the same DocType would split one member's layout in two, and the SPA reads one."""
+		"""A second row for the same DocType would split one member's layout in two, and the SPA reads one.
+
+		Checked against the row's owner rather than the session user: an administrator editing someone else's
+		row in Desk would otherwise pass here and be stopped by the unique index, which says nothing helpful.
+		"""
 		if frappe.db.exists(
 			"Roadie List View",
-			{"dt": self.dt, "owner": frappe.session.user, "name": ["!=", self.name]},
+			{"dt": self.dt, "owner": self.owner, "name": ["!=", self.name]},
 		):
 			frappe.throw(_("You already have a saved column layout for {0}").format(_(self.dt)))
 
