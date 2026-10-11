@@ -1231,3 +1231,11 @@ msgstr ""
 #: frontend/src/components/FormCustomiser.vue:59
 msgid "{0} stays visible: Roadie relies on it"
 msgstr ""
+
+#: frontend/src/App.vue:124
+msgid "Mail"
+msgstr ""
+
+#: roadie/api.py:336
+msgid "{0} is not a directory list"
+msgstr ""

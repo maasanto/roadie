@@ -1233,3 +1233,11 @@ msgstr "Champ « {0} » de nouveau affiché"
 #: frontend/src/components/FormCustomiser.vue:59
 msgid "{0} stays visible: Roadie relies on it"
 msgstr "Le champ « {0} » reste affiché : Roadie s'appuie dessus"
+
+#: frontend/src/App.vue:124
+msgid "Mail"
+msgstr "Courrier"
+
+#: roadie/api.py:336
+msgid "{0} is not a directory list"
+msgstr "{0} n'est pas une liste d'annuaire"
