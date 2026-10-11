@@ -400,28 +400,34 @@ def clean_label(label: str) -> str:
 
 
 def can_use_drive() -> bool:
-	# Drive refuses its share and permission calls to anyone without its Drive User role.
-	return "drive" in frappe.get_installed_apps() and "Drive User" in frappe.get_roles()
+	# Drive ships inside the suite app since the standalone one was archived, and refuses its share
+	# and permission calls to anyone without the role it reads.
+	return "suite" in frappe.get_installed_apps() and "Suite User" in frappe.get_roles()
+
+
+def is_in_drive(entity) -> bool:
+	"""Whether Drive serves this file, which it does only under one of its own two roots."""
+	from suite.drive.utils import ROOT_FOLDER, USERS_FOLDER, generate_upward_path
+
+	return generate_upward_path(entity.name)[0]["name"] in (ROOT_FOLDER, USERS_FOLDER)
 
 
 @frappe.whitelist(methods=["POST"])
 def share_drive_link(entity_name: str) -> str:
 	if not can_use_drive():
 		frappe.throw(
-			_("Linking Drive items needs Frappe Drive and the Drive User role"), frappe.PermissionError
+			_("Linking Drive items needs Frappe Suite and the Suite User role"), frappe.PermissionError
 		)
 
 	entity = frappe.get_doc("File", entity_name)
 	# Drive serves these types elsewhere (Writer, Slides, the link target), never at /drive/f/.
-	if not entity.team or entity.file_type in ("Link", "Document", "Presentation"):
-		frappe.throw(
-			_("Only files and folders from a Drive team can be linked, not {0}").format(entity.file_name)
-		)
+	if entity.file_type in ("Link", "Document", "Presentation") or not is_in_drive(entity):
+		frappe.throw(_("Only files and folders in Drive can be linked, not {0}").format(entity.file_name))
 
-	from drive.api.permissions import get_user_access
+	from suite.drive.api.permissions import get_user_access_for_user
 
 	# Sharing again would reset the public access Drive already grants, such as comment rights.
-	if not get_user_access(entity, "Guest")["read"]:
+	if not get_user_access_for_user(entity, "Guest")["read"]:
 		# Drive overrides the File class with share(), which checks the caller's share permission.
 		entity.share(user="", read=1)
 	return frappe.utils.get_url(f"/drive/{'d' if entity.is_folder else 'f'}/{entity.name}")

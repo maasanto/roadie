@@ -170,7 +170,7 @@ msgstr ""
 msgid "Booked"
 msgstr ""
 
-#: frontend/src/components/DriveLinkDialog.vue:132
+#: frontend/src/components/DriveLinkDialog.vue:128
 msgid "Cancel"
 msgstr ""
 
@@ -316,7 +316,7 @@ msgid "Done: {0}"
 msgstr ""
 
 #: frontend/src/App.vue:25 frontend/src/App.vue:79
-#: frontend/src/components/DriveLinkDialog.vue:73
+#: frontend/src/components/DriveLinkDialog.vue:69
 msgid "Drive"
 msgstr ""
 
@@ -384,7 +384,7 @@ msgstr ""
 msgid "First name"
 msgstr ""
 
-#: frontend/src/components/DriveLinkDialog.vue:70
+#: frontend/src/components/DriveLinkDialog.vue:66
 msgid "Folder path"
 msgstr ""
 
@@ -448,7 +448,7 @@ msgstr ""
 msgid "Hip Hop"
 msgstr ""
 
-#: frontend/src/components/DriveLinkDialog.vue:20
+#: frontend/src/components/DriveLinkDialog.vue:18
 msgid "Home"
 msgstr ""
 
@@ -471,11 +471,11 @@ msgstr ""
 msgid "Indie"
 msgstr ""
 
-#: frontend/src/components/DriveLinkDialog.vue:135
+#: frontend/src/components/DriveLinkDialog.vue:131
 msgid "Insert link"
 msgstr ""
 
-#: frontend/src/components/DriveLinkDialog.vue:128
+#: frontend/src/components/DriveLinkDialog.vue:124
 msgid "Inserting the link makes the item public: anyone who has the link can open it."
 msgstr ""
 
@@ -535,12 +535,12 @@ msgstr ""
 msgid "Link from Drive"
 msgstr ""
 
-#: frontend/src/components/DriveLinkDialog.vue:67
+#: frontend/src/components/DriveLinkDialog.vue:63
 msgid "Link to a Drive item"
 msgstr ""
 
-#: roadie/api.py:370
-msgid "Linking Drive items needs Frappe Drive and the Drive User role"
+#: roadie/api.py:424
+msgid "Linking Drive items needs Frappe Suite and the Suite User role"
 msgstr ""
 
 #: frontend/src/components/EntryForm.vue:97
@@ -738,11 +738,11 @@ msgstr ""
 msgid "Only band members can open Roadie"
 msgstr ""
 
-#: roadie/api.py:377
-msgid "Only files and folders from a Drive team can be linked, not {0}"
+#: roadie/api.py:430
+msgid "Only files and folders in Drive can be linked, not {0}"
 msgstr ""
 
-#: frontend/src/components/DriveLinkDialog.vue:100
+#: frontend/src/components/DriveLinkDialog.vue:96
 msgid "Only its owner can share this item."
 msgstr ""
 
@@ -773,7 +773,7 @@ msgstr ""
 msgid "Open the pipeline"
 msgstr ""
 
-#: frontend/src/components/DriveLinkDialog.vue:117
+#: frontend/src/components/DriveLinkDialog.vue:113
 msgid "Open {0}"
 msgstr ""
 
@@ -971,6 +971,10 @@ msgstr ""
 msgid "Show"
 msgstr ""
 
+#: frontend/src/components/DriveLinkDialog.vue:17
+msgid "Site"
+msgstr ""
+
 #. Genre option for the Band genre multiselect
 #: frontend/src/directory.js:41
 msgid "Ska"
@@ -1038,7 +1042,7 @@ msgstr ""
 msgid "The application for {0} closes on {1}, in {2} days, and the gig is still at {3}."
 msgstr ""
 
-#: frontend/src/components/DriveLinkDialog.vue:123
+#: frontend/src/components/DriveLinkDialog.vue:119
 msgid "This folder is empty."
 msgstr ""
 
@@ -1151,10 +1155,6 @@ msgstr ""
 
 #: frontend/src/pages/PlanningScreen.vue:32
 msgid "Year"
-msgstr ""
-
-#: frontend/src/components/DriveLinkDialog.vue:123
-msgid "You are not a member of any Drive team."
 msgstr ""
 
 #: frontend/src/pages/DirectoryScreen.vue:102

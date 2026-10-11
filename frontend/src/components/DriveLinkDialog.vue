@@ -10,20 +10,16 @@ const openedFolders = ref([]);
 const selectedItem = ref(null);
 const currentFolder = computed(() => openedFolders.value.at(-1));
 
-const teamHomes = useCall({
-	url: "/api/v2/method/drive.api.permissions.get_teams",
-	params: { details: 1, exclude_personal: 0 },
-	transform: (teamsByName) =>
-		Object.values(teamsByName).map((team) => ({
-			name: team.file,
-			// Drive titles a personal team with the user's email, and shows it as Home.
-			file_name: team.personal ? __("Home") : team.title,
-			is_folder: 1,
-		})),
-	onSuccess: (homes) => homes.length === 1 && openFolder(homes[0]),
+const driveHomes = useCall({
+	url: "/api/v2/method/suite.drive.api.files.get_root_folder",
+	// Drive keeps the shared tree and the member's own folder side by side; both are browsable.
+	transform: ({ root, home }) => [
+		{ name: root, file_name: __("Site"), is_folder: 1 },
+		{ name: home, file_name: __("Home"), is_folder: 1 },
+	],
 });
 const folderItems = useCall({
-	url: "/api/v2/method/drive.api.list.files",
+	url: "/api/v2/method/suite.drive.api.list.files",
 	immediate: false,
 	transform: (items) => items.toSorted((first, second) => second.is_folder - first.is_folder),
 });
@@ -33,7 +29,7 @@ const shareLink = useCall({
 	immediate: false,
 });
 
-const listing = computed(() => (currentFolder.value ? folderItems : teamHomes));
+const listing = computed(() => (currentFolder.value ? folderItems : driveHomes));
 // Drive lets only an item's owner, or whoever it was shared with, share it; a public item already has its link.
 const PUBLIC_SHARE_COUNT = -2;
 const canLink = (item) => item.share || item.share_count === PUBLIC_SHARE_COUNT;
@@ -120,7 +116,7 @@ function loadCurrentFolder() {
 			</li>
 		</ul>
 		<p v-else-if="listing.isFinished" class="mt-3 text-p-sm text-ink-gray-5">
-			{{ currentFolder ? __("This folder is empty.") : __("You are not a member of any Drive team.") }}
+			{{ __("This folder is empty.") }}
 		</p>
 		<ErrorMessage class="mt-2" :message="listing.error || shareLink.error" />
 		<p class="mt-3 flex items-start gap-2 text-p-sm text-ink-gray-7">
