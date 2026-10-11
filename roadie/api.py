@@ -4,7 +4,7 @@ import frappe
 from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 
-from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns
+from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns, clean_quick_filters
 
 DIRECTORY_DOCTYPES = ("Festival", "Venue", "Promoter", "Band")
 CUSTOMISABLE_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
@@ -340,6 +340,31 @@ def set_directory_columns(doctype: str, columns: str) -> None:
 	all_columns = frappe.parse_json(settings.directory_columns or "{}") or {}
 	all_columns[doctype] = clean_columns(doctype, frappe.parse_json(columns))
 	settings.directory_columns = frappe.as_json(all_columns)
+	settings.save()
+
+
+@frappe.whitelist()
+def get_directory_quick_filters() -> dict:
+	"""The quick filters each directory list offers, keyed by DocType: one setting for the whole site."""
+	frappe.only_for(("Band Member", "System Manager"))
+
+	return (
+		frappe.parse_json(frappe.db.get_single_value("Roadie Settings", "directory_quick_filters") or "{}")
+		or {}
+	)
+
+
+@frappe.whitelist(methods=["POST"])
+def set_directory_quick_filters(doctype: str, fieldnames: str) -> None:
+	"""Replace one type's quick filters. An empty list leaves that type with none."""
+	frappe.only_for(("Band Member", "System Manager"))
+	if doctype not in DIRECTORY_DOCTYPES:
+		frappe.throw(_("{0} is not a directory list").format(doctype))
+
+	settings = frappe.get_doc("Roadie Settings")
+	all_filters = frappe.parse_json(settings.directory_quick_filters or "{}") or {}
+	all_filters[doctype] = clean_quick_filters(doctype, frappe.parse_json(fieldnames))
+	settings.directory_quick_filters = frappe.as_json(all_filters)
 	settings.save()
 
 

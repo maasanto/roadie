@@ -61,11 +61,11 @@ export function columnsFor(doctype, saved) {
 	return [saved_name ?? cleanColumn(name), ...columns.filter((column) => !isNameColumn(column))];
 }
 
-// What the list fetches: the row's name, which is its identity and key, then every field a column reads and
-// whatever the screen needs regardless of the columns it shows. Sorted, because reordering columns changes
-// neither what is read nor the response, and an unsorted list would re-request the whole type.
-export function fetchFields(columns, extraFields = []) {
-	const fields = new Set([...columns.map((column) => column.fieldname), ...extraFields]);
+// What the list fetches: the row's name, which is its identity and key, then every field a column reads.
+// Sorted, because reordering columns changes neither what is read nor the response, and an unsorted list
+// would re-request the whole type.
+export function fetchFields(columns) {
+	const fields = new Set(columns.map((column) => column.fieldname));
 	fields.delete("name");
 	return ["name", ...[...fields].sort()];
 }

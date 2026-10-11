@@ -12,7 +12,7 @@ Roadie is a small, shared booking desk for a band. Everyone in the band sees the
 - Gig panel: the gig's fields, a task checklist, attachments (riders, contracts), the email thread with a composer, and a comment thread for the band only.
 - Planning: a gantt with one lane per gig showing the application window, the gig date and its tasks, plus a lane for loose tasks.
 - My tasks: what is assigned to you, overdue first, ticked off in one click.
-- Directory: festivals, venues, promoters and bands with their contacts, searchable in one list.
+- Directory: festivals, venues, promoters and bands with their contacts, each in a list the band can filter, sort and pick the columns of.
 - Inbox and Outbox: the band's shared mailbox, with read/unread and delivery status. Email to a contact also shows on the festival, venue, promoter or band they belong to.
 - Reminders: the gig owner gets an email 7 days before an application closes, and the assignee gets one when a task is due.
 
@@ -60,4 +60,4 @@ The app uses `pre-commit` (ruff, eslint, prettier, pyupgrade): run `pre-commit i
 
 ## License
 
-[AGPL-3.0](license.txt). The email composer is adapted from [Frappe CRM](https://github.com/frappe/crm), which is AGPL-3.0.
+[AGPL-3.0](license.txt). The email composer and the directory lists' filter, sort and quick filter controls are adapted from [Frappe CRM](https://github.com/frappe/crm), which is AGPL-3.0.
