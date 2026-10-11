@@ -31,10 +31,10 @@ function openNotification(notification) {
 
 <template>
 	<Teleport to="body">
-		<div v-if="open" class="fixed inset-0 z-40 bg-black/25" @click="open = false" />
+		<div v-if="open" class="fixed inset-0 z-40 bg-black/25 md:left-60" @click="open = false" />
 		<aside
 			v-if="open"
-			class="fixed inset-y-0 left-0 z-50 flex w-80 max-w-full flex-col border-r bg-surface-base shadow-xl"
+			class="fixed inset-y-0 left-0 z-50 flex w-80 max-w-full flex-col border-r bg-surface-base shadow-xl md:left-60"
 			role="dialog"
 			:aria-label="__('Notifications')"
 		>
