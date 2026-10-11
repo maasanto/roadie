@@ -71,6 +71,8 @@ class TestDriveLink(IntegrationTestCase):
 		frappe.set_user(MEMBER_WITHOUT_DRIVE)
 
 		self.assertFalse(roadie_page.get_context().boot["can_link_drive_items"])
+		with self.assertRaisesRegex(frappe.PermissionError, "Suite User role"):
+			share_drive_link("anything")
 
 	def test_bandmate_cannot_make_a_folder_they_do_not_own_public(self):
 		from suite.drive.api.permissions import get_user_access_for_user
