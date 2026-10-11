@@ -1250,3 +1250,51 @@ msgstr "Courrier"
 #: roadie/api.py:336
 msgid "{0} is not a directory list"
 msgstr "{0} n'est pas une liste d'annuaire"
+
+#: frontend/src/components/BandMembers.vue
+msgid "Members"
+msgstr "Membres"
+
+#: frontend/src/components/BandMembers.vue
+msgid "Invited"
+msgstr "Invité"
+
+#: frontend/src/components/BandMembers.vue
+msgid "Cancel invitation"
+msgstr "Annuler l'invitation"
+
+#: frontend/src/components/BandMembers.vue
+msgid "Invite someone to the band"
+msgstr "Inviter quelqu'un dans le groupe"
+
+#: frontend/src/components/BandMembers.vue
+msgid "Invite"
+msgstr "Inviter"
+
+#: frontend/src/components/BandMembers.vue
+msgid "They get an email with a link to join the band."
+msgstr "La personne reçoit un e-mail avec un lien pour rejoindre le groupe."
+
+#: frontend/src/components/BandMembers.vue
+msgid "Invitation sent to {0}"
+msgstr "Invitation envoyée à {0}"
+
+#: frontend/src/components/BandMembers.vue
+msgid "Invitation to {0} cancelled"
+msgstr "Invitation pour {0} annulée"
+
+#: frontend/src/components/BandMembers.vue
+msgid "{0} is already invited"
+msgstr "{0} est déjà invité"
+
+#: frontend/src/components/BandMembers.vue
+msgid "{0} is already a member"
+msgstr "{0} est déjà membre du groupe"
+
+#: frontend/src/components/BandMembers.vue
+msgid "{0} has a disabled account"
+msgstr "Le compte de {0} est désactivé"
+
+#: frontend/src/components/BandMembers.vue
+msgid "{0} already accepted an invitation"
+msgstr "{0} a déjà accepté une invitation"

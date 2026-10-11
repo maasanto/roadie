@@ -27,6 +27,9 @@ website_redirects = [{"source": r"/band(/.*)?", "target": r"/roadie\1", "forward
 # Members are website users: logging in lands them on the SPA, never on Desk
 role_home_page = {"Band Member": "roadie"}
 
+# A band has no admin: any member brings in the next one, who joins as a member and nothing more
+user_invitation = {"allowed_roles": {"Band Member": ["Band Member"], "System Manager": ["Band Member"]}}
+
 after_install = "roadie.install.after_install"
 after_uninstall = "roadie.install.after_uninstall"
 
@@ -37,7 +40,8 @@ doc_events = {
 	"Comment": {
 		"before_insert": "roadie.comments.set_author",
 		"after_insert": "roadie.mentions.notify_mentioned_members",
-	}
+	},
+	"User Invitation": {"before_insert": "roadie.invitations.keep_invitee_in_roadie"},
 }
 
 fixtures = [
