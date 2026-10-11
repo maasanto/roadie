@@ -23,6 +23,7 @@ const router = createRouter({
 			component: () => import("./pages/MailboxScreen.vue"),
 			props: { sentOrReceived: "Sent" },
 		},
+		{ path: "/settings", name: "Settings", component: () => import("./pages/SettingsScreen.vue") },
 	],
 });
 
