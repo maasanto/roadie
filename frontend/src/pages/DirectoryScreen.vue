@@ -1,66 +1,76 @@
 <script setup>
 import { computed, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Button, ErrorMessage, ListView, Rating, Skeleton, TextInput, call, toast, useList } from "frappe-ui";
+import { Button, Dropdown, ErrorMessage, ListView, Rating, Skeleton, call, toast, useList } from "frappe-ui";
 import CommentThread from "../components/CommentThread.vue";
 import EmailThread from "../components/EmailThread.vue";
 import EmptyState from "../components/EmptyState.vue";
 import EntryContacts from "../components/EntryContacts.vue";
 import EntryDialog from "../components/EntryDialog.vue";
 import ListColumnEditor from "../components/ListColumnEditor.vue";
+import ListFilter from "../components/ListFilter.vue";
+import ListSort from "../components/ListSort.vue";
+import QuickFilterBar from "../components/QuickFilterBar.vue";
 import { useDirectoryColumns } from "../directoryColumns";
+import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { RATING_STARS, directoryControls, directoryType, toFraction, toStars } from "../directory";
 import { fetchFields, formatCell } from "../listColumns";
+import { orderBy, queryFilters } from "../listFilters";
+import { useMeta } from "../meta";
+import { fieldsFromMeta } from "../metaFields";
 import { onKey } from "../keyboard";
 
 const props = defineProps({ doctype: { type: String, required: true } });
 
 const type = directoryType(props.doctype);
 const { columns, loaded } = useDirectoryColumns(props.doctype);
+const fields = computed(() => fetchFields(columns.value));
 
-// The search reads the name and the city whether or not those columns are on screen, so they are always fetched.
-const SEARCH_FIELDS = ["title", "city"];
-const fields = computed(() => fetchFields(columns.value, SEARCH_FIELDS));
+const meta = useMeta(props.doctype);
+const filterFields = computed(() =>
+	fieldsFromMeta(meta.data?.fields ?? [], directoryControls[props.doctype] ?? {}).filter(
+		(field) => !field.hidden
+	)
+);
+// Sorting on an address or a page of notes orders nothing anyone reads.
+const sortFields = computed(() => [
+	...filterFields.value.filter((field) => field.type !== "textarea"),
+	{ fieldname: "modified", label: __("Last modified") },
+	{ fieldname: "creation", label: __("Created") },
+]);
+
+// ponytail: in memory only, so a reload starts unfiltered; persist per member if the band asks for saved views
+const filters = ref([]);
+const sort = ref(null);
+const activeFilters = computed(() => queryFilters(filters.value, filterFields.value));
 
 // ponytail: the whole type in one unpaged fetch, page server-side if a directory outgrows a few hundred entries
 const entries = useList({
 	doctype: props.doctype,
 	fields: () => fields.value,
-	orderBy: "relevance desc, title asc",
+	filters: () => activeFilters.value,
+	orderBy: () => orderBy(sort.value),
 	limit: 500,
 	immediate: false,
-	// The fields change when the columns do, and each change would otherwise fire a request that the next one
-	// abandons. Asking once per set of fields keeps the network and the console clean; a reorder changes
-	// nothing, so it asks for nothing.
+	// Columns, filters and sort all change the request. Asking once the column setting is known keeps the first
+	// load from being abandoned for the next; a column reorder leaves the request as it was, so it asks for
+	// nothing. Text filters wait for the member to pause before they change it at all.
 	refetch: false,
 });
 
-let fetched = null;
-watch(
-	[loaded, fields],
-	() => {
-		if (!loaded.value) return;
-		const key = fields.value.join(",");
-		if (key === fetched) return;
-		fetched = key;
-		entries.execute();
-	},
-	{ immediate: true }
-);
+watch([loaded, () => entries.url], () => loaded.value && entries.execute(), { immediate: true });
 
 const isLoading = computed(() => !loaded.value || (entries.loading && !entries.data));
-const loadError = computed(() => (entries.loading || entries.data ? null : entries.error));
+// The previous rows stay in place when a refetch fails, so the error has to show over them, or the list would
+// look filtered by conditions the server never applied.
+const loadError = computed(() => (entries.loading ? null : entries.error));
 
-const query = ref("");
-const searchInput = ref(null);
-onKey("/", () => searchInput.value?.el.focus());
+const isCustomisingQuickFilters = ref(false);
+const { loaded: quickFiltersLoaded } = useDirectoryQuickFilters(props.doctype);
+const quickFilterBar = ref(null);
+onKey("/", () => quickFilterBar.value?.querySelector("input")?.focus());
 
-const rows = computed(() => {
-	const needle = query.value.trim().toLowerCase();
-	return (entries.data || []).filter(
-		(entry) => !needle || `${entry.title || ""} ${entry.city || ""}`.toLowerCase().includes(needle)
-	);
-});
+const rows = computed(() => entries.data || []);
 
 // The list owns its grid, so a phone drops the trailing columns rather than hiding their cells: two tracks are
 // what a phone can read.
@@ -142,39 +152,51 @@ watch(
 	<div class="p-6">
 		<div class="flex flex-wrap items-center justify-between gap-3">
 			<h1 class="text-2xl-semibold">{{ type.plural }}</h1>
-			<div class="flex items-center gap-2">
-				<ListColumnEditor :doctype="doctype" />
-				<Button variant="solid" icon-left="lucide-plus" :label="__('New')" @click="openEntry()" />
-			</div>
+			<Button variant="solid" icon-left="lucide-plus" :label="__('New')" @click="openEntry()" />
 		</div>
-		<div class="mt-4 flex flex-wrap items-center gap-3">
-			<TextInput
-				ref="searchInput"
-				v-model="query"
-				type="search"
-				:placeholder="__('Search by name or city')"
-				class="w-full sm:w-80"
-			>
-				<template #suffix>
-					<kbd
-						class="hidden rounded border px-1 text-xs text-ink-gray-5 md:inline"
-						:title="__('Press / to search')"
-						>/</kbd
-					>
-				</template>
-				<template #prefix
-					><span class="lucide-search size-4 text-ink-gray-5" aria-hidden="true"
-				/></template>
-			</TextInput>
+		<div class="mt-4 flex flex-wrap items-center gap-2">
+			<div ref="quickFilterBar" class="contents">
+				<QuickFilterBar
+					v-model="filters"
+					v-model:customising="isCustomisingQuickFilters"
+					:doctype="doctype"
+					:fields="filterFields"
+				/>
+			</div>
+			<div v-if="!isCustomisingQuickFilters" class="ms-auto flex flex-wrap items-center gap-2">
+				<Button
+					icon="lucide-refresh-ccw"
+					:label="__('Refresh')"
+					:loading="entries.loading"
+					@click="entries.reload()"
+				/>
+				<ListFilter v-model="filters" :fields="filterFields" />
+				<ListSort v-model="sort" :fields="sortFields" />
+				<ListColumnEditor :doctype="doctype" />
+				<Dropdown
+					align="end"
+					:options="[
+						{
+							label: __('Customise quick filters'),
+							icon: 'lucide-sliders-horizontal',
+							disabled: !quickFiltersLoaded,
+							onClick: () => (isCustomisingQuickFilters = true),
+						},
+					]"
+					:button="{ icon: 'lucide-ellipsis', label: __('More options') }"
+				/>
+			</div>
 		</div>
 		<ErrorMessage v-if="loadError" class="mt-4" :message="loadError" />
 		<EmptyState
-			v-else-if="!isLoading && !rows.length && query.trim()"
+			v-else-if="!isLoading && !rows.length && Object.keys(activeFilters).length"
 			class="mt-4"
 			icon="lucide-search-x"
-			:title="__('No match for “{0}”', [query.trim()])"
-			:description="__('Search looks at names and cities. Try a shorter word, or add the entry.')"
-		/>
+			:title="__('No {0} match these filters', [type.plural.toLowerCase()])"
+			:description="__('Loosen a filter, or add the entry.')"
+		>
+			<Button icon-left="lucide-x" :label="__('Clear all filters')" @click="filters = []" />
+		</EmptyState>
 		<EmptyState
 			v-else-if="!isLoading && !rows.length"
 			class="mt-4"

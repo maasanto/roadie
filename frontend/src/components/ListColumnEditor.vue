@@ -44,7 +44,7 @@ const remove = (column) => save(columns.value.filter((entry) => entry.fieldname 
 		<template #trigger>
 			<!-- The columns are one setting for the whole site, so the editor stays shut until it has been read:
 			     a save on top of a failed fetch would write the defaults over it. -->
-			<Button icon="lucide-columns-3" :label="__('Columns')" :disabled="!loaded" />
+			<Button icon-left="lucide-columns-3" :label="__('Columns')" :disabled="!loaded" />
 		</template>
 		<template #default>
 			<div class="flex w-64 flex-col">

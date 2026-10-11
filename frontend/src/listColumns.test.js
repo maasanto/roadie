@@ -92,17 +92,11 @@ test("the list fetches the row's name first, then each column once", () => {
 	assert.deepEqual(fetchFields(columns), ["name", "city", "title"]);
 });
 
-test("the list fetches what the search reads, whether or not those columns are shown", () => {
-	const columns = [{ fieldname: "title" }, { fieldname: "genre" }];
-
-	assert.deepEqual(fetchFields(columns, ["title", "city"]), ["name", "city", "genre", "title"]);
-});
-
 test("reordering columns leaves what is fetched, and so the request, alone", () => {
 	const columns = defaultColumns("Venue");
 	const reordered = moveColumn(columns, "capacity", -1);
 
-	assert.deepEqual(fetchFields(reordered, ["title", "city"]), fetchFields(columns, ["title", "city"]));
+	assert.deepEqual(fetchFields(reordered), fetchFields(columns));
 });
 
 test("a column moves one slot at a time, and never displaces the name column", () => {
