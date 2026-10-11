@@ -320,6 +320,16 @@ def get_members() -> list[dict]:
 
 
 @frappe.whitelist(methods=["POST"])
+def delete_list_view(dt: str) -> None:
+	"""Drop the layout this member has for one DocType, which is what the editor's reset does.
+
+	Scoped on the session user rather than left to the DocType's own permissions: a member who also holds a
+	role with plain read (System Manager) would otherwise be able to clear someone else's layout.
+	"""
+	frappe.db.delete("Roadie List View", {"dt": dt, "owner": frappe.session.user})
+
+
+@frappe.whitelist(methods=["POST"])
 def add_form_field(doctype: str, label: str, fieldtype: str, options: str | None = None) -> str:
 	"""Members are website users who cannot write Custom Field, so Roadie adds the field on their behalf."""
 	check_customisable(doctype)

@@ -12,7 +12,9 @@ export const useListView = (doctype) =>
 		const list = useList({
 			doctype: "Roadie List View",
 			fields: ["name", "columns"],
-			filters: { dt: doctype },
+			// Scoped to this member rather than left to the DocType's permissions: a member who also holds a
+			// role with plain read (System Manager) would otherwise load the newest layout of whoever has one.
+			filters: { dt: doctype, owner: window.user },
 			orderBy: "modified desc",
 			limit: 1,
 		});
@@ -62,13 +64,11 @@ export const useListView = (doctype) =>
 				__("Columns saved")
 			);
 
+		// Roadie's own method rather than frappe.client.delete: it clears every row this member has for the
+		// DocType, not just the newest one.
 		const reset = () =>
 			apply(
-				() =>
-					call("frappe.client.delete", {
-						doctype: "Roadie List View",
-						name: row.value.name,
-					}),
+				() => call("roadie.api.delete_list_view", { dt: doctype }),
 				__("Back to the usual columns")
 			);
 
