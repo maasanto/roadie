@@ -40,11 +40,14 @@ export function formatDate(isoDate) {
 const toOptions = (rows, labelField) =>
 	(rows || []).map((row) => ({ label: row[labelField], value: row.name }));
 
+// The members a gig can be assigned to, labelled by name and valued by their user id.
+export const memberOptions = (members) => toOptions(members, "full_name");
+
 export function gigControls({ festivals, venues, promoters, members }) {
 	return {
 		// The pipeline has one column per status it knows, so a status added in Desk would hide its gigs.
 		status: { options: translatedOptions(GIG_STATUSES) },
-		gig_owner: { type: "combobox", options: toOptions(members, "full_name"), default: window.user },
+		gig_owner: { type: "combobox", options: memberOptions(members), default: window.user },
 		festival: { type: "combobox", options: toOptions(festivals, "title") },
 		venue: { type: "combobox", options: toOptions(venues, "title") },
 		promoter: { type: "combobox", options: toOptions(promoters, "title") },
