@@ -5,6 +5,7 @@ import {
 	Dropdown,
 	FrappeUIProvider,
 	KeyboardShortcut,
+	ScrollArea,
 	Sidebar,
 	SidebarHeader,
 	SidebarItem,
@@ -100,57 +101,66 @@ const searchPalette = ref(null);
 						:subtitle="user.fullName"
 						:menu-items="accountMenu"
 					/>
-					<SidebarItem :label="__('Search')" icon="lucide-search" @click="searchPalette.open()">
-						<template #suffix><KeyboardShortcut combo="Mod+K" /></template>
-					</SidebarItem>
-					<SidebarItem
-						:label="__('Notifications')"
-						icon="lucide-bell"
-						:active="showNotifications"
-						@click="showNotifications = true"
-					>
-						<template v-if="unread" #suffix>
-							<Badge :label="String(unread)" theme="gray" />
-						</template>
-					</SidebarItem>
-					<SidebarItem
-						v-for="screen in screens"
-						:key="screen.name"
-						:label="screen.label"
-						:icon="screen.icon"
-						:to="screen.to"
-						:active="route.name === screen.name"
-					/>
-					<SidebarLabel>{{ __("Directory") }}</SidebarLabel>
-					<SidebarItem
-						v-for="screen in directoryScreens"
-						:key="screen.name"
-						:label="screen.label"
-						:icon="screen.icon"
-						:to="screen.to"
-						:active="route.name === screen.name"
-					/>
-					<SidebarLabel>{{ __("Mail") }}</SidebarLabel>
-					<SidebarItem
-						v-for="screen in mailboxScreens"
-						:key="screen.name"
-						:label="screen.label"
-						:icon="screen.icon"
-						:to="screen.to"
-						:active="route.name === screen.name"
-					/>
-					<SidebarItem
-						v-if="driveUrl"
-						:label="__('Drive')"
-						icon="lucide-hard-drive"
-						@click="openDrive"
-					>
-						<template #suffix
-							><span
-								class="lucide-external-link mr-2 size-3.5 text-ink-gray-4"
-								aria-hidden="true"
-						/></template>
-					</SidebarItem>
+					<!-- Composition mode leaves the gutter and scrolling to the app; SidebarHeader owns its own. -->
+					<ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pt-0.5 pb-2">
+						<nav class="flex flex-col gap-0.5">
+							<SidebarItem
+								:label="__('Search')"
+								icon="lucide-search"
+								@click="searchPalette.open()"
+							>
+								<template #suffix><KeyboardShortcut class="mr-2" combo="Mod+K" /></template>
+							</SidebarItem>
+							<SidebarItem
+								:label="__('Notifications')"
+								icon="lucide-bell"
+								:active="showNotifications"
+								@click="showNotifications = true"
+							>
+								<template v-if="unread" #suffix>
+									<Badge class="mr-2" :label="String(unread)" theme="gray" />
+								</template>
+							</SidebarItem>
+							<SidebarItem
+								v-for="screen in screens"
+								:key="screen.name"
+								:label="screen.label"
+								:icon="screen.icon"
+								:to="screen.to"
+								:active="route.name === screen.name"
+							/>
+							<SidebarLabel class="mt-2">{{ __("Directory") }}</SidebarLabel>
+							<SidebarItem
+								v-for="screen in directoryScreens"
+								:key="screen.name"
+								:label="screen.label"
+								:icon="screen.icon"
+								:to="screen.to"
+								:active="route.name === screen.name"
+							/>
+							<SidebarLabel class="mt-2">{{ __("Mail") }}</SidebarLabel>
+							<SidebarItem
+								v-for="screen in mailboxScreens"
+								:key="screen.name"
+								:label="screen.label"
+								:icon="screen.icon"
+								:to="screen.to"
+								:active="route.name === screen.name"
+							/>
+							<SidebarItem
+								v-if="driveUrl"
+								:label="__('Drive')"
+								icon="lucide-hard-drive"
+								@click="openDrive"
+							>
+								<template #suffix
+									><span
+										class="lucide-external-link mr-2 size-3.5 text-ink-gray-4"
+										aria-hidden="true"
+								/></template>
+							</SidebarItem>
+						</nav>
+					</ScrollArea>
 				</Sidebar>
 			</div>
 			<header class="flex items-center gap-2 border-b px-4 py-2 md:hidden">
