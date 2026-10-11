@@ -22,9 +22,14 @@ export const useListView = (doctype) =>
 		const row = computed(() => list.data?.[0]);
 		// A site that has not run migrate has no such DocType, let alone a row: the type's defaults stand in.
 		const columns = computed(() => columnsFor(doctype, row.value?.columns));
-		// Whether the saved layout is known yet. A list whose fields follow from those columns must not ask
-		// before this is true: its first request would only be abandoned for the second.
+		// Whether the layout question is settled, so a list whose fields follow from those columns asks once
+		// instead of abandoning a first request for a second. A failed fetch is settled too: the type's
+		// defaults stand in and the screen should not wait on them.
 		const ready = computed(() => Boolean(list.error) || list.isFinished === true);
+		// Whether the saved layout is actually known. The column editor waits for this rather than `ready`:
+		// `ready` is true after a failed fetch, and an edit on top of one would save the defaults over a
+		// layout that is really there.
+		const loaded = computed(() => list.isFinished === true && !list.error);
 		const saved = computed(() => Boolean(row.value));
 		const saving = ref(false);
 
@@ -72,5 +77,5 @@ export const useListView = (doctype) =>
 				__("Back to the usual columns")
 			);
 
-		return { columns, ready, saved, saving, save, reset };
+		return { columns, ready, loaded, saved, saving, save, reset };
 	}));
