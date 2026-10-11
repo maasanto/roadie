@@ -162,14 +162,20 @@ onKey("Escape", () => !hasDraft() && close());
 									<span
 										class="min-w-0 flex-1 truncate text-base"
 										:class="
-											isInbox && row.unread ? 'font-semibold text-ink-gray-9' : 'text-ink-gray-8'
+											isInbox && row.unread
+												? 'font-semibold text-ink-gray-9'
+												: 'text-ink-gray-8'
 										"
 									>
 										{{
-											isInbox ? row.sender_full_name || row.sender : __("To {0}", [row.recipients])
+											isInbox
+												? row.sender_full_name || row.sender
+												: __("To {0}", [row.recipients])
 										}}
 									</span>
-									<span v-if="row.count > 1" class="text-sm text-ink-gray-5">{{ row.count }}</span>
+									<span v-if="row.count > 1" class="text-sm text-ink-gray-5">{{
+										row.count
+									}}</span>
 									<span class="shrink-0 text-sm text-ink-gray-5">{{
 										formatListDate(row.communication_date)
 									}}</span>

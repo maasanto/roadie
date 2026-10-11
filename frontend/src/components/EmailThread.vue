@@ -95,7 +95,10 @@ function onSent() {
 						<span class="block truncate text-base-medium text-ink-gray-8">
 							{{ email.sender_full_name || email.sender }}
 						</span>
-						<span v-if="openEmails.has(email.name)" class="block truncate text-sm text-ink-gray-5">
+						<span
+							v-if="openEmails.has(email.name)"
+							class="block truncate text-sm text-ink-gray-5"
+						>
 							{{ __("to {0}", [email.recipients])
 							}}<template v-if="email.cc"> · {{ __("cc {0}", [email.cc]) }}</template>
 						</span>
