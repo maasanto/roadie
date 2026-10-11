@@ -9,7 +9,7 @@ import { fieldsFromMeta } from "../metaFields";
 
 const props = defineProps({ doctype: { type: String, required: true } });
 
-const { columns, saved, saving, save, reset } = useListView(props.doctype);
+const { columns, ready, saved, saving, save, reset } = useListView(props.doctype);
 const meta = useMeta(props.doctype);
 const metaFields = computed(() => meta.data?.fields ?? []);
 // The DocType's own word for a field, so a saved column does not carry one language's translation into another.
@@ -42,7 +42,9 @@ const remove = (column) => save(columns.value.filter((entry) => entry.fieldname 
 <template>
 	<Popover align="end">
 		<template #trigger>
-			<Button icon="lucide-columns-3" :label="__('Columns')" />
+			<!-- A save inserts or updates depending on the layout already loaded, so the editor stays shut
+			     until that has arrived: opened early it would list the defaults and discard the edit. -->
+			<Button icon="lucide-columns-3" :label="__('Columns')" :disabled="!ready" />
 		</template>
 		<template #default>
 			<div class="flex w-64 flex-col">
