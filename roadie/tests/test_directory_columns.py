@@ -97,6 +97,19 @@ class TestDirectoryColumns(IntegrationTestCase):
 		ensure_unique_index()
 		ensure_unique_index()
 
+	def test_a_layout_moved_to_a_doctype_the_member_already_has_is_refused(self):
+		"""Someone editing another member's row in Desk has no conflict of their own for the guard to find."""
+		frappe.set_user(MEMBER)
+		self.make_view("Festival")
+		venue = self.make_view("Venue")
+
+		frappe.set_user("Administrator")
+		moved = frappe.get_doc("Roadie List View", venue.name)
+		moved.dt = "Festival"
+
+		with self.assertRaises(frappe.ValidationError):
+			moved.save()
+
 	def test_a_second_layout_for_the_same_doctype_is_refused(self):
 		frappe.set_user(MEMBER)
 		self.make_view()
