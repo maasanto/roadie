@@ -63,6 +63,16 @@ class TestDriveLink(IntegrationTestCase):
 		self.assertEqual(link, frappe.utils.get_url(f"/drive/d/{folder.name}"))
 		self.assertTrue(get_user_access_for_user(folder, "Guest")["read"])
 
+	def test_a_member_cannot_publish_their_whole_home_folder(self):
+		from suite.drive.api.permissions import get_user_access_for_user
+		from suite.drive.utils import get_user_folder
+
+		home = frappe.get_doc("File", get_user_folder().name)
+
+		with self.assertRaisesRegex(frappe.ValidationError, "whole Drive"):
+			share_drive_link(home.name)
+		self.assertFalse(get_user_access_for_user(home, "Guest")["read"])
+
 	def test_member_without_the_suite_user_role_is_not_offered_drive_links(self):
 		frappe.set_user("Administrator")
 		make_member(MEMBER_WITHOUT_DRIVE, "Kim")

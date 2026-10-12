@@ -473,6 +473,14 @@ def is_in_drive(entity) -> bool:
 	return generate_upward_path(entity.name)[0]["name"] in (ROOT_FOLDER, USERS_FOLDER)
 
 
+def is_drive_home(entity) -> bool:
+	"""Drive's two roots, or a member's home folder: one link would publish everything under it."""
+	from suite.drive.utils import USERS_FOLDER, generate_upward_path
+
+	path = [folder["name"] for folder in generate_upward_path(entity.name)]
+	return len(path) == 1 or (path[0] == USERS_FOLDER and len(path) == 2)
+
+
 @frappe.whitelist(methods=["POST"])
 def share_drive_link(entity_name: str) -> str:
 	if not can_use_drive():
@@ -484,6 +492,8 @@ def share_drive_link(entity_name: str) -> str:
 	# Drive serves these types elsewhere (Writer, Slides, the link target), never at /drive/f/.
 	if entity.file_type in ("Link", "Document", "Presentation") or not is_in_drive(entity):
 		frappe.throw(_("Only files and folders in Drive can be linked, not {0}").format(entity.file_name))
+	if is_drive_home(entity):
+		frappe.throw(_("{0} holds a whole Drive: link a folder inside it instead").format(entity.file_name))
 
 	from suite.drive.api.permissions import get_user_access_for_user
 
