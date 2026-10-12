@@ -1,3 +1,4 @@
+import re
 from html import unescape
 
 import frappe
@@ -9,6 +10,8 @@ from roadie.api import SPA_BASE, notification_route
 # The relay keys its Firebase credentials by project, so this must match the project registered there.
 PUSH_PROJECT = "roadie"
 PUSH_ICON = "/assets/roadie/pwa/icon-192.png"
+# Without a break, the paragraphs of a comment or a reminder run into one another once the tags are gone.
+PARAGRAPH_BREAK = re.compile(r"<br\s*/?>|</(?:p|div|li)>", re.IGNORECASE)
 
 
 def is_push_configured() -> bool:
@@ -36,9 +39,12 @@ def send_push(notification_log: str) -> None:
 		body=_plain_text(notification.email_content),
 		link=get_url(SPA_BASE + route),
 		icon=get_url(PUSH_ICON),
+		# Already plain: a second pass would delete text like "doors < 18h" that the first one unescaped
+		strip_html=False,
 	)
 
 
 def _plain_text(html: str | None) -> str:
 	"""A system notification shows text verbatim, and subjects carry markup like <strong>John Doe</strong>."""
-	return unescape(strip_html(html or "")).strip()
+	paragraphs = PARAGRAPH_BREAK.sub("\n", html or "")
+	return unescape(strip_html(paragraphs)).strip()

@@ -26,8 +26,7 @@ class TestPushNotifications(IntegrationTestCase):
 		self.enqueue = self.start(patch("frappe.enqueue", side_effect=enqueue_all_but_pushes))
 		self.send = self.start(patch.object(PushNotification, "send_notification_to_user", return_value=True))
 		self.start(patch.object(PushNotification, "is_enabled", return_value=True))
-		frappe.conf.push_relay_server_url = "https://push.example.com"
-		self.addCleanup(frappe.conf.pop, "push_relay_server_url", None)
+		self.start(patch.dict(frappe.conf, {"push_relay_server_url": "https://push.example.com"}))
 
 	def tearDown(self):
 		frappe.set_user("Administrator")
@@ -56,6 +55,7 @@ class TestPushNotifications(IntegrationTestCase):
 			body="",
 			link=get_url("/roadie/tasks"),
 			icon=get_url(ICON_URL),
+			strip_html=False,
 		)
 
 	def test_a_mention_is_pushed_as_plain_text(self):
@@ -65,7 +65,7 @@ class TestPushNotifications(IntegrationTestCase):
 				"for_user": MEMBER,
 				"type": "Mention",
 				"subject": "<strong>Jane Doe</strong> mentioned you in <span>Rock &amp; Roll</span>",
-				"email_content": "<p>Can you call the venue?</p>",
+				"email_content": "<p>Can you call the venue?</p><p>Doors &lt; 18h</p>",
 				"link": get_url("/roadie/directory/festivals"),
 			}
 		).insert(ignore_permissions=True)
@@ -75,9 +75,10 @@ class TestPushNotifications(IntegrationTestCase):
 		self.send.assert_called_once_with(
 			MEMBER,
 			title="Jane Doe mentioned you in Rock & Roll",
-			body="Can you call the venue?",
+			body="Can you call the venue?\nDoors < 18h",
 			link=get_url("/roadie/directory/festivals"),
 			icon=get_url(ICON_URL),
+			strip_html=False,
 		)
 
 	def test_nothing_is_queued_without_the_relay_url(self):
