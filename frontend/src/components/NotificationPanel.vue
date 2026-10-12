@@ -4,7 +4,7 @@ import { Button, ErrorMessage, useCall } from "frappe-ui";
 import { useRouter } from "vue-router";
 import EmptyState from "./EmptyState.vue";
 import ListSkeleton from "./ListSkeleton.vue";
-import { relativeDate } from "../notifications";
+import { notificationRoute, relativeDate } from "../notifications";
 
 const props = defineProps({
 	notifications: { type: Object, required: true },
@@ -24,7 +24,8 @@ watch(open, (isOpen) => isOpen && props.notifications.reload());
 
 function openNotification(notification) {
 	if (!notification.read) markRead.submit({ names: [notification.name] });
-	if (notification.route) router.push(notification.route);
+	const route = notificationRoute(notification);
+	if (route) router.push(route);
 	open.value = false;
 }
 </script>
@@ -55,7 +56,7 @@ function openNotification(notification) {
 				class="m-4"
 				icon="lucide-bell"
 				:title="__('No notifications yet')"
-				:description="__('Task assignments and deadlines show up here.')"
+				:description="__('Task assignments, deadlines and mentions show up here.')"
 			/>
 			<ul v-else class="flex-1 divide-y divide-outline-gray-1 overflow-y-auto">
 				<li v-for="notification in notifications.data" :key="notification.name">
@@ -75,11 +76,11 @@ function openNotification(notification) {
 									notification.read ? 'text-ink-gray-7' : 'font-semibold text-ink-gray-9'
 								"
 							>
-								{{ notification.title || notification.subject }}
+								{{ notification.title }}
 							</span>
 							<span
 								v-if="notification.description"
-								class="mt-0.5 block text-p-sm text-ink-gray-6"
+								class="mt-0.5 line-clamp-2 text-p-sm text-ink-gray-6"
 							>
 								{{ notification.description }}
 							</span>

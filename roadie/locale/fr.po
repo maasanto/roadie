@@ -541,9 +541,9 @@ msgstr "Latin"
 msgid "Link from Drive"
 msgstr "Lien depuis le Drive"
 
-#: frontend/src/components/DriveLinkDialog.vue:63
-msgid "Link to a Drive item"
-msgstr "Lien vers un élément du Drive"
+#: frontend/src/components/DriveLinkDialog.vue
+msgid "Link to a Drive file or folder"
+msgstr "Lien vers un fichier ou un dossier du Drive"
 
 #: roadie/api.py:424
 msgid "Linking Drive items needs Frappe Suite and the Suite User role"
@@ -1026,8 +1026,8 @@ msgid "Task"
 msgstr "Tâche"
 
 #: frontend/src/components/NotificationPanel.vue:51
-msgid "Task assignments and deadlines show up here."
-msgstr "Les tâches qui vous sont assignées et les échéances apparaissent ici."
+msgid "Task assignments, deadlines and mentions show up here."
+msgstr "Les tâches qui vous sont assignées, les échéances et les mentions apparaissent ici."
 
 #: frontend/src/App.vue:41 frontend/src/components/GigTasks.vue:34
 msgid "Tasks"
@@ -1516,3 +1516,14 @@ msgstr "Ce navigateur ne peut pas recevoir de notifications push"
 #: frontend/src/push.js
 msgid "The push relay refused this device ({0})"
 msgstr "Le relais de notifications push a refusé cet appareil ({0})"
+#: frontend/src/components/DriveLinkDialog.vue
+msgid "Insert link to {0}"
+msgstr "Insérer le lien vers {0}"
+
+#: frontend/src/components/DriveLinkDialog.vue
+msgid "Inserting the link makes the folder public: anyone who has the link can open and download everything in it, including what is added later."
+msgstr "Insérer le lien rend le dossier public : toute personne qui a le lien pourra ouvrir et télécharger tout son contenu, y compris ce qui y sera ajouté plus tard."
+
+#: roadie/api.py
+msgid "{0} holds a whole Drive: link a folder inside it instead"
+msgstr "{0} contient tout un Drive : liez plutôt un dossier qu'il contient"

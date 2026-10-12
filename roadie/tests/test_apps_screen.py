@@ -10,9 +10,10 @@ class TestAppsScreen(IntegrationTestCase):
 		frappe.set_user("Administrator")
 
 	def test_tile_carries_the_logo_and_hides_from_desk_users_outside_the_band(self):
-		self.assertIn(
-			{"name": "roadie", "logo": "/assets/roadie/logo.svg", "title": "Roadie", "route": "/roadie"},
-			self._apps_seen_by("Administrator"),
+		# Only the keys Roadie sets: the framework adds its own to every tile
+		[tile] = [app for app in self._apps_seen_by("Administrator") if app["name"] == "roadie"]
+		self.assertEqual(
+			(tile["logo"], tile["title"], tile["route"]), ("/assets/roadie/logo.svg", "Roadie", "/roadie")
 		)
 
 		if not frappe.db.exists("User", OUTSIDER):

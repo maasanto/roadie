@@ -100,7 +100,7 @@ class TestNotifications(IntegrationTestCase):
 		self.assertEqual([n.route for n in notifications], ["/tasks"])
 
 	def test_a_route_never_repeats_the_base_the_router_already_carries(self):
-		# A mention carries a site path in its link and has no entry in NOTIFICATION_ROUTES.
+		# An older mention carries a site path in its link.
 		frappe.set_user(MEMBER)
 		festival = frappe.get_doc({"doctype": "Festival", "title": "Acme Festival"}).insert()
 		frappe.get_doc(

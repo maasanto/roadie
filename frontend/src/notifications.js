@@ -1,5 +1,12 @@
+import { resultRoute } from "./search.js";
+
 export const unreadCount = (notifications = []) =>
 	notifications.filter((notification) => !notification.read).length;
+
+// A notification about a record opens that record, as the search palette would, so Frappe's own mentions,
+// which carry no Roadie link, open it too. The server's route covers the rest.
+export const notificationRoute = ({ document_type, document_name, route }) =>
+	(document_name && resultRoute({ doctype: document_type, name: document_name })) || route;
 
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
