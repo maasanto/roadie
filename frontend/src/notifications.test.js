@@ -3,7 +3,33 @@ import { test } from "node:test";
 
 globalThis.window = globalThis;
 await import("./translation.js");
-const { relativeDate, unreadCount } = await import("./notifications.js");
+const { notificationRoute, relativeDate, unreadCount } = await import("./notifications.js");
+
+test("notificationRoute opens the record a notification is about", () => {
+	assert.deepEqual(
+		notificationRoute({
+			document_type: "Festival",
+			document_name: "festival-1",
+			route: "/directory/festivals",
+		}),
+		{ name: "Festivals", query: { entry: "Festival:festival-1" } }
+	);
+	assert.deepEqual(notificationRoute({ document_type: "Gig", document_name: "gig-1", route: null }), {
+		name: "Pipeline",
+		query: { gig: "gig-1" },
+	});
+});
+
+test("notificationRoute falls back to the server's route when the record has no screen", () => {
+	assert.equal(
+		notificationRoute({ document_type: "User", document_name: "jane@example.com", route: null }),
+		null
+	);
+	assert.equal(
+		notificationRoute({ document_type: null, document_name: null, route: "/settings" }),
+		"/settings"
+	);
+});
 
 test("unreadCount counts the notifications that were not read yet", () => {
 	assert.equal(unreadCount([{ read: 0 }, { read: 1 }, { read: 0 }]), 2);
