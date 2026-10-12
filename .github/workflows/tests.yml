@@ -61,10 +61,13 @@ jobs:
       - name: Install Roadie on a test site
         working-directory: /home/runner/frappe-bench
         run: |
-          bench get-app roadie "$GITHUB_WORKSPACE"
+          bench get-app --skip-assets roadie "$GITHUB_WORKSPACE"
           bench new-site test_site --db-host 127.0.0.1 --db-root-password root --admin-password admin
           bench --site test_site install-app roadie
           bench --site test_site set-config allow_tests true
+          # Without an outgoing account the reminders fail before queueing their email or notification; tests never reach SMTP
+          bench --site test_site set-config mail_server smtp.example.com
+          bench --site test_site set-config auto_email_id test@example.com
 
       - name: Build the frontend
         working-directory: /home/runner/frappe-bench
