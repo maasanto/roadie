@@ -50,9 +50,14 @@ function open() {
 	nextTick(() => input.value?.el?.focus());
 }
 
+// A result on the screen already open keeps that screen's own query, such as the pipeline's list view.
 function select(item) {
 	isOpen.value = false;
-	router.push(resultRoute(item));
+	const target = resultRoute(item);
+	const current = router.currentRoute.value;
+	router.push(
+		target.name === current.name ? { ...target, query: { ...current.query, ...target.query } } : target
+	);
 }
 
 function onKeydown(event) {
