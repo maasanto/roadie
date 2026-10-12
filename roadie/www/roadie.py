@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 import frappe
 from frappe import _
 from frappe.translate import get_translations_from_apps
@@ -9,7 +11,10 @@ no_cache = 1
 
 def get_context():
 	if frappe.session.user == "Guest":
-		frappe.local.flags.redirect_location = "/login?redirect-to=/roadie"
+		# The full path, so a link from a mention email still opens its record once the member has signed in.
+		frappe.local.flags.redirect_location = "/login?" + urlencode(
+			{"redirect-to": frappe.request.full_path}
+		)
 		raise frappe.Redirect
 
 	if not frappe.has_permission("Gig", "read"):

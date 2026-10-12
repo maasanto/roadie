@@ -2,6 +2,7 @@ from io import BytesIO
 
 import frappe
 from frappe.tests import IntegrationTestCase
+from frappe.utils import set_request
 from frappe.website.path_resolver import resolve_redirect
 from pypdf import PdfWriter
 
@@ -116,11 +117,16 @@ class TestGig(IntegrationTestCase):
 		self.assertEqual([file.file_name for file in attachments], ["rider.pdf"])
 		self.assertTrue(frappe.get_doc("File", attachments[0].name).is_downloadable())
 
-	def test_guest_is_sent_to_login(self):
+	def test_guest_is_sent_to_login_and_back_to_the_record_they_asked_for(self):
 		frappe.set_user("Guest")
+		set_request(method="GET", path="/roadie/directory/festivals", query_string="entry=Festival:abc")
+		self.addCleanup(setattr, frappe.local, "request", None)
 		with self.assertRaises(frappe.Redirect):
 			roadie_page.get_context()
-		self.assertEqual(frappe.local.flags.redirect_location, "/login?redirect-to=/roadie")
+		self.assertEqual(
+			frappe.local.flags.redirect_location,
+			"/login?redirect-to=%2Froadie%2Fdirectory%2Ffestivals%3Fentry%3DFestival%3Aabc",
+		)
 
 	def test_old_band_links_land_on_roadie(self):
 		frappe.cache.delete_value("website_redirects")
