@@ -524,11 +524,11 @@ def get_notifications() -> list[dict]:
 		limit=50,
 	)
 	for notification in notifications:
-		notification.route = notification_route(notification)
+		notification.route = _notification_route(notification)
 	return notifications
 
 
-def notification_route(notification) -> str | None:
+def _notification_route(notification) -> str | None:
 	"""A Notification Log's own link is a site path like /roadie/tasks, which the router would double."""
 	if notification.document_type in NOTIFICATION_ROUTES:
 		return NOTIFICATION_ROUTES[notification.document_type]

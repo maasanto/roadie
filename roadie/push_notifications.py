@@ -1,14 +1,14 @@
 import re
 from html import unescape
+from urllib.parse import urlsplit
 
 import frappe
 from frappe.push_notification import PushNotification
 from frappe.utils import get_url, strip_html
 
-from roadie.api import SPA_BASE, notification_route
-
 # The relay keys its Firebase credentials by project, so this must match the project registered there.
 PUSH_PROJECT = "roadie"
+SPA_ROUTE = "/roadie"
 PUSH_ICON = "/assets/roadie/pwa/icon-192.png"
 # Without a break, the paragraphs of a comment or a reminder run into one another once the tags are gone.
 PARAGRAPH_BREAK = re.compile(r"<br\s*/?>|</(?:p|div|li)>", re.IGNORECASE)
@@ -32,16 +32,21 @@ def queue_push(notification_log, method=None):
 
 def send_push(notification_log: str) -> None:
 	notification = frappe.get_doc("Notification Log", notification_log)
-	route = notification_route(notification) or "/"
 	PushNotification(PUSH_PROJECT).send_notification_to_user(
 		notification.for_user,
 		title=_plain_text(notification.subject),
 		body=_plain_text(notification.email_content),
-		link=get_url(SPA_BASE + route),
+		link=get_url(_spa_path(notification.link)),
 		icon=get_url(PUSH_ICON),
 		# Already plain: a second pass would delete text like "doors < 18h" that the first one unescaped
 		strip_html=False,
 	)
+
+
+def _spa_path(link: str | None) -> str:
+	"""Reminders link to the Desk form, which members can't open, so their push opens Roadie instead."""
+	path = urlsplit(link or "").path
+	return path if path.startswith(SPA_ROUTE) else SPA_ROUTE
 
 
 def _plain_text(html: str | None) -> str:

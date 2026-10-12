@@ -81,6 +81,20 @@ class TestPushNotifications(IntegrationTestCase):
 			strip_html=False,
 		)
 
+	def test_a_reminder_linking_to_the_desk_opens_roadie(self):
+		notification_log = frappe.get_doc(
+			{
+				"doctype": "Notification Log",
+				"for_user": MEMBER,
+				"subject": "Due today: Send the rider",
+				"link": get_url("/app/band-task/send-the-rider"),
+			}
+		).insert(ignore_permissions=True)
+
+		send_push(notification_log.name)
+
+		self.assertEqual(self.send.call_args.kwargs["link"], get_url("/roadie"))
+
 	def test_nothing_is_queued_without_the_relay_url(self):
 		# A backup restored elsewhere keeps the settings enabled but not the site config's relay URL.
 		frappe.conf.pop("push_relay_server_url")
