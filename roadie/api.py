@@ -1,8 +1,10 @@
+import re
 from urllib.parse import urlsplit
 
 import frappe
 from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
+from markupsafe import Markup
 
 from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns, clean_quick_filters
 
@@ -494,9 +496,9 @@ def share_drive_link(entity_name: str) -> str:
 	return frappe.utils.get_url(f"/drive/{'d' if entity.is_folder else 'f'}/{entity.name}")
 
 
-# Router paths, not site paths: the SPA's router is already mounted at /roadie.
-NOTIFICATION_ROUTES = {"Gig": "/", "Band Task": "/tasks"}
 SPA_BASE = "/roadie"
+# Where a block element ends, so its text doesn't run into the next one's once the tags are stripped.
+BLOCK_END = re.compile(r"<(?:br|/p|/div|/li|/h[1-6])\b[^>]*>", re.IGNORECASE)
 NOTIFICATION_FIELDS = [
 	"name",
 	"type",
@@ -525,13 +527,19 @@ def get_notifications() -> list[dict]:
 	)
 	for notification in notifications:
 		notification.route = _notification_route(notification)
+		# A mention keeps the email's HTML in its title and the comment's in its description; the panel shows text.
+		notification.title = _html_to_text(notification.title or notification.subject)
+		notification.description = _html_to_text(notification.description)
 	return notifications
 
 
+def _html_to_text(html: str | None) -> str:
+	return Markup(BLOCK_END.sub(" ", html or "")).striptags()
+
+
 def _notification_route(notification) -> str | None:
-	"""A Notification Log's own link is a site path like /roadie/tasks, which the router would double."""
-	if notification.document_type in NOTIFICATION_ROUTES:
-		return NOTIFICATION_ROUTES[notification.document_type]
+	"""A Notification Log's own link is a site path like /roadie/tasks, which the router would double. A record's
+	own screen is resolved by the SPA (notificationRoute in frontend/src/notifications.js), so this is the fallback."""
 	path = urlsplit(notification.link or "").path
 	if not path.startswith(SPA_BASE):
 		return None
