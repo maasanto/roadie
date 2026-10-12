@@ -1,14 +1,68 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Button, ErrorMessage, Skeleton, toast, useList } from "frappe-ui";
+import {
+	Avatar,
+	Badge,
+	Button,
+	ErrorMessage,
+	ListView,
+	Skeleton,
+	TabButtons,
+	toast,
+	useList,
+} from "frappe-ui";
 import EmptyState from "../components/EmptyState.vue";
 import GigCard from "../components/GigCard.vue";
 import GigPanel from "../components/GigPanel.vue";
+import ListFilter from "../components/ListFilter.vue";
+import ListSkeleton from "../components/ListSkeleton.vue";
+import ListSort from "../components/ListSort.vue";
 import { burstConfetti } from "../celebrate";
-import { pipelineColumns } from "../gig";
+import { daysUntil, formatDate, isDeadlineClose, pipelineColumns } from "../gig";
 import { useGigControls } from "../gigControls";
+import { orderBy, queryFilters } from "../listFilters";
+import { useIsPhone } from "../media";
+import { useMeta } from "../meta";
+import { fieldsFromMeta } from "../metaFields";
 import { UNDO_WINDOW_MS } from "../undo";
+
+const route = useRoute();
+const router = useRouter();
+
+// The kanban stays the pipeline's face; the list is asked for through the address, so a refresh or a shared
+// link keeps it.
+const views = [
+	{ label: __("Kanban"), value: "kanban", iconLeft: "lucide-square-kanban" },
+	{ label: __("List"), value: "list", iconLeft: "lucide-list" },
+];
+const view = computed({
+	get: () => (route.query.view === "list" ? "list" : "kanban"),
+	set: (value) =>
+		router.replace({ query: { ...route.query, view: value === "list" ? "list" : undefined } }),
+});
+
+const { linkLists, members, controls } = useGigControls();
+
+const meta = useMeta("Gig");
+const filterFields = computed(() =>
+	fieldsFromMeta(meta.data?.fields ?? [], controls.value).filter((field) => !field.hidden)
+);
+// A link sorts by its generated id, a page of notes by its first word and a status by its English name rather
+// than its stage: none of them orders anything. The kanban is the view by stage.
+const sortFields = computed(() => [
+	...filterFields.value.filter(
+		(field) => !["textarea", "combobox"].includes(field.type) && field.fieldname !== "status"
+	),
+	{ fieldname: "modified", label: __("Last modified") },
+	{ fieldname: "creation", label: __("Created") },
+]);
+
+// ponytail: in memory only, like the directory's, so a reload starts unfiltered
+const filters = ref([]);
+const sort = ref(null);
+const activeFilters = computed(() => queryFilters(filters.value, filterFields.value));
+const isFiltered = computed(() => Object.keys(activeFilters.value).length > 0);
 
 // ponytail: the whole pipeline in one unpaged fetch, page per column if a band ever tracks hundreds of gigs
 const gigs = useList({
@@ -24,10 +78,10 @@ const gigs = useList({
 		"promoter",
 		"application_closes",
 	],
-	orderBy: "modified desc",
+	filters: () => activeFilters.value,
+	orderBy: () => (sort.value ? orderBy(sort.value) : "modified desc"),
 	limit: 500,
 });
-const { linkLists, members, controls } = useGigControls();
 
 const titleOf = (doctype, name) => linkLists[doctype].data?.find((row) => row.name === name)?.title;
 const linkedTitles = (gig) =>
@@ -38,12 +92,43 @@ const linkedTitles = (gig) =>
 	].filter(Boolean);
 const ownerOf = (gig) => members.data?.find((member) => member.name === gig.gig_owner);
 
+// Only a band with no gig at all gets the onboarding, and it is decided when a response lands: a cleared filter
+// keeps the empty filtered rows until the refetch returns, and the toolbar has to stay put under the pointer.
+const hasNoGigs = ref(false);
+watch(
+	() => gigs.data,
+	(data) => (hasNoGigs.value = data?.length === 0 && !isFiltered.value)
+);
+// A retry hides the last failure while it runs, as the directory does, rather than leaving it over the board.
+const loadError = computed(() => (gigs.loading ? null : gigs.error));
+
 const columns = computed(() =>
 	pipelineColumns.map((column) => ({
 		...column,
 		gigs: (gigs.data || []).filter((gig) => column.statuses.includes(gig.status)),
 	}))
 );
+
+const isPhone = useIsPhone();
+// The ListView grid is as wide as its content, so every column but the title gets a fixed width, or the longest
+// label would set them all. The promoter stays in the panel, which leaves the title room on a laptop screen.
+const listColumns = computed(() =>
+	[
+		{ key: "title", label: __("Title") },
+		{ key: "status", label: __("Status"), width: "9rem" },
+		{ key: "gig_date", label: __("Gig date"), width: "7rem" },
+		{ key: "festival", label: __("Festival"), width: "8rem" },
+		{ key: "venue", label: __("Venue"), width: "8rem" },
+		{ key: "application_closes", label: __("Apply by"), width: "8rem" },
+		{ key: "gig_owner", label: __("Owner"), width: "8rem" },
+	].slice(0, isPhone.value ? 2 : undefined)
+);
+const listOptions = {
+	onRowClick: (gig) => openGig(gig.name),
+	selectable: false,
+	rowHeight: 44,
+};
+const linkedDoctypes = { festival: "Festival", venue: "Venue" };
 
 const draggedGig = ref(null);
 const dropColumn = ref(null);
@@ -104,8 +189,6 @@ function openGig(name = null) {
 }
 
 // The search palette sends a gig name through the query, and it is cleared once the panel has it.
-const route = useRoute();
-const router = useRouter();
 watch(
 	() => route.query.gig,
 	(name) => {
@@ -122,15 +205,29 @@ watch(
 		<div class="flex items-center justify-between">
 			<h1 class="text-2xl-semibold">{{ __("Pipeline") }}</h1>
 			<Button
-				v-if="gigs.data?.length !== 0"
+				v-if="!hasNoGigs"
 				variant="solid"
 				icon-left="lucide-plus"
 				:label="__('New gig')"
 				@click="openGig()"
 			/>
 		</div>
+		<div v-if="!hasNoGigs" class="mt-4 flex flex-wrap items-center gap-2">
+			<TabButtons v-model="view" :options="views" />
+			<div class="ms-auto flex flex-wrap items-center gap-2">
+				<Button
+					icon="lucide-refresh-ccw"
+					:label="__('Refresh')"
+					:loading="gigs.loading"
+					@click="gigs.reload()"
+				/>
+				<ListFilter v-model="filters" :fields="filterFields" />
+				<ListSort v-model="sort" :fields="sortFields" />
+			</div>
+		</div>
+		<ListSkeleton v-if="gigs.loading && !gigs.data && view === 'list'" class="mt-4" />
 		<div
-			v-if="gigs.loading && !gigs.data"
+			v-else-if="gigs.loading && !gigs.data"
 			class="mt-4 flex gap-3 overflow-hidden"
 			aria-busy="true"
 			:aria-label="__('Loading')"
@@ -144,9 +241,9 @@ watch(
 				<Skeleton v-for="card in (column % 3) + 1" :key="card" class="h-20 rounded-4" />
 			</div>
 		</div>
-		<ErrorMessage v-else-if="gigs.error" class="mt-4" :message="gigs.error" />
+		<ErrorMessage v-else-if="loadError" class="mt-4" :message="loadError" />
 		<EmptyState
-			v-else-if="!gigs.data?.length"
+			v-else-if="hasNoGigs"
 			class="mt-4"
 			icon="lucide-guitar"
 			:title="__('No gigs yet')"
@@ -158,9 +255,64 @@ watch(
 		>
 			<Button variant="solid" icon-left="lucide-plus" :label="__('New gig')" @click="openGig()" />
 		</EmptyState>
+		<EmptyState
+			v-else-if="!gigs.data?.length"
+			class="mt-4"
+			icon="lucide-search-x"
+			:title="__('No gigs match these filters')"
+			:description="__('Loosen a filter, or add the gig.')"
+		>
+			<Button icon-left="lucide-x" :label="__('Clear all filters')" @click="filters = []" />
+		</EmptyState>
 		<template v-else>
 			<ErrorMessage class="mt-4" :message="gigs.setValue.error" />
-			<div class="mt-4 hidden gap-3 overflow-x-auto pb-2 md:flex">
+			<ListView
+				v-if="view === 'list'"
+				class="mt-4"
+				:columns="listColumns"
+				:rows="gigs.data"
+				row-key="name"
+				:options="listOptions"
+			>
+				<template #cell="{ column, row }">
+					<Badge v-if="column.key === 'status'" :label="__(row.status)" />
+					<span v-else-if="column.key === 'gig_date' && row.gig_date" class="truncate">
+						{{ formatDate(row.gig_date) }}
+					</span>
+					<span
+						v-else-if="column.key === 'application_closes' && row.application_closes"
+						class="truncate"
+						:class="
+							daysUntil(row.application_closes) >= 0 && isDeadlineClose(row.application_closes)
+								? 'text-ink-red-7'
+								: ''
+						"
+					>
+						{{ formatDate(row.application_closes) }}
+					</span>
+					<!-- A cell slot replaces the ListView's own tooltip, so a truncated name carries its own. -->
+					<span
+						v-else-if="linkedDoctypes[column.key]"
+						class="truncate"
+						:title="titleOf(linkedDoctypes[column.key], row[column.key])"
+					>
+						{{ titleOf(linkedDoctypes[column.key], row[column.key]) }}
+					</span>
+					<span
+						v-else-if="column.key === 'gig_owner' && ownerOf(row)"
+						class="flex min-w-0 items-center gap-2"
+					>
+						<Avatar :label="ownerOf(row).full_name" :image="ownerOf(row).user_image" size="sm" />
+						<span class="truncate" :title="ownerOf(row).full_name">{{
+							ownerOf(row).full_name
+						}}</span>
+					</span>
+					<span v-else-if="column.key === 'title'" class="truncate text-ink-gray-8">{{
+						row.title
+					}}</span>
+				</template>
+			</ListView>
+			<div v-else class="mt-4 hidden gap-3 overflow-x-auto pb-2 md:flex">
 				<section
 					v-for="column in columns"
 					:key="column.label"
@@ -190,7 +342,7 @@ watch(
 					</div>
 				</section>
 			</div>
-			<div class="mt-4 space-y-6 md:hidden">
+			<div v-if="view === 'kanban'" class="mt-4 space-y-6 md:hidden">
 				<section v-for="column in columns.filter((column) => column.gigs.length)" :key="column.label">
 					<h2 class="pb-2 text-sm-medium text-ink-gray-7">
 						{{ column.label }} · {{ column.gigs.length }}

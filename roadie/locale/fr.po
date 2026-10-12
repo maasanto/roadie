@@ -1516,6 +1516,25 @@ msgstr "Ce navigateur ne peut pas recevoir de notifications push"
 #: frontend/src/push.js
 msgid "The push relay refused this device ({0})"
 msgstr "Le relais de notifications push a refusé cet appareil ({0})"
+#: frontend/src/pages/PipelineScreen.vue
+msgid "Kanban"
+msgstr "Kanban"
+
+#: frontend/src/pages/PipelineScreen.vue
+msgid "Apply by"
+msgstr "Candidater avant le"
+
+#: frontend/src/pages/PipelineScreen.vue
+msgid "List"
+msgstr "Liste"
+
+#: frontend/src/pages/PipelineScreen.vue
+msgid "No gigs match these filters"
+msgstr "Aucun concert ne correspond à ces filtres"
+
+#: frontend/src/pages/PipelineScreen.vue
+msgid "Loosen a filter, or add the gig."
+msgstr "Assouplissez un filtre, ou ajoutez le concert."
 #: frontend/src/components/DriveLinkDialog.vue
 msgid "Insert link to {0}"
 msgstr "Insérer le lien vers {0}"

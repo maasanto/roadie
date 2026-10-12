@@ -54,6 +54,18 @@ test("a new filter starts on the field's first operator with a value that alread
 	assert.deepEqual(newFilter(NAME), { fieldname: "title", operator: "like", value: "" });
 });
 
+test("a linked record is filtered by picking it, never by typing its id", () => {
+	const VENUE = {
+		fieldname: "venue",
+		label: "Venue",
+		type: "combobox",
+		options: [{ label: "Le Trianon", value: "a1b2c3" }],
+	};
+
+	assert.deepEqual(newFilter(VENUE), { fieldname: "venue", operator: "=", value: "a1b2c3" });
+	assert.deepEqual(queryFilters([newFilter(VENUE)], [VENUE]), { venue: ["=", "a1b2c3"] });
+});
+
 test("operators are offered in the member's language, and only those the field understands", () => {
 	assert.equal(operatorOptions(NAME)[0].label, "Contient");
 	assert.deepEqual(
