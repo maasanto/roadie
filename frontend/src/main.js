@@ -17,7 +17,7 @@ const router = createRouter({
 			component: () => import("./pages/DirectoryScreen.vue"),
 			props: { doctype: type.doctype },
 		})),
-		// The directory's own address, from old bookmarks and the mention notifications, opens on its first type.
+		// The directory's own address, from old bookmarks and older mention notifications, opens on its first type.
 		{ path: "/directory", redirect: directoryTypes[0].route.path },
 		// The open thread is the record it belongs to, so a refresh or a shared link reopens it.
 		{

@@ -1120,7 +1120,7 @@ msgid "Task"
 msgstr ""
 
 #: frontend/src/components/NotificationPanel.vue:58
-msgid "Task assignments and deadlines show up here."
+msgid "Task assignments, deadlines and mentions show up here."
 msgstr ""
 
 #: frontend/src/App.vue:70 frontend/src/components/GigTasks.vue:34

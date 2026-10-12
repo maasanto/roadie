@@ -1,7 +1,9 @@
 @import "frappe-ui/style.css";
 
-/* A modal Dialog sets pointer-events: none on body, which would make Undo on a toast unclickable while a directory entry is open. */
-[data-sonner-toaster] {
+/* A modal Dialog sets pointer-events: none on body, which would make Undo on a toast, or a bandmate in the @ mention
+   list, unclickable while a directory entry is open. Both render on body, outside the dialog. */
+[data-sonner-toaster],
+[data-tippy-root] {
 	pointer-events: auto;
 }
 
