@@ -1488,3 +1488,23 @@ msgstr "Au moins {0} ★"
 #: frontend/src/directoryQuickFilters.js
 msgid "Quick filters saved"
 msgstr "Filtres rapides enregistrés"
+
+#: frontend/src/pages/PipelineScreen.vue
+msgid "Kanban"
+msgstr "Kanban"
+
+#: frontend/src/pages/PipelineScreen.vue
+msgid "Apply by"
+msgstr "Candidater avant le"
+
+#: frontend/src/pages/PipelineScreen.vue
+msgid "List"
+msgstr "Liste"
+
+#: frontend/src/pages/PipelineScreen.vue
+msgid "No gigs match these filters"
+msgstr "Aucun concert ne correspond à ces filtres"
+
+#: frontend/src/pages/PipelineScreen.vue
+msgid "Loosen a filter, or add the gig."
+msgstr "Assouplissez un filtre, ou ajoutez le concert."
