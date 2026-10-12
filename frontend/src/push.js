@@ -22,8 +22,9 @@ export async function enablePush() {
 export async function disablePush() {
 	const token = localStorage.getItem(tokenKey());
 	// Dropping the browser's subscription stops delivery even if the relay call below fails.
-	const registration = await navigator.serviceWorker.ready;
-	await (await registration.pushManager.getSubscription())?.unsubscribe();
+	// Not serviceWorker.ready: it never settles without a worker, and logging out awaits this.
+	const registration = await navigator.serviceWorker.getRegistration("/roadie");
+	await (await registration?.pushManager.getSubscription())?.unsubscribe();
 	if (token) await callFrappePushEndpoint("unsubscribe", token);
 	localStorage.removeItem(tokenKey());
 }

@@ -24,20 +24,29 @@ self.addEventListener("push", (event) => {
 		self.registration.showNotification(data.title || notification.title || "Roadie", {
 			body: data.body || notification.body || "",
 			icon: data.notification_icon || "/assets/roadie/pwa/icon-192.png",
-			data: { url: data.click_action || APP_ROUTE },
+			data: { url: toAppPath(data.click_action) },
 		})
 	);
 });
+
+// The server builds absolute links from its configured host, which can differ from the origin the member browses.
+function toAppPath(link) {
+	const url = new URL(link || APP_ROUTE, self.location.origin);
+	return url.pathname + url.search;
+}
 
 self.addEventListener("notificationclick", (event) => {
 	event.notification.close();
 	const url = event.notification.data?.url || APP_ROUTE;
 	event.waitUntil(
-		// Only the windows this worker controls, which are all Roadie's
-		self.clients
-			.matchAll({ type: "window" })
-			.then(([open]) =>
-				open ? open.focus().then((client) => client.navigate(url)) : self.clients.openWindow(url)
-			)
+		self.clients.matchAll({ type: "window" }).then(([open]) =>
+			open
+				? open
+						.focus()
+						// Some browsers refuse focus; the window should still move to what was clicked.
+						.catch(() => open)
+						.then((client) => client.navigate(url))
+				: self.clients.openWindow(url)
+		)
 	);
 });
