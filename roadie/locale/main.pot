@@ -1363,3 +1363,31 @@ msgstr ""
 msgid "{0} stays visible: Roadie relies on it"
 msgstr ""
 
+#: frontend/src/components/PushNotifications.vue
+msgid "Push notifications on this device"
+msgstr ""
+
+#: frontend/src/components/PushNotifications.vue
+msgid "Assignments, deadlines and mentions reach this device even when Roadie is closed."
+msgstr ""
+
+#: frontend/src/components/PushNotifications.vue
+msgid "Notifications are blocked for Roadie in this browser's site settings."
+msgstr ""
+
+#: frontend/src/components/PushNotifications.vue
+msgid "Push notifications turned on for this device"
+msgstr ""
+
+#: frontend/src/push.js
+msgid "The push relay answered with an error ({0})"
+msgstr ""
+
+#: frontend/src/push.js
+msgid "This browser can't receive push notifications"
+msgstr ""
+
+#: frontend/src/push.js
+msgid "The push relay refused this device ({0})"
+msgstr ""
+

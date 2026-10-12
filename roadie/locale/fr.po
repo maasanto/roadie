@@ -1489,6 +1489,33 @@ msgstr "Au moins {0} ★"
 msgid "Quick filters saved"
 msgstr "Filtres rapides enregistrés"
 
+#: frontend/src/components/PushNotifications.vue
+msgid "Push notifications on this device"
+msgstr "Notifications push sur cet appareil"
+
+#: frontend/src/components/PushNotifications.vue
+msgid "Assignments, deadlines and mentions reach this device even when Roadie is closed."
+msgstr "Les tâches assignées, les échéances et les mentions arrivent sur cet appareil, même quand Roadie est fermé."
+
+#: frontend/src/components/PushNotifications.vue
+msgid "Notifications are blocked for Roadie in this browser's site settings."
+msgstr "Les notifications de Roadie sont bloquées dans les paramètres du site de ce navigateur."
+
+#: frontend/src/components/PushNotifications.vue
+msgid "Push notifications turned on for this device"
+msgstr "Notifications push activées sur cet appareil"
+
+#: frontend/src/push.js
+msgid "The push relay answered with an error ({0})"
+msgstr "Le relais de notifications push a répondu par une erreur ({0})"
+
+#: frontend/src/push.js
+msgid "This browser can't receive push notifications"
+msgstr "Ce navigateur ne peut pas recevoir de notifications push"
+
+#: frontend/src/push.js
+msgid "The push relay refused this device ({0})"
+msgstr "Le relais de notifications push a refusé cet appareil ({0})"
 #: frontend/src/pages/PipelineScreen.vue
 msgid "Kanban"
 msgstr "Kanban"

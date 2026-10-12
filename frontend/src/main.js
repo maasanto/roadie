@@ -3,6 +3,7 @@ import { createApp } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 import App from "./App.vue";
 import { directoryTypes } from "./directory";
+import { refreshPushToken } from "./push";
 import "./style.css";
 
 const router = createRouter({
@@ -44,7 +45,8 @@ app.mount("#app");
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
 	// After load, so precaching every chunk doesn't compete with the first screen for bandwidth
-	window.addEventListener("load", () =>
-		navigator.serviceWorker.register("/roadie/sw.js", { scope: "/roadie" })
-	);
+	window.addEventListener("load", () => {
+		navigator.serviceWorker.register("/roadie/sw.js", { scope: "/roadie" });
+		refreshPushToken();
+	});
 }

@@ -43,6 +43,7 @@ doc_events = {
 		"after_insert": "roadie.mentions.notify_mentioned_members",
 	},
 	"User Invitation": {"before_insert": "roadie.invitations.keep_invitee_in_roadie"},
+	"Notification Log": {"after_insert": "roadie.push_notifications.queue_push"},
 }
 
 fixtures = [
