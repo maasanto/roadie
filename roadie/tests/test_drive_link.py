@@ -63,6 +63,20 @@ class TestDriveLink(IntegrationTestCase):
 		self.assertEqual(link, frappe.utils.get_url(f"/drive/d/{folder.name}"))
 		self.assertTrue(get_user_access_for_user(folder, "Guest")["read"])
 
+	def test_a_promoter_with_a_folder_link_can_open_what_it_holds_now_and_later(self):
+		from suite.drive.api.permissions import get_user_access_for_user
+		from suite.drive.utils import create_drive_file
+
+		press_kit = make_band_folder("Press kit")
+		photos = create_drive_file("Photos", press_kit.name, "Folder", "")
+		rider = create_drive_file("Tech rider.txt", photos.name, "Text", "")
+
+		share_drive_link(press_kit.name)
+		bio = create_drive_file("Bio.txt", press_kit.name, "Text", "")
+
+		for item in (photos, rider, bio):
+			self.assertTrue(get_user_access_for_user(item, "Guest")["read"], item.file_name)
+
 	def test_a_member_cannot_publish_their_whole_home_folder(self):
 		from suite.drive.api.permissions import get_user_access_for_user
 		from suite.drive.utils import get_user_folder
