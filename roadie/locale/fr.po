@@ -1026,8 +1026,8 @@ msgid "Task"
 msgstr "Tâche"
 
 #: frontend/src/components/NotificationPanel.vue:51
-msgid "Task assignments and deadlines show up here."
-msgstr "Les tâches qui vous sont assignées et les échéances apparaissent ici."
+msgid "Task assignments, deadlines and mentions show up here."
+msgstr "Les tâches qui vous sont assignées, les échéances et les mentions apparaissent ici."
 
 #: frontend/src/App.vue:41 frontend/src/components/GigTasks.vue:34
 msgid "Tasks"
