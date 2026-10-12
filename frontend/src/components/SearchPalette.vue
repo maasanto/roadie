@@ -37,7 +37,9 @@ watch(query, (value) => {
 const groups = computed(() => searchGroups(query.value, results.value));
 // One flat list for the arrow keys, in the order the groups render.
 const items = computed(() => groups.value.flatMap((group) => group.items));
-const activeOptionId = computed(() => (items.value.length ? optionId(items.value[activeIndex.value]) : undefined));
+const activeOptionId = computed(() =>
+	items.value.length ? optionId(items.value[activeIndex.value]) : undefined
+);
 
 function optionId(item) {
 	return `roadie-search-option-${items.value.indexOf(item)}`;
@@ -58,7 +60,8 @@ function select(item) {
 function onKeydown(event) {
 	if (!items.value.length) return;
 	if (event.key === "ArrowDown") activeIndex.value = (activeIndex.value + 1) % items.value.length;
-	else if (event.key === "ArrowUp") activeIndex.value = (activeIndex.value - 1 + items.value.length) % items.value.length;
+	else if (event.key === "ArrowUp")
+		activeIndex.value = (activeIndex.value - 1 + items.value.length) % items.value.length;
 	else if (event.key === "Enter") return select(items.value[activeIndex.value]);
 	else return;
 	event.preventDefault();
@@ -86,7 +89,12 @@ defineExpose({ open });
 					class="w-full"
 				/>
 			</div>
-			<div v-if="items.length" role="listbox" :aria-label="__('Search results')" class="max-h-96 overflow-auto p-2">
+			<div
+				v-if="items.length"
+				role="listbox"
+				:aria-label="__('Search results')"
+				class="max-h-96 overflow-auto p-2"
+			>
 				<div v-for="group in groups" :key="group.doctype" role="group" :aria-label="group.title">
 					<p class="px-3 pb-1 pt-3 text-sm text-ink-gray-5" aria-hidden="true">{{ group.title }}</p>
 					<button
