@@ -494,6 +494,14 @@ msgstr ""
 msgid "Insert link"
 msgstr ""
 
+#: frontend/src/components/DriveLinkDialog.vue
+msgid "Insert link to {0}"
+msgstr ""
+
+#: frontend/src/components/DriveLinkDialog.vue
+msgid "Inserting the link makes the folder public: anyone who has the link can open and download everything in it, including what is added later."
+msgstr ""
+
 #: frontend/src/components/DriveLinkDialog.vue:124
 msgid "Inserting the link makes the item public: anyone who has the link can open it."
 msgstr ""
@@ -572,8 +580,8 @@ msgstr ""
 msgid "Link from Drive"
 msgstr ""
 
-#: frontend/src/components/DriveLinkDialog.vue:63
-msgid "Link to a Drive item"
+#: frontend/src/components/DriveLinkDialog.vue
+msgid "Link to a Drive file or folder"
 msgstr ""
 
 #: roadie/api.py:465
@@ -1305,6 +1313,10 @@ msgstr ""
 
 #: roadie/api.py:423
 msgid "{0} has no field {1} that Roadie's form shows"
+msgstr ""
+
+#: roadie/api.py
+msgid "{0} holds a whole Drive: link a folder inside it instead"
 msgstr ""
 
 #: frontend/src/components/FormCustomiser.vue:64
