@@ -1,34 +1,51 @@
 // Frappe's push relay hands out one Firebase project per app; roadie/push_notifications.py sends to the same one.
 const PROJECT = "roadie";
-// The key Frappe's own push clients use, so a device keeps its token across reloads.
-const TOKEN_KEY = `firebase_token_${PROJECT}`;
+// Per member: the browser's subscription outlives a session, and a shared device must not read on for the next one.
+const tokenKey = () => `firebase_token_${PROJECT}:${window.user}`;
 
-// www/roadie.py only boots the relay URL when the site has push set up.
+// www/roadie.py only boots the relay URL when the site has push set up, and only a production build registers the worker.
 export const isPushAvailable = () =>
+	import.meta.env.PROD &&
 	Boolean(window.push_relay_server_url) &&
 	"serviceWorker" in navigator &&
 	"PushManager" in window &&
 	"Notification" in window;
 
-export const isPushEnabled = () =>
-	Notification.permission === "granted" && localStorage.getItem(TOKEN_KEY) !== null;
+export const isPushEnabled = () => localStorage.getItem(tokenKey()) !== null;
 
 /** Turns push on for this device. Call it from a click: Safari only prompts inside one. */
 export async function enablePush() {
-	if ((await Notification.requestPermission()) !== "granted") return false;
-	const token = await getFirebaseToken();
-	await callFrappePushEndpoint("subscribe", token);
-	localStorage.setItem(TOKEN_KEY, token);
-	return true;
+	if ((await Notification.requestPermission()) !== "granted") return;
+	await registerDevice();
 }
 
 export async function disablePush() {
-	const token = localStorage.getItem(TOKEN_KEY);
-	localStorage.removeItem(TOKEN_KEY);
+	const token = localStorage.getItem(tokenKey());
 	// Dropping the browser's subscription stops delivery even if the relay call below fails.
 	const registration = await navigator.serviceWorker.ready;
 	await (await registration.pushManager.getSubscription())?.unsubscribe();
 	if (token) await callFrappePushEndpoint("unsubscribe", token);
+	localStorage.removeItem(tokenKey());
+}
+
+/** Firebase rotates tokens, so a subscribed device re-registers its current one on every launch. */
+export function refreshPushToken() {
+	if (isPushAvailable() && isPushEnabled() && Notification.permission === "granted") {
+		registerDevice().catch((error) => console.error("Could not refresh the push token", error));
+	}
+}
+
+async function registerDevice() {
+	const token = await getFirebaseToken();
+	const previous = localStorage.getItem(tokenKey());
+	if (token === previous) return;
+	if (previous) {
+		await callFrappePushEndpoint("unsubscribe", previous).catch((error) =>
+			console.error("Could not drop the previous push token", error)
+		);
+	}
+	await callFrappePushEndpoint("subscribe", token);
+	localStorage.setItem(tokenKey(), token);
 }
 
 // Firebase only mints the token: the worker shows pushes itself, so the SDK stays out of the main bundle.

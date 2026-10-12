@@ -18,6 +18,7 @@ import NotificationPanel from "./components/NotificationPanel.vue";
 import SearchPalette from "./components/SearchPalette.vue";
 import { directoryTypes } from "./directory";
 import { unreadCount } from "./notifications";
+import { disablePush, isPushAvailable, isPushEnabled } from "./push";
 import { user } from "./user";
 
 const route = useRoute();
@@ -38,7 +39,13 @@ const openDrive = () => window.open(driveUrl, "_blank", "noopener");
 const logOut = {
 	label: __("Log out"),
 	icon: "lucide-log-out",
-	onClick: () => (window.location.href = "/?cmd=web_logout"),
+	onClick: async () => {
+		// The browser's push subscription outlives the session: left on, the next person on this device gets the member's notifications.
+		if (isPushAvailable() && isPushEnabled()) {
+			await disablePush().catch((error) => console.error("Could not turn push off on logout", error));
+		}
+		window.location.href = "/?cmd=web_logout";
+	},
 };
 const settings = {
 	label: __("Settings"),

@@ -14,21 +14,22 @@ const description = computed(() =>
 		: __("Assignments, deadlines and mentions reach this device even when Roadie is closed.")
 );
 
-async function toggle(turnOn) {
+async function turnOn() {
+	await enablePush();
+	blocked.value = Notification.permission === "denied";
+	if (isPushEnabled()) toast.success(__("Push notifications turned on for this device"));
+}
+
+// Whichever step fails, the switch then shows what the device still holds, so turning it off can be retried.
+async function run(action) {
 	busy.value = true;
 	error.value = "";
 	try {
-		if (turnOn) {
-			enabled.value = await enablePush();
-			blocked.value = Notification.permission === "denied";
-			if (enabled.value) toast.success(__("Push notifications turned on for this device"));
-		} else {
-			enabled.value = false;
-			await disablePush();
-		}
+		await action();
 	} catch (err) {
 		error.value = err.message;
 	} finally {
+		enabled.value = isPushEnabled();
 		busy.value = false;
 	}
 }
@@ -43,8 +44,8 @@ async function toggle(turnOn) {
 			:label="__('Push notifications on this device')"
 			:description="description"
 			:error="error"
-			:disabled="busy || blocked"
-			@update:model-value="toggle"
+			:disabled="busy || (blocked && !enabled)"
+			@update:model-value="(turningOn) => run(turningOn ? turnOn : disablePush)"
 		/>
 	</section>
 </template>
