@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import shlex
 
@@ -13,7 +14,10 @@ class TestSkill(IntegrationTestCase):
 	@classmethod
 	def setUpClass(cls):
 		super().setUpClass()
-		with open(frappe.get_app_path("roadie", "roadie", "skills", "roadie", "SKILL.md")) as skill:
+		# Not get_app_path: it lowercases every part, and SKILL.md is not skill.md on Linux
+		with open(
+			os.path.join(frappe.get_app_path("roadie"), "roadie", "skills", "roadie", "SKILL.md")
+		) as skill:
 			cls.skill = skill.read()
 
 	def test_domain_model_covers_every_doctype_with_existing_fields(self):
