@@ -3,6 +3,7 @@ from frappe import _
 from frappe.translate import get_translations_from_apps
 
 from roadie.api import PROTECTED_FIELDS, can_use_drive
+from roadie.push_notifications import is_push_configured
 
 no_cache = 1
 
@@ -27,5 +28,6 @@ def get_context():
 			"drive_url": frappe.conf.get("band_drive_url"),
 			"protected_fields": PROTECTED_FIELDS,
 			"can_link_drive_items": can_use_drive(),
+			"push_relay_server_url": frappe.conf.push_relay_server_url if is_push_configured() else None,
 		}
 	)
