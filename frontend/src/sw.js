@@ -33,9 +33,11 @@ self.addEventListener("notificationclick", (event) => {
 	event.notification.close();
 	const url = event.notification.data?.url || APP_ROUTE;
 	event.waitUntil(
-		self.clients.matchAll({ type: "window" }).then((windows) => {
-			const open = windows.find((client) => new URL(client.url).pathname.startsWith(APP_ROUTE));
-			return open ? open.focus().then((client) => client.navigate(url)) : self.clients.openWindow(url);
-		})
+		// Only the windows this worker controls, which are all Roadie's
+		self.clients
+			.matchAll({ type: "window" })
+			.then(([open]) =>
+				open ? open.focus().then((client) => client.navigate(url)) : self.clients.openWindow(url)
+			)
 	);
 });
