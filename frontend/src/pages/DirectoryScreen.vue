@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onUnmounted, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Button, Dropdown, ErrorMessage, ListView, Rating, Skeleton, call, toast, useList } from "frappe-ui";
 import CommentThread from "../components/CommentThread.vue";
@@ -19,6 +19,7 @@ import { orderBy, queryFilters } from "../listFilters";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
 import { onKey } from "../keyboard";
+import { useIsPhone } from "../media";
 
 const props = defineProps({ doctype: { type: String, required: true } });
 
@@ -72,15 +73,11 @@ onKey("/", () => quickFilterBar.value?.querySelector("input")?.focus());
 
 const rows = computed(() => entries.data || []);
 
-// The list owns its grid, so a phone drops the trailing columns rather than hiding their cells: two tracks are
-// what a phone can read.
-const phone = window.matchMedia("(max-width: 639px)");
-const isPhone = ref(phone.matches);
-const onPhoneChange = (event) => (isPhone.value = event.matches);
-phone.addEventListener("change", onPhoneChange);
-onUnmounted(() => phone.removeEventListener("change", onPhoneChange));
+const isPhone = useIsPhone();
 
 const listColumns = computed(() =>
+	// The list owns its grid, so a phone drops the trailing columns rather than hiding their cells: two tracks
+	// are what a phone can read.
 	columns.value.slice(0, isPhone.value ? 2 : undefined).map((column) => ({
 		key: column.fieldname,
 		label: __(column.label),

@@ -10,6 +10,8 @@ const KIND_BY_CONTROL = {
 	rating: "rating",
 	date: "date",
 	select: "select",
+	// A link's stored value is a generated id nobody types, so it is picked from the records it links to.
+	combobox: "select",
 	checkbox: "check",
 };
 
