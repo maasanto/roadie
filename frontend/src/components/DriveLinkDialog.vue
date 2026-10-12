@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { Button, Dialog, ErrorMessage, useCall } from "frappe-ui";
+import { canLink, linkTarget } from "../drive.js";
 import ListSkeleton from "./ListSkeleton.vue";
 
 const open = defineModel("open", { type: Boolean, default: false });
@@ -30,13 +31,11 @@ const shareLink = useCall({
 });
 
 const listing = computed(() => (currentFolder.value ? folderItems : driveHomes));
-// Drive lets only an item's owner, or whoever it was shared with, share it; a public item already has its link.
-const PUBLIC_SHARE_COUNT = -2;
-const canLink = (item) => item.share || item.share_count === PUBLIC_SHARE_COUNT;
+const itemToLink = computed(() => linkTarget(selectedItem.value, currentFolder.value));
 
 async function insertLink() {
 	// Captured now: the selection may change, or the dialog close, while Drive shares the item.
-	const item = selectedItem.value;
+	const item = itemToLink.value;
 	const url = await shareLink.submit({ entity_name: item.name });
 	if (shareLink.error || !open.value) return;
 	emit("pick", { url, label: item.file_name });
@@ -50,6 +49,7 @@ function openFolder(folder) {
 
 function goBackTo(depth) {
 	openedFolders.value = openedFolders.value.slice(0, depth);
+	selectedItem.value = null;
 	if (currentFolder.value) loadCurrentFolder();
 }
 
@@ -60,7 +60,7 @@ function loadCurrentFolder() {
 </script>
 
 <template>
-	<Dialog v-model:open="open" :title="__('Link to a Drive item')" size="xl">
+	<Dialog v-model:open="open" :title="__('Link to a Drive file or folder')" size="xl">
 		<nav
 			class="flex flex-wrap items-center gap-1 text-base text-ink-gray-6"
 			:aria-label="__('Folder path')"
@@ -121,15 +121,24 @@ function loadCurrentFolder() {
 		<ErrorMessage class="mt-2" :message="listing.error || shareLink.error" />
 		<p class="mt-3 flex items-start gap-2 text-p-sm text-ink-gray-7">
 			<span class="lucide-globe mt-0.5 size-4 shrink-0" aria-hidden="true" />
-			{{ __("Inserting the link makes the item public: anyone who has the link can open it.") }}
+			{{
+				itemToLink?.is_folder
+					? __(
+							"Inserting the link makes the folder public: anyone who has the link can open and download everything in it, including what is added later."
+					  )
+					: __("Inserting the link makes the item public: anyone who has the link can open it.")
+			}}
 		</p>
 		<template #actions>
 			<div class="flex justify-end gap-2">
 				<Button :label="__('Cancel')" variant="ghost" @click="open = false" />
+				<!-- Shrinkable, so a long file name truncates instead of pushing Cancel out of the dialog. -->
 				<Button
+					class="min-w-0 !shrink"
 					variant="solid"
-					:label="__('Insert link')"
-					:disabled="!selectedItem"
+					:label="itemToLink ? __('Insert link to {0}', [itemToLink.file_name]) : __('Insert link')"
+					:tooltip="itemToLink?.file_name"
+					:disabled="!itemToLink || listing.loading || Boolean(listing.error)"
 					:loading="shareLink.loading"
 					@click="insertLink"
 				/>

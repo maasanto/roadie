@@ -541,9 +541,9 @@ msgstr "Latin"
 msgid "Link from Drive"
 msgstr "Lien depuis le Drive"
 
-#: frontend/src/components/DriveLinkDialog.vue:63
-msgid "Link to a Drive item"
-msgstr "Lien vers un élément du Drive"
+#: frontend/src/components/DriveLinkDialog.vue
+msgid "Link to a Drive file or folder"
+msgstr "Lien vers un fichier ou un dossier du Drive"
 
 #: roadie/api.py:424
 msgid "Linking Drive items needs Frappe Suite and the Suite User role"
@@ -1508,3 +1508,14 @@ msgstr "Aucun concert ne correspond à ces filtres"
 #: frontend/src/pages/PipelineScreen.vue
 msgid "Loosen a filter, or add the gig."
 msgstr "Assouplissez un filtre, ou ajoutez le concert."
+#: frontend/src/components/DriveLinkDialog.vue
+msgid "Insert link to {0}"
+msgstr "Insérer le lien vers {0}"
+
+#: frontend/src/components/DriveLinkDialog.vue
+msgid "Inserting the link makes the folder public: anyone who has the link can open and download everything in it, including what is added later."
+msgstr "Insérer le lien rend le dossier public : toute personne qui a le lien pourra ouvrir et télécharger tout son contenu, y compris ce qui y sera ajouté plus tard."
+
+#: roadie/api.py
+msgid "{0} holds a whole Drive: link a folder inside it instead"
+msgstr "{0} contient tout un Drive : liez plutôt un dossier qu'il contient"

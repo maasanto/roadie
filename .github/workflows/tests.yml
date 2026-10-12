@@ -1,0 +1,82 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [develop]
+
+concurrency:
+  group: tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Server and frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=5s --health-timeout=2s --health-retries=20
+      # bench's default ports for redis_queue and redis_cache
+      redis-queue:
+        image: redis:alpine
+        ports:
+          - 11000:6379
+      redis-cache:
+        image: redis:alpine
+        ports:
+          - 13000:6379
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Install the MariaDB client
+        run: sudo apt-get update && sudo apt-get install -y mariadb-client
+
+      # Dodock is the Frappe fork Roadie is developed and run on; Frappe's version-16 lacks hooks Roadie sets
+      - name: Set up bench on Dodock develop
+        run: |
+          pip install dokos-cli
+          bench init --skip-redis-config-generation --skip-assets --no-backups \
+            --frappe-path https://gitlab.com/dokos/dodock.git --frappe-branch develop \
+            --python "$(which python)" ~/frappe-bench
+
+      - name: Install Roadie on a test site
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench get-app --skip-assets roadie "$GITHUB_WORKSPACE"
+          bench new-site test_site --db-host 127.0.0.1 --db-root-password root --admin-password admin
+          bench --site test_site install-app roadie
+          bench --site test_site set-config allow_tests true
+          # Without an outgoing account the reminders fail before queueing their email or notification; tests never reach SMTP
+          bench --site test_site set-config mail_server smtp.example.com
+          bench --site test_site set-config auto_email_id test@example.com
+
+      - name: Build the frontend
+        working-directory: /home/runner/frappe-bench
+        run: bench build --app roadie
+
+      - name: Run frontend tests
+        working-directory: /home/runner/frappe-bench/apps/roadie/frontend
+        run: yarn test
+
+      - name: Run server tests
+        working-directory: /home/runner/frappe-bench
+        run: bench --site test_site run-tests --app roadie
