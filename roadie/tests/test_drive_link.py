@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import frappe
 from frappe.tests import IntegrationTestCase
 
@@ -52,6 +54,13 @@ class TestDriveLink(IntegrationTestCase):
 	def tearDown(self):
 		frappe.set_user("Administrator")
 
+	def test_sidebar_links_to_drive_without_any_site_config(self):
+		with patch.dict(frappe.local.conf):
+			frappe.local.conf.pop("band_drive_url", None)
+			drive_url = roadie_page.get_context().boot["drive_url"]
+
+		self.assertEqual(drive_url, "/drive")
+
 	def test_member_shares_a_drive_folder_with_anyone_who_has_the_link(self):
 		from suite.drive.api.permissions import get_user_access_for_user
 
@@ -94,7 +103,11 @@ class TestDriveLink(IntegrationTestCase):
 		frappe.get_doc("User", MEMBER_WITHOUT_DRIVE).remove_roles("Suite User")
 		frappe.set_user(MEMBER_WITHOUT_DRIVE)
 
-		self.assertFalse(roadie_page.get_context().boot["can_link_drive_items"])
+		with patch.dict(frappe.local.conf):
+			frappe.local.conf.pop("band_drive_url", None)
+			boot = roadie_page.get_context().boot
+		self.assertFalse(boot["can_link_drive_items"])
+		self.assertIsNone(boot["drive_url"])
 		with self.assertRaisesRegex(frappe.PermissionError, "Suite User role"):
 			share_drive_link("anything")
 
