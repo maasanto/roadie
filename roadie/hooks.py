@@ -37,6 +37,8 @@ after_uninstall = "roadie.install.after_uninstall"
 # Read by the dokos_ai app to serve the agent skill in roadie/roadie/skills; inert on a site without it
 dokos_ai_skills = ["roadie"]
 
+extend_doctype_class = {"Email Account": ["roadie.sent_folder.SentFolderEmailAccount"]}
+
 doc_events = {
 	"Comment": {
 		"before_insert": "roadie.comments.set_author",

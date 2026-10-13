@@ -1,7 +1,9 @@
 from email.message import EmailMessage
+from unittest.mock import patch
 
 import frappe
 from frappe.core.doctype.communication.email import make
+from frappe.email.doctype.email_account.email_account import EmailAccount
 from frappe.email.receive import InboundMail
 from frappe.tests import IntegrationTestCase
 
@@ -36,6 +38,16 @@ def incoming_email(sender, subject, message_id):
 	email["Subject"] = subject
 	email["Message-ID"] = f"<{message_id}@example.com>"
 	email.set_content("Thanks, the tech sheet is attached.")
+	return email
+
+
+def sent_by_band(subject, message_id):
+	email = EmailMessage()
+	email["From"] = f"Acme Band <{MAILBOX}>"
+	email["To"] = VENUE
+	email["Subject"] = subject
+	email["Message-ID"] = f"<{message_id}>"
+	email.set_content("Here is our tech rider.")
 	return email
 
 
@@ -205,6 +217,52 @@ class TestEmail(IntegrationTestCase):
 		self.assertEqual(outbox[sent["name"]].thread, {"doctype": "Communication", "name": sent["name"]})
 		thread = get_emails("Communication", sent["name"])
 		self.assertEqual([file.file_name for file in thread[0].attachments], ["flyer.txt"])
+
+	def test_sent_folder_fills_the_outbox_but_skips_what_frappe_sent(self):
+		frappe.set_user(MEMBER)
+		venue = frappe.get_doc({"doctype": "Venue", "title": "Le Petit Club"}).insert()
+		frappe.get_doc(
+			{
+				"doctype": "Contact",
+				"first_name": "Bob",
+				"email_ids": [{"email_id": VENUE, "is_primary": 1}],
+				"links": [{"link_doctype": "Venue", "link_name": venue.name}],
+			}
+		).insert()
+		from_roadie = make(
+			subject="Residency dates", content="<p>Hi Bob</p>", recipients=[VENUE], send_email=True
+		)
+
+		frappe.set_user("Administrator")
+		roadie_message_id = frappe.db.get_value("Communication", from_roadie["name"], "message_id")
+		reset_subject = f"Password Reset {frappe.generate_hash()}"
+		sent_by_frappe = [
+			sent_by_band("Residency dates", roadie_message_id),
+			sent_by_band(reset_subject, f"reset-{frappe.generate_hash()}@example.com"),
+		]
+		for email in sent_by_frappe:
+			email["X-Frappe-Site"] = frappe.utils.get_url()
+		from_webmail = sent_by_band("Tech rider", f"webmail-{frappe.generate_hash()}@example.com")
+		pulled = [
+			InboundMail(email.as_string(), self.mailbox, uid, "SEEN", imap_folder="Sent")
+			for uid, email in enumerate([from_webmail, *sent_by_frappe], start=1)
+		]
+		# receive() commits after every email, which would leave this test's mail on the site.
+		with (
+			patch.object(EmailAccount, "get_inbound_mails", return_value=pulled),
+			patch.object(frappe.db, "commit"),
+		):
+			self.mailbox.receive()
+		webmail_sent = frappe.get_last_doc("Communication", filters={"subject": "Tech rider"})
+
+		frappe.set_user(MEMBER)
+		outbox = {row.name: row for row in get_mailbox("Sent")}
+		self.assertEqual(outbox[webmail_sent.name].delivery_status, "Sent")
+		self.assertEqual(outbox[webmail_sent.name].thread, {"doctype": "Venue", "name": venue.name})
+		self.assertNotIn(webmail_sent.name, {row.name for row in get_mailbox("Received")})
+		self.assertFalse(frappe.db.exists("Email Queue", {"communication": webmail_sent.name}))
+		self.assertEqual(frappe.db.count("Communication", {"message_id": roadie_message_id}), 1)
+		self.assertFalse(frappe.db.exists("Communication", {"subject": reset_subject}))
 
 	def test_reminders_stay_out_of_the_gig_thread(self):
 		frappe.set_user(MEMBER)
