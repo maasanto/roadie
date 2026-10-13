@@ -46,6 +46,7 @@ Then, on the site:
    ```bash
    bench --site <your-site> set-config band_drive_url "/drive"
    ```
+4. Optionally, turn on push notifications, so the notification panel also reaches members' phones and computers. It needs a Firebase project and a push relay server; [Turning on push notifications](docs/push-notifications.md) covers both.
 
 ## Development
 
