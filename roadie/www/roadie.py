@@ -21,6 +21,7 @@ def get_context():
 	if not frappe.has_permission("Gig", "read"):
 		frappe.throw(_("Only band members can open Roadie"), frappe.PermissionError)
 
+	can_link_drive_items = can_use_drive()
 	return frappe._dict(
 		boot={
 			"csrf_token": frappe.sessions.get_csrf_token(),
@@ -30,9 +31,9 @@ def get_context():
 			"lang": frappe.local.lang,
 			# Only this app's catalogue: every SPA string is ours, and the full one weighs megabytes.
 			"translations": get_translations_from_apps(frappe.local.lang, apps=["roadie"]),
-			"drive_url": frappe.conf.get("band_drive_url"),
+			"drive_url": frappe.conf.get("band_drive_url") or ("/drive" if can_link_drive_items else None),
 			"protected_fields": PROTECTED_FIELDS,
-			"can_link_drive_items": can_use_drive(),
+			"can_link_drive_items": can_link_drive_items,
 			"push_relay_server_url": frappe.conf.push_relay_server_url if is_push_configured() else None,
 		}
 	)
