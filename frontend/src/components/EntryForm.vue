@@ -2,9 +2,9 @@
 import { computed, reactive, ref, watch } from "vue";
 import { Button, ErrorMessage, FormControl, Rating, Skeleton, toast, useCall } from "frappe-ui";
 import FormCustomiser from "./FormCustomiser.vue";
-import { RATING_STARS, joinList, splitList, toFraction, toStars } from "../directory";
+import { RATING_STARS, splitList, toStars } from "../directory";
 import { useMeta } from "../meta";
-import { fieldsFromMeta } from "../metaFields";
+import { fieldsFromMeta, toStoredValue } from "../metaFields";
 
 const props = defineProps({
 	doctype: { type: String, required: true },
@@ -34,14 +34,10 @@ const updateEntry = useCall({ url: documentUrl, method: "PUT", immediate: false 
 let loadedForm = {};
 let loadedDoc = null;
 
-// A multiselect round-trips: an array in the form, one comma-separated string in the database. A rating is a
-// count of stars in the form and a fraction in the database.
+// The way back from what toStoredValue writes to the database.
 const FORM_VALUE = { multiselect: splitList, rating: toStars };
-const STORED_VALUE = { multiselect: joinList, rating: toFraction };
 
 const toFormValue = (field, value) => FORM_VALUE[field.type]?.(value) ?? value ?? "";
-
-const toStoredValue = (field, value) => STORED_VALUE[field.type]?.(value) ?? value;
 
 // Two multiselections holding the same genres are unchanged, so they cannot be compared by reference.
 const sameValue = (a, b) =>

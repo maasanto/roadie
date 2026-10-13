@@ -57,7 +57,8 @@ export const newFilter = (field) => {
 	return { fieldname: field.fieldname, operator, value: defaultValue(field, operator) };
 };
 
-const isBlank = (value) => value === "" || value === null || value === undefined;
+export const isBlank = (value) =>
+	value === "" || value === null || value === undefined || (Array.isArray(value) && !value.length);
 
 function queryValue(field, { operator, value }) {
 	if (operator === "is") return value;
