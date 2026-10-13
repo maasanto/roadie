@@ -35,10 +35,10 @@ Log in as Administrator, open `/app/email-account/new`, and fill in:
 **Incoming**
 - Enable Incoming: ticked
 - Use IMAP: ticked. Incoming Server: `ssl0.ovh.net`, Port `993`, Use SSL: ticked
-- IMAP Folder: `INBOX`
+- IMAP Folder: two rows, `INBOX` and `Sent` (the name of the mailbox's Sent folder). Roadie files the emails the band writes from webmail or a phone in the Outbox. It leaves out what Frappe sent, such as password resets and invitations, and emails written in Roadie, which are there already.
 - Default Incoming: ticked
-- Append To: **leave empty**. Roadie links mail to gigs by thread and to directory entries by contact; Append To would instead turn every new email into a document of that type.
-- Email Sync Option: `UNSEEN`. Initial Sync Count: `100` (how many existing emails the first sync imports; raise it to bring in more history).
+- Append To: **leave empty** on both rows. Roadie links mail to gigs by thread and to directory entries by contact; Append To would instead turn every new email into a document of that type.
+- Email Sync Option: `ALL`. `UNSEEN` would skip the Sent folder, whose emails are already read. With `ALL`, an email read on a phone before Roadie fetched it still arrives, and fetching no longer marks emails read in webmail. Initial Sync Count: `100` (how many existing emails the first sync imports; raise it to bring in more history).
 
 **Outgoing**
 - Enable Outgoing: ticked
