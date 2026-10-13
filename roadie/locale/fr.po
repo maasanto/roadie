@@ -1546,3 +1546,47 @@ msgstr "Insérer le lien rend le dossier public : toute personne qui a le lien p
 #: roadie/api.py
 msgid "{0} holds a whole Drive: link a folder inside it instead"
 msgstr "{0} contient tout un Drive : liez plutôt un dossier qu'il contient"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} selected"
+msgstr "{0} sélectionné(s)"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Edit"
+msgstr "Modifier"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Select all"
+msgstr "Tout sélectionner"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Clear selection"
+msgstr "Effacer la sélection"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Bulk edit"
+msgstr "Modification groupée"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Field"
+msgstr "Champ"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Choose a field"
+msgstr "Choisissez un champ"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Value"
+msgstr "Valeur"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Apply to {0} selected"
+msgstr "Appliquer à la sélection ({0})"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Clear {0} on {1} selected"
+msgstr "Vider « {0} » sur la sélection ({1})"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} of {1} could not be updated."
+msgstr "Échec de la modification pour {0} sur {1}."

@@ -1391,3 +1391,47 @@ msgstr ""
 msgid "The push relay refused this device ({0})"
 msgstr ""
 
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} selected"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Edit"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Select all"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Clear selection"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Bulk edit"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Field"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Choose a field"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Value"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Apply to {0} selected"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Clear {0} on {1} selected"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} of {1} could not be updated."
+msgstr ""
+
