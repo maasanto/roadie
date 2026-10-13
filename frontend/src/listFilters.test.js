@@ -5,9 +5,8 @@ import { test } from "node:test";
 globalThis.window = globalThis;
 window.translations = { Contains: "Contient" };
 await import("./translation.js");
-const { newFilter, operatorOptions, orderBy, queryFilters, quickValue, setQuickValue } = await import(
-	"./listFilters.js"
-);
+const { newFilter, operatorOptions, orderBy, queryFilters, quickValue, setQuickValue, sortEmptyLast } =
+	await import("./listFilters.js");
 
 const NAME = { fieldname: "title", label: "Name", type: "text" };
 const CAPACITY = { fieldname: "capacity", label: "Capacity", type: "number" };
@@ -99,4 +98,17 @@ test("the list keeps its own order until a member picks one, and the name breaks
 	assert.equal(orderBy(null), "relevance desc, title asc");
 	assert.equal(orderBy({ fieldname: "city", direction: "desc" }), "city desc, title asc");
 	assert.equal(orderBy({ fieldname: "title", direction: "desc" }), "title desc");
+});
+
+test("rows without the sorted value move after the others, which keep the order the server gave them", () => {
+	const gigs = [
+		{ title: "Never set", application_opens: null },
+		{ title: "Cleared", application_opens: "" },
+		{ title: "September", application_opens: "2026-09-09" },
+		{ title: "November", application_opens: "2026-11-01" },
+	];
+	assert.deepEqual(
+		sortEmptyLast(gigs, "application_opens").map((gig) => gig.title),
+		["September", "November", "Never set", "Cleared"]
+	);
 });

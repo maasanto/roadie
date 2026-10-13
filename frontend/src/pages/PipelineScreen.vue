@@ -25,7 +25,7 @@ import QuickFilterBar from "../components/QuickFilterBar.vue";
 import { burstConfetti } from "../celebrate";
 import { daysUntil, formatDate, isDeadlineClose, pipelineColumns } from "../gig";
 import { useGigControls } from "../gigControls";
-import { orderBy, queryFilters } from "../listFilters";
+import { orderBy, queryFilters, sortEmptyLast } from "../listFilters";
 import { useIsPhone } from "../media";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
@@ -80,10 +80,12 @@ const gigs = useList({
 		"festival",
 		"venue",
 		"promoter",
+		"application_opens",
 		"application_closes",
 	],
 	filters: () => activeFilters.value,
 	orderBy: () => (sort.value ? orderBy(sort.value) : "modified desc"),
+	transform: (rows) => (sort.value ? sortEmptyLast(rows, sort.value.fieldname) : rows),
 	limit: 500,
 });
 
@@ -112,6 +114,8 @@ const columns = computed(() =>
 		gigs: (gigs.data || []).filter((gig) => column.statuses.includes(gig.status)),
 	}))
 );
+// A card has no room for every date, so the opening date shows only while the board is ordered by it.
+const showsOpeningDate = computed(() => sort.value?.fieldname === "application_opens");
 
 const isPhone = useIsPhone();
 // The ListView grid is as wide as its content, so every column but the title gets a fixed width, or the longest
@@ -339,6 +343,7 @@ watch(
 							:linked-titles="linkedTitles(gig)"
 							:owner="ownerOf(gig)"
 							:members="members.data || []"
+							:shows-opening-date="showsOpeningDate"
 							class="cursor-grab"
 							draggable="true"
 							@dragstart="draggedGig = gig"
@@ -362,6 +367,7 @@ watch(
 							:linked-titles="linkedTitles(gig)"
 							:owner="ownerOf(gig)"
 							:members="members.data || []"
+							:shows-opening-date="showsOpeningDate"
 							@click="openGig(gig.name)"
 							@assign="assignOwner(gig, $event)"
 						/>

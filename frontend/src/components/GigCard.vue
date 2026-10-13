@@ -8,6 +8,7 @@ const props = defineProps({
 	linkedTitles: { type: Array, default: () => [] },
 	owner: { type: Object, default: null },
 	members: { type: Array, default: () => [] },
+	showsOpeningDate: { type: Boolean, default: false },
 });
 const emit = defineEmits(["assign"]);
 
@@ -54,6 +55,11 @@ const assignOptions = computed(() =>
 		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-gray-5">
 			<span v-if="gig.gig_date" class="flex items-center gap-1">
 				<span class="lucide-calendar size-3.5" aria-hidden="true" />{{ formatDate(gig.gig_date) }}
+			</span>
+			<span v-if="showsOpeningDate && gig.application_opens" class="flex items-center gap-1">
+				<span class="lucide-calendar-clock size-3.5" aria-hidden="true" />{{
+					__("Applications open {0}", [formatDate(gig.application_opens)])
+				}}
 			</span>
 			<span
 				v-if="hasOpenDeadline"
