@@ -86,6 +86,10 @@ msgstr ""
 msgid "Application window"
 msgstr ""
 
+#: frontend/src/components/GigCard.vue:61
+msgid "Applications open {0}"
+msgstr ""
+
 #. Option for the 'Status' (Select) field in DocType 'Gig'
 #: roadie/roadie/doctype/gig/gig.json
 msgid "Applied"

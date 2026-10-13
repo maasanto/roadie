@@ -105,3 +105,7 @@ export function orderBy(sort) {
 	const order = `${sort.fieldname} ${sort.direction}`;
 	return sort.fieldname === "title" ? order : `${order}, title asc`;
 }
+
+// The database sorts an empty value first, so an ascending sort on a date would bury the dated rows under the rest.
+export const sortEmptyLast = (rows, fieldname) =>
+	rows.toSorted((first, second) => isBlank(first[fieldname]) - isBlank(second[fieldname]));

@@ -92,6 +92,10 @@ msgstr "Ouverture des candidatures"
 msgid "Application window"
 msgstr "Période de candidature"
 
+#: frontend/src/components/GigCard.vue:61
+msgid "Applications open {0}"
+msgstr "Candidatures dès le {0}"
+
 #. Option for the 'Status' (Select) field in DocType 'Gig'
 #: roadie/roadie/doctype/gig/gig.json
 msgid "Applied"
