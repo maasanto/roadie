@@ -1,4 +1,5 @@
 import { __ } from "./translation";
+import { dayjs } from "frappe-ui";
 import { createApp } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 import App from "./App.vue";
@@ -38,6 +39,8 @@ const router = createRouter({
 });
 
 document.documentElement.lang = window.lang;
+// frappe-ui's date pickers lay out their weeks from dayjs's locale.
+dayjs.updateLocale(dayjs.locale(), { weekStart: window.week_start });
 
 const app = createApp(App).use(router);
 app.config.globalProperties.__ = __;
