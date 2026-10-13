@@ -1,3 +1,4 @@
+import { joinList, toFraction } from "./directory.js";
 import { translatedOptions } from "./translation.js";
 
 // Field types a form can edit without a dedicated picker. Anything else, a table or an attachment
@@ -47,3 +48,9 @@ export function fieldsFromMeta(metaFields, controls = {}) {
 			...controls[field.fieldname],
 		}));
 }
+
+// A multiselect is an array in the form and one comma-separated string in the database. A rating is a count of
+// stars in the form and a fraction in the database.
+const STORED_VALUE = { multiselect: joinList, rating: toFraction };
+
+export const toStoredValue = (field, value) => STORED_VALUE[field.type]?.(value) ?? value;
