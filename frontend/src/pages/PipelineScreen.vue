@@ -21,6 +21,7 @@ import GigPanel from "../components/GigPanel.vue";
 import ListFilter from "../components/ListFilter.vue";
 import ListSkeleton from "../components/ListSkeleton.vue";
 import ListSort from "../components/ListSort.vue";
+import QuickFilterBar from "../components/QuickFilterBar.vue";
 import { burstConfetti } from "../celebrate";
 import { daysUntil, formatDate, isDeadlineClose, pipelineColumns } from "../gig";
 import { useGigControls } from "../gigControls";
@@ -216,6 +217,7 @@ watch(
 		</div>
 		<div v-if="!hasNoGigs" class="mt-4 flex flex-wrap items-center gap-2">
 			<TabButtons v-model="view" :options="views" />
+			<QuickFilterBar v-if="view === 'list'" v-model="filters" doctype="Gig" :fields="filterFields" />
 			<div class="ms-auto flex flex-wrap items-center gap-2">
 				<Button
 					icon="lucide-refresh-ccw"
