@@ -1,7 +1,20 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Button, Dropdown, ErrorMessage, ListView, Rating, Skeleton, call, toast, useList } from "frappe-ui";
+import {
+	Button,
+	Dropdown,
+	ErrorMessage,
+	ListHeader,
+	ListRows,
+	ListView,
+	Rating,
+	Skeleton,
+	call,
+	toast,
+	useList,
+} from "frappe-ui";
+import BulkEditBar from "../components/BulkEditBar.vue";
 import CommentThread from "../components/CommentThread.vue";
 import EmailThread from "../components/EmailThread.vue";
 import EmptyState from "../components/EmptyState.vue";
@@ -96,15 +109,11 @@ const placeholderRows = Array.from({ length: 4 }, (unused, index) => ({
 const listRows = computed(() => (isLoading.value ? placeholderRows : rows.value));
 
 const options = computed(() => ({
-	// A skeleton row is not an entry, so it opens nothing.
+	// A skeleton row is not an entry, so it can be neither opened nor selected.
 	onRowClick: (row) => !row.__skeleton && openEntry(row.name),
-	selectable: false,
+	selectable: !isLoading.value,
 	showTooltip: true,
 	rowHeight: 44,
-	emptyState: {
-		title: __("No {0} yet", [type.plural.toLowerCase()]),
-		description: "",
-	},
 }));
 
 // Rated in place and kept in place: the row only moves to its new rank on the next load, never from under the
@@ -215,6 +224,9 @@ watch(
 			row-key="name"
 			:options="options"
 		>
+			<ListHeader />
+			<ListRows />
+			<BulkEditBar :doctype="doctype" :fields="filterFields" @updated="entries.reload()" />
 			<template #cell="{ column, row }">
 				<Skeleton
 					v-if="row.__skeleton"
