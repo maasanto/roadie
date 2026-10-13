@@ -6,12 +6,15 @@ import {
 	Badge,
 	Button,
 	ErrorMessage,
+	ListHeader,
+	ListRows,
 	ListView,
 	Skeleton,
 	TabButtons,
 	toast,
 	useList,
 } from "frappe-ui";
+import BulkEditBar from "../components/BulkEditBar.vue";
 import EmptyState from "../components/EmptyState.vue";
 import GigCard from "../components/GigCard.vue";
 import GigPanel from "../components/GigPanel.vue";
@@ -125,7 +128,6 @@ const listColumns = computed(() =>
 );
 const listOptions = {
 	onRowClick: (gig) => openGig(gig.name),
-	selectable: false,
 	rowHeight: 44,
 };
 const linkedDoctypes = { festival: "Festival", venue: "Venue" };
@@ -274,6 +276,9 @@ watch(
 				row-key="name"
 				:options="listOptions"
 			>
+				<ListHeader />
+				<ListRows />
+				<BulkEditBar doctype="Gig" :fields="filterFields" @updated="gigs.reload()" />
 				<template #cell="{ column, row }">
 					<Badge v-if="column.key === 'status'" :label="__(row.status)" />
 					<span v-else-if="column.key === 'gig_date' && row.gig_date" class="truncate">
