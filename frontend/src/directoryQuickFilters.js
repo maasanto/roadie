@@ -1,17 +1,21 @@
 import { computed, ref } from "vue";
 import { call, toast, useCall } from "frappe-ui";
 
-// Name and city are what members look an entry up by, so a type nobody customised offers those two.
+// Name and city are what members look an entry up by, so a type nobody customised offers those two. A gig is
+// looked up by its title, where it stands and who chases it.
 const DEFAULT_QUICK_FILTERS = ["title", "city"];
+const DEFAULT_QUICK_FILTERS_BY_DOCTYPE = { Gig: ["title", "status", "gig_owner"] };
 
-// One setting for the whole site, read once for all four screens, like the columns.
+// One setting for the whole site, read once for the directory screens and the pipeline.
 const setting = useCall({ url: "/api/v2/method/roadie.api.get_directory_quick_filters" });
 
 export const useDirectoryQuickFilters = (doctype) => {
 	// The setting is a Code field anyone can hand-edit in Desk, so anything but a list reads as unset.
 	const fieldnames = computed(() => {
 		const saved = setting.data?.[doctype];
-		return Array.isArray(saved) ? saved : DEFAULT_QUICK_FILTERS;
+		return Array.isArray(saved)
+			? saved
+			: DEFAULT_QUICK_FILTERS_BY_DOCTYPE[doctype] ?? DEFAULT_QUICK_FILTERS;
 	});
 	// Whether the setting is known: customising before it arrives would save the defaults over the real list.
 	const loaded = computed(() => setting.isFinished === true && !setting.error);
