@@ -60,4 +60,4 @@ The app uses `pre-commit` (ruff, eslint, prettier, pyupgrade): run `pre-commit i
 
 ## License
 
-[AGPL-3.0](license.txt). The email composer and the directory lists' filter, sort and quick filter controls are adapted from [Frappe CRM](https://github.com/frappe/crm), which is AGPL-3.0.
+[AGPL-3.0](license.txt). The email composer, the lists' filter, sort and quick filter controls and their bulk edit bar are adapted from [Frappe CRM](https://github.com/frappe/crm), which is AGPL-3.0.
