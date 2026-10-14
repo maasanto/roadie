@@ -22,8 +22,10 @@ const FAILED_STATUSES = [
 ];
 const QUEUED_STATUSES = ["", "Sending", "Scheduled", "Delayed"];
 
+export const isFailedDelivery = (status) => FAILED_STATUSES.includes(status);
+
 export function deliveryState(status) {
-	if (FAILED_STATUSES.includes(status)) return { label: __("Error"), theme: "red" };
+	if (isFailedDelivery(status)) return { label: __("Error"), theme: "red" };
 	if (QUEUED_STATUSES.includes(status || "")) return { label: __("Queued"), theme: "orange" };
 	return { label: __("Sent"), theme: "green" };
 }
