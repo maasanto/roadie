@@ -1050,6 +1050,10 @@ msgstr "Texte"
 msgid "The application for {0} closes on {1}, in {2} days, and the gig is still at {3}."
 msgstr "Les candidatures pour {0} ferment le {1}, dans {2} jours, et le concert est toujours au statut « {3} »."
 
+#: roadie/api.py:138
+msgid "This file isn't an unsent email attachment of yours, so it can't be deleted from a draft"
+msgstr "Ce fichier n'est pas une pièce jointe d'un de vos e-mails non envoyés : il ne peut pas être supprimé depuis un brouillon"
+
 #: frontend/src/components/DriveLinkDialog.vue:119
 msgid "This folder is empty."
 msgstr "Ce dossier est vide."

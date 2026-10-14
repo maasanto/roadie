@@ -1156,6 +1156,10 @@ msgstr ""
 msgid "They get an email with a link to join the band."
 msgstr ""
 
+#: roadie/api.py:138
+msgid "This file isn't an unsent email attachment of yours, so it can't be deleted from a draft"
+msgstr ""
+
 #: frontend/src/components/DriveLinkDialog.vue:119
 msgid "This folder is empty."
 msgstr ""
