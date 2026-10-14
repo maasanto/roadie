@@ -3,11 +3,12 @@ import { ref } from "vue";
 import { Avatar, Checkbox, Dialog } from "frappe-ui";
 import EmailThread from "./EmailThread.vue";
 import { daysUntil, formatDate } from "../gig";
+import { resultRoute } from "../search";
 
 defineProps({
 	task: { type: Object, required: true },
 	assignee: { type: Object, default: null },
-	context: { type: String, default: "" },
+	gigTitle: { type: String, default: "" },
 });
 const emit = defineEmits(["update:done"]);
 
@@ -31,7 +32,13 @@ const isShowingEmails = ref(false);
 			>
 				{{ task.title }}
 			</button>
-			<p v-if="context" class="truncate text-sm text-ink-gray-5">{{ context }}</p>
+			<RouterLink
+				v-if="gigTitle"
+				:to="resultRoute({ doctype: 'Gig', name: task.gig })"
+				class="block w-fit max-w-full truncate text-sm text-ink-gray-5 hover:underline"
+			>
+				{{ gigTitle }}
+			</RouterLink>
 		</div>
 		<span
 			v-if="task.due_date"
