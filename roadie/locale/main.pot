@@ -1483,3 +1483,27 @@ msgstr ""
 msgid "{0} of {1} could not be updated."
 msgstr ""
 
+#: frontend/src/components/BulkEditBar.vue
+msgid "Delete"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Delete {0} selected?"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Their comments and attached files go with them, for the whole band, and this cannot be undone."
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Delete {0} selected"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} deleted"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} of {1} could not be deleted while other records, such as contacts, tasks or gigs, link to them."
+msgstr ""
+

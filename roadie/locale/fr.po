@@ -1631,6 +1631,30 @@ msgstr "Vider « {0} » sur la sélection ({1})"
 msgid "{0} of {1} could not be updated."
 msgstr "Échec de la modification pour {0} sur {1}."
 
+#: frontend/src/components/BulkEditBar.vue
+msgid "Delete"
+msgstr "Supprimer"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Delete {0} selected?"
+msgstr "Supprimer la sélection ({0}) ?"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Their comments and attached files go with them, for the whole band, and this cannot be undone."
+msgstr "Leurs commentaires et pièces jointes sont supprimés avec eux, pour tout le groupe, et sans retour possible."
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Delete {0} selected"
+msgstr "Supprimer la sélection ({0})"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} deleted"
+msgstr "{0} supprimé(s)"
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} of {1} could not be deleted while other records, such as contacts, tasks or gigs, link to them."
+msgstr "Échec de la suppression pour {0} sur {1} : d'autres fiches y sont encore liées, comme des contacts, des tâches ou des concerts."
+
 #: frontend/src/components/GigTasks.vue
 msgid "Show {0} done"
 msgstr "Afficher les tâches faites ({0})"
