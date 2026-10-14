@@ -27,6 +27,7 @@ import QuickFilterBar from "../components/QuickFilterBar.vue";
 import { useDirectoryColumns } from "../directoryColumns";
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { RATING_STARS, directoryControls, directoryType, toFraction, toStars } from "../directory";
+import { confirmDiscardDraft } from "../draft";
 import { columnFormat, fetchFields, formatCell } from "../listColumns";
 import { useListCount } from "../listCount";
 import { orderBy, queryFilters } from "../listFilters";
@@ -139,6 +140,7 @@ const isDialogOpen = ref(false);
 const editingName = ref(null);
 
 function openEntry(name = null) {
+	if (isDialogOpen.value && name !== editingName.value && !confirmDiscardDraft()) return;
 	editingName.value = name;
 	isDialogOpen.value = true;
 }

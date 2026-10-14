@@ -10,6 +10,7 @@ const deletedEmails = ref(new Set());
 import { Avatar, Button, ErrorMessage, call, toast, useCall } from "frappe-ui";
 import EmailBody from "./EmailBody.vue";
 import EmailComposer from "./EmailComposer.vue";
+import { confirmDiscardDraft } from "../draft";
 import { QUOTE_SELECTOR, asHtml, formatDateTime, openByDefault, replyDraft } from "../email";
 import { toastWithUndo } from "../undo";
 
@@ -97,7 +98,10 @@ const previews = computed(
 const draft = ref(null);
 const composerKey = ref(0);
 
+const composer = ref(null);
+
 function compose(nextDraft) {
+	if (composer.value && !confirmDiscardDraft(composer.value.isEdited)) return;
 	draft.value = nextDraft;
 	composerKey.value++;
 }
@@ -192,6 +196,7 @@ function onSent() {
 		<EmailComposer
 			v-if="draft"
 			:key="composerKey"
+			ref="composer"
 			class="mt-3"
 			:doctype="doctype"
 			:name="name"

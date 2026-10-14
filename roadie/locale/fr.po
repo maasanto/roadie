@@ -1647,6 +1647,10 @@ msgstr "Vider « {0} » sur la sélection ({1})"
 msgid "{0} of {1} could not be updated."
 msgstr "Échec de la modification pour {0} sur {1}."
 
+#: frontend/src/draft.js
+msgid "Discard the unsent email?"
+msgstr "Abandonner l'e-mail non envoyé ?"
+
 #: frontend/src/components/EmailThread.vue frontend/src/pages/MailboxScreen.vue
 msgid "Delete"
 msgstr "Supprimer"

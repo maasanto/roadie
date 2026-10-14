@@ -1502,6 +1502,10 @@ msgstr ""
 msgid "{0} of {1} could not be updated."
 msgstr ""
 
+#: frontend/src/draft.js
+msgid "Discard the unsent email?"
+msgstr ""
+
 #: frontend/src/components/EmailThread.vue frontend/src/pages/MailboxScreen.vue
 msgid "Delete"
 msgstr ""

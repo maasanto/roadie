@@ -1,8 +1,9 @@
 <script setup>
-import { computed, onBeforeUnmount, reactive, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { Button, ErrorMessage, FileUploader, TextEditor, call, toast, useCall, useList } from "frappe-ui";
 import DriveLinkDialog from "./DriveLinkDialog.vue";
 import EmailRecipients from "./EmailRecipients.vue";
+import { confirmDiscardDraft, trackDraft } from "../draft";
 
 const props = defineProps({
 	// Left out for a new email from the Inbox: Frappe then threads it on the recipient's contact, or on itself.
@@ -44,6 +45,32 @@ const canLinkDriveItems = window.can_link_drive_items;
 const isPickingDriveItem = ref(false);
 const textEditor = ref(null);
 
+// The first click in a quoted reply makes the editor append an empty paragraph, which is no edit.
+const currentState = () =>
+	JSON.stringify([
+		email.to,
+		email.cc,
+		email.bcc,
+		email.subject,
+		attachments.value,
+		textEditor.value.editor.getHTML().replace(/(<p><\/p>)+$/, ""),
+	]);
+let untouchedState;
+// Once on its way, the email is no longer the writer's to lose: the request completes without the composer.
+const isEdited = () => !send.loading && currentState() !== untouchedState;
+let forgetDraft;
+onMounted(() => {
+	untouchedState = currentState();
+	forgetDraft = trackDraft(isEdited);
+});
+// Before the editor inside is torn down, which would leave the check reading a destroyed editor.
+onBeforeUnmount(() => forgetDraft());
+defineExpose({ isEdited });
+
+function discard() {
+	if (confirmDiscardDraft(isEdited)) emit("discard");
+}
+
 function insertLink({ url, label }) {
 	const { editor } = textEditor.value;
 	if (!editor.state.selection.empty) {
@@ -79,7 +106,10 @@ const send = useCall({
 	url: "/api/v2/method/frappe.core.doctype.communication.email.make",
 	method: "POST",
 	immediate: false,
-	onSuccess: () => emit("sent"),
+	onSuccess: () => {
+		forgetDraft();
+		emit("sent");
+	},
 });
 
 // An upload is attached to the record as soon as it lands, so one the email never sends must be deleted.
@@ -213,7 +243,7 @@ function submit(event) {
 				/>
 			</div>
 			<div class="flex gap-2">
-				<Button :label="__('Discard')" variant="ghost" @click="emit('discard')" />
+				<Button :label="__('Discard')" variant="ghost" @click="discard" />
 				<Button
 					ref="sendButton"
 					type="submit"
