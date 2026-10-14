@@ -602,6 +602,10 @@ msgstr "Vue"
 msgid "Month"
 msgstr "Mois"
 
+#: frontend/src/components/GigCard.vue:88
+msgid "Move to"
+msgstr "Déplacer vers"
+
 #: frontend/src/pages/PipelineScreen.vue:81
 msgid "Moved {0} to {1}"
 msgstr "{0} passe en « {1} »"
