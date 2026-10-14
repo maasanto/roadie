@@ -3,7 +3,7 @@ import { test } from "node:test";
 
 globalThis.window = globalThis;
 await import("./translation.js");
-const { openByDefault, replyDraft } = await import("./email.js");
+const { openByDefault, replyDraft, splitRecipients } = await import("./email.js");
 
 const received = {
 	name: "comm-1",
@@ -34,6 +34,14 @@ test("reply all to a sent email goes back to its recipients", () => {
 	const draft = replyDraft(sent, "reply-all");
 	assert.deepEqual(draft.to, ["bob@example.com"]);
 	assert.deepEqual(draft.cc, ["carol@example.com"]);
+});
+
+test("a mistyped recipient is kept apart from the addresses, never dropped", () => {
+	assert.deepEqual(splitRecipients("jane@example.com, john@exmple;bob@example.org"), {
+		valid: ["jane@example.com", "bob@example.org"],
+		invalid: ["john@exmple"],
+	});
+	assert.deepEqual(splitRecipients(" , "), { valid: [], invalid: [] });
 });
 
 test("a thread opens on its latest email and on unread ones, the read history stays folded", () => {
