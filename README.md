@@ -8,7 +8,7 @@ Roadie is a small, shared booking desk for a band. Everyone in the band sees the
 
 ## What it does
 
-- Pipeline: every gig on a kanban, from Idea to Played (or Declined / Dropped). Drag a card to change its status, with Undo. Application deadlines turn red when they get close.
+- Pipeline: every gig on a kanban, from Idea to Played (or Declined / Dropped). Drag a card, or pick a status from its Move to menu, to change its status, with Undo. Application deadlines turn red when they get close.
 - Gig panel: the gig's fields, a task checklist, attachments (riders, contracts), the email thread with a composer, and a comment thread for the band only.
 - Planning: a gantt with one lane per gig showing the application window, the gig date and its tasks, plus a lane for loose tasks.
 - My tasks: what is assigned to you, overdue first, ticked off in one click.

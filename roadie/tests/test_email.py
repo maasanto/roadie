@@ -7,9 +7,20 @@ from frappe.email.doctype.email_account.email_account import EmailAccount
 from frappe.email.receive import InboundMail
 from frappe.tests import IntegrationTestCase
 
-from roadie.api import get_emails, get_mailbox, mark_thread_seen
+from roadie.api import (
+	EMAIL_DRAFT_FIELD,
+	delete_draft_attachment,
+	delete_email,
+	delete_threads,
+	get_attachments,
+	get_emails,
+	get_mailbox,
+	link_thread,
+	mark_threads_read,
+	mark_threads_unread,
+)
 from roadie.install import grant_communication_access
-from roadie.roadie.doctype.gig.test_gig import MEMBER, blank_pdf, make_member
+from roadie.roadie.doctype.gig.test_gig import MEMBER, OTHER_MEMBER, blank_pdf, make_member
 
 MAILBOX = "band@example.com"
 VENUE = "venue@example.com"
@@ -179,7 +190,10 @@ class TestEmail(IntegrationTestCase):
 		self.assertEqual(inbox[reply.name].seen, 0)
 		self.assertEqual(inbox[reply.name].thread, {"doctype": "Gig", "name": gig.name})
 
-		mark_thread_seen("Gig", gig.name)
+		mark_threads_read([{"doctype": "Gig", "name": gig.name}])
+		self.assertEqual(frappe.db.get_value("Communication", reply.name, "seen"), 1)
+		# The venue's page shows the reply too, but the mailbox files it under the gig it answers.
+		mark_threads_unread([{"doctype": "Venue", "name": venue.name}])
 		self.assertEqual(frappe.db.get_value("Communication", reply.name, "seen"), 1)
 
 	def test_inbox_lists_one_row_per_thread_with_its_latest_email(self):
@@ -209,9 +223,81 @@ class TestEmail(IntegrationTestCase):
 		rows = [row for row in get_mailbox("Received") if row.thread == {"doctype": "Gig", "name": gig.name}]
 		self.assertEqual([(row.name, row.count, row.unread) for row in rows], [(replies[1], 2, 2)])
 
-		mark_thread_seen("Gig", gig.name)
+		thread = {"doctype": "Gig", "name": gig.name}
+		mark_threads_read([thread])
 		row = next(row for row in get_mailbox("Received") if row.name == replies[1])
 		self.assertEqual(row.unread, 0)
+
+		mark_threads_unread([thread])
+		row = next(row for row in get_mailbox("Received") if row.name == replies[1])
+		self.assertEqual(row.unread, 1)
+		self.assertEqual(frappe.db.get_value("Communication", replies[1], "seen"), 0)
+
+	def test_bulk_delete_clears_an_unlinked_conversation_but_never_a_gigs_mail(self):
+		enquiry = incoming_email("Jane Doe <jane.promoter@example.com>", "Spam?", frappe.generate_hash())
+		InboundMail(enquiry.as_string(), self.mailbox).process()
+		received = frappe.get_last_doc("Communication", filters={"subject": "Spam?"})
+		frappe.set_user(MEMBER)
+		reply = make(
+			doctype="Communication",
+			name=received.name,
+			subject="Re: Spam?",
+			content="<p>No thanks.</p>",
+			recipients=["jane.promoter@example.com"],
+			send_email=True,
+		)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Festival 2027"}).insert()
+		gig_email = make(
+			doctype="Gig",
+			name=gig.name,
+			subject="Dates",
+			content="<p>Hi</p>",
+			recipients=[VENUE],
+			send_email=True,
+		)
+
+		delete_threads([received.name])
+		self.assertFalse(frappe.db.exists("Communication", received.name))
+		self.assertFalse(frappe.db.exists("Communication", reply["name"]))
+		with self.assertRaises(frappe.ValidationError):
+			delete_threads([gig_email["name"]])
+		self.assertTrue(frappe.db.exists("Communication", gig_email["name"]))
+
+	def test_deleting_a_conversations_first_email_hands_it_to_the_next(self):
+		enquiry = incoming_email(
+			"Jane Doe <jane.promoter@example.com>", "Summer dates", frappe.generate_hash()
+		)
+		InboundMail(enquiry.as_string(), self.mailbox).process()
+		first = frappe.get_last_doc("Communication", filters={"subject": "Summer dates"})
+		frappe.set_user(MEMBER)
+		replies = [
+			make(
+				doctype="Communication",
+				name=first.name,
+				subject="Re: Summer dates",
+				content=f"<p>{text}</p>",
+				recipients=["jane.promoter@example.com"],
+				send_email=True,
+			)["name"]
+			for text in ("July works.", "August too.")
+		]
+		frappe.db.set_value("Communication", replies[1], "communication_date", frappe.utils.add_days(None, 1))
+
+		self.assertEqual(delete_email(first.name), {"promoted": replies[0]})
+		self.assertFalse(frappe.db.exists("Email Queue", {"reference_name": first.name}))
+		self.assertEqual([email.name for email in get_emails("Communication", replies[0])], replies)
+		outbox = {row.name: row for row in get_mailbox("Sent")}
+		self.assertEqual(outbox[replies[1]].thread, {"doctype": "Communication", "name": replies[0]})
+
+		follow_up = make(
+			doctype="Communication",
+			name=replies[0],
+			subject="Re: Summer dates",
+			content="<p>September is free as well.</p>",
+			recipients=["jane.promoter@example.com"],
+			send_email=True,
+		)["name"]
+		self.assertIn(follow_up, [email.name for email in get_emails("Communication", replies[0])])
 
 	def test_mail_linked_to_no_record_threads_on_itself(self):
 		enquiry = incoming_email("Jane Doe <jane.promoter@example.com>", "Booking enquiry", "enquiry-1")
@@ -233,6 +319,73 @@ class TestEmail(IntegrationTestCase):
 			[email.name for email in get_emails("Communication", received.name)],
 			[received.name, reply["name"]],
 		)
+
+	def test_search_and_a_higher_limit_reach_mail_older_than_the_latest(self):
+		# Unique per run: InboundMail commits, so earlier runs' emails are still on the site.
+		sender, subject = frappe.generate_hash(), frappe.generate_hash()
+		enquiry = incoming_email(f"Sunny Fest <{sender}@sunnyfest.example.com>", f"Line-up {subject}", sender)
+		InboundMail(enquiry.as_string(), self.mailbox).process()
+		march = frappe.get_last_doc("Communication", filters={"subject": f"Line-up {subject}"})
+		frappe.db.set_value("Communication", march.name, "communication_date", "2000-03-12 09:00:00")
+		newer = incoming_email("Jane Roe <jane.roe@example.com>", "Photos", subject)
+		InboundMail(newer.as_string(), self.mailbox).process()
+		every_email = frappe.db.count(
+			"Communication",
+			{
+				"communication_medium": "Email",
+				"communication_type": "Communication",
+				"sent_or_received": "Received",
+			},
+		)
+
+		def listed(**kwargs):
+			return {row.name for row in get_mailbox("Received", **kwargs)}
+
+		frappe.set_user(MEMBER)
+		self.assertNotIn(march.name, listed(limit=1))
+		self.assertIn(march.name, listed(limit=every_email))
+		self.assertEqual(listed(query=f" {sender}@SUNNYFEST ", limit=1), {march.name})
+		self.assertEqual(listed(query=f"line-up {subject}"), {march.name})
+		self.assertEqual(listed(query=f"nothing like {subject}"), set())
+
+	def test_linked_thread_and_its_later_replies_file_under_the_gig(self):
+		enquiry = incoming_email(
+			"Jane Doe <jane.promoter@example.com>", "Summer booking", f"enquiry-{frappe.generate_hash()}"
+		)
+		InboundMail(enquiry.as_string(), self.mailbox).process()
+		received = frappe.get_last_doc("Communication", filters={"subject": "Summer booking"})
+
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme summer festival"}).insert()
+		reply = make(
+			doctype="Communication",
+			name=received.name,
+			subject="Re: Summer booking",
+			content="<p>We would love to.</p>",
+			recipients=["jane.promoter@example.com"],
+			send_email=True,
+		)
+		link_thread(received.name, "Gig", gig.name)
+
+		frappe.set_user("Administrator")
+		answer = incoming_email(
+			"Jane Doe <jane.promoter@example.com>", "Re: Summer booking", f"answer-{frappe.generate_hash()}"
+		)
+		answer["In-Reply-To"] = f"<{frappe.db.get_value('Communication', reply['name'], 'message_id')}>"
+		InboundMail(answer.as_string(), self.mailbox).process()
+		answered = frappe.get_last_doc("Communication", filters={"in_reply_to": reply["name"]})
+
+		frappe.set_user(MEMBER)
+		self.assertEqual(
+			[email.name for email in get_emails("Gig", gig.name)],
+			[received.name, reply["name"], answered.name],
+		)
+		inbox = {row.name: row.thread for row in get_mailbox("Received")}
+		self.assertEqual(inbox[answered.name], {"doctype": "Gig", "name": gig.name})
+		self.assertNotIn(received.name, inbox)
+		other_gig = frappe.get_doc({"doctype": "Gig", "title": "Acme winter festival"}).insert()
+		with self.assertRaises(frappe.ValidationError):
+			link_thread(received.name, "Gig", other_gig.name)
 
 	def test_new_email_from_the_inbox_needs_no_record(self):
 		frappe.set_user(MEMBER)
@@ -302,7 +455,7 @@ class TestEmail(IntegrationTestCase):
 	def test_reminders_stay_out_of_the_gig_thread(self):
 		frappe.set_user(MEMBER)
 		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Festival 2027"}).insert()
-		frappe.get_doc(
+		reminder = frappe.get_doc(
 			{
 				"doctype": "Communication",
 				"communication_medium": "Email",
@@ -316,6 +469,58 @@ class TestEmail(IntegrationTestCase):
 		).insert(ignore_permissions=True)
 
 		self.assertEqual(get_emails("Gig", gig.name), [])
+		with self.assertRaises(frappe.ValidationError):
+			delete_email(reminder.name)
+
+	def test_draft_only_deletes_its_own_unsent_uploads(self):
+		make_member(OTHER_MEMBER, "Jane")
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Festival 2028"}).insert()
+
+		def upload(file_name, content=None, attached_to_field=EMAIL_DRAFT_FIELD):
+			# Unique by default: make() commits, and Frappe dedupes files by hash across runs.
+			return frappe.get_doc(
+				{
+					"doctype": "File",
+					"file_name": file_name,
+					"content": content or f"{file_name} {frappe.generate_hash()}",
+					"is_private": 1,
+					"attached_to_doctype": "Gig",
+					"attached_to_name": gig.name,
+					"attached_to_field": attached_to_field,
+				}
+			).insert()
+
+		dropped = upload("dropped-from-draft.txt")
+		already_on_gig = upload("stage-plan.txt", attached_to_field=None)
+		rider = f"Acme rider {frappe.generate_hash()}"
+		sent_file = upload("rider.txt", rider)
+		make(
+			doctype="Gig",
+			name=gig.name,
+			subject="Rider",
+			content="<p>Our rider is attached.</p>",
+			recipients=[VENUE],
+			send_email=True,
+			attachments=[sent_file.name],
+		)
+		frappe.set_user(OTHER_MEMBER)
+		other_members_draft = upload("their-draft.txt")
+
+		frappe.set_user(MEMBER)
+		# The same bytes as the sent rider, so Frappe hands this draft upload the sent copy's URL.
+		rider_attached_again = upload("rider-again.txt", rider)
+		self.assertEqual(rider_attached_again.file_url, sent_file.file_url)
+		delete_draft_attachment(dropped.name)
+		delete_draft_attachment(rider_attached_again.name)
+		for kept in (already_on_gig, sent_file, other_members_draft):
+			with self.assertRaises(frappe.PermissionError):
+				delete_draft_attachment(kept.name)
+
+		self.assertCountEqual(
+			[file.name for file in get_attachments(gig.name)],
+			[already_on_gig.name, sent_file.name, other_members_draft.name],
+		)
 
 	def test_emails_are_only_listed_for_email_doctypes(self):
 		frappe.set_user(MEMBER)

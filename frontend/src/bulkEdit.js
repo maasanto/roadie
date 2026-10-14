@@ -1,16 +1,18 @@
-// Frappe updates fewer than 20 documents within the request and queues more in the background, where the reload
-// that follows could not see them land. Batches below that keep every update inside its request.
-const BATCH_SIZE = 19;
+// Frappe updates fewer than 20 documents and deletes up to 10 within the request, and queues more in the background,
+// where the reload that follows could not see them land. Batches within those limits keep the work inside its request.
+export const UPDATE_BATCH_SIZE = 19;
+export const DELETE_BATCH_SIZE = 10;
 
-// Resolves to the names that could not be updated. A batch whose request fails counts as failed whole, and the
-// rest still go: setting a field to a value can safely be repeated on whichever of them did save.
-export async function updateInBatches(names, updateBatch) {
+// Resolves to the names the batches report as failed. A batch whose request fails counts as failed whole, and the
+// rest still go: an update can safely be repeated, and a record already deleted drops out of the list on reload.
+export async function runInBatches(names, batchSize, runBatch) {
 	const failed = [];
-	for (let start = 0; start < names.length; start += BATCH_SIZE) {
-		const batch = names.slice(start, start + BATCH_SIZE);
+	for (let start = 0; start < names.length; start += batchSize) {
+		const batch = names.slice(start, start + batchSize);
 		try {
-			failed.push(...(await updateBatch(batch)));
-		} catch {
+			failed.push(...(await runBatch(batch)));
+		} catch (error) {
+			console.error(error);
 			failed.push(...batch);
 		}
 	}

@@ -1,11 +1,13 @@
 import { onMounted, onUnmounted } from "vue";
 
-const FIELDS = "input, textarea, select, [contenteditable]";
-const isDialogOpen = () => Boolean(document.querySelector('[role="dialog"][data-state="open"]'));
+// A ticked checkbox keeps focus but takes no typing, so shortcuts still apply after selecting a row.
+const FIELDS = "input:not([type=checkbox]), textarea, select, [contenteditable]";
+const isOverlayOpen = () =>
+	Boolean(document.querySelector(':is([role="dialog"], [role="menu"])[data-state="open"]'));
 
 function listen(key, ignoredIn, matchesModifiers, handler) {
 	const listener = (event) => {
-		if (event.key !== key || event.defaultPrevented || isDialogOpen()) return;
+		if (event.key !== key || event.defaultPrevented || isOverlayOpen()) return;
 		if (!matchesModifiers(event)) return;
 		if (event.target.closest?.(ignoredIn)) return;
 		event.preventDefault();
@@ -16,10 +18,9 @@ function listen(key, ignoredIn, matchesModifiers, handler) {
 }
 
 // Page-wide shortcut while the component is mounted. Keys typed into a field are ignored, except Escape,
-// and a frappe-ui Dialog on top keeps Escape for itself. Escape inside a `data-draft` form would lose the draft.
-// An open dropdown menu is portalled out of that form and holds the focus, so its Escape only closes the menu.
+// and a frappe-ui Dialog or menu on top keeps Escape for itself. Escape inside a `data-draft` form would lose the draft.
 export function onKey(key, handler) {
-	listen(key, key === "Escape" ? '[data-draft], [role="menu"]' : FIELDS, () => true, handler);
+	listen(key, key === "Escape" ? "[data-draft]" : FIELDS, () => true, handler);
 }
 
 // Same, for a shortcut that asks for a modifier, such as Ctrl/⌘+K. Ctrl and ⌘ count as the same modifier,
