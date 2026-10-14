@@ -18,11 +18,16 @@ const isShowingEmails = ref(false);
 
 <template>
 	<li class="flex items-center gap-3 px-3 py-2">
-		<Checkbox
-			:model-value="Boolean(task.done)"
-			:aria-label="__('Done: {0}', [task.title])"
-			@update:model-value="emit('update:done', $event)"
-		/>
+		<!-- A fingertip target for touch screens. The negative margins must match the li's padding, or it reaches into the next row. -->
+		<label
+			class="flex items-center [@media(pointer:coarse)]:-mx-3 [@media(pointer:coarse)]:-my-2 [@media(pointer:coarse)]:self-stretch [@media(pointer:coarse)]:px-3"
+		>
+			<Checkbox
+				:model-value="Boolean(task.done)"
+				:aria-label="__('Done: {0}', [task.title])"
+				@update:model-value="emit('update:done', $event)"
+			/>
+		</label>
 		<div class="min-w-0 flex-1">
 			<button
 				type="button"
