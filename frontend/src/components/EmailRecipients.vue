@@ -1,21 +1,28 @@
 <script setup>
 import { ref, useId } from "vue";
-import { isEmail } from "../email";
+import { splitRecipients } from "../email";
 
 const emails = defineModel({ type: Array, required: true });
+const isInvalid = defineModel("invalid", { type: Boolean, default: false });
 defineProps({
 	label: { type: String, required: true },
 	suggestions: { type: Array, default: () => [] },
 });
 
+const inputId = useId();
+const errorId = useId();
 const listId = useId();
 const query = ref("");
 
 function addTyped() {
-	const typed = query.value.split(/[,;\s]+/).filter(Boolean);
-	const valid = typed.filter((email) => isEmail(email) && !emails.value.includes(email));
-	emails.value = [...emails.value, ...valid];
-	query.value = typed.filter((email) => !isEmail(email)).join(" ");
+	const { valid, invalid } = splitRecipients(query.value);
+	emails.value = [...emails.value, ...valid.filter((email) => !emails.value.includes(email))];
+	query.value = invalid.join(" ");
+	isInvalid.value = invalid.length > 0;
+}
+
+function recheckWhileInvalid() {
+	if (isInvalid.value) isInvalid.value = splitRecipients(query.value).invalid.length > 0;
 }
 
 const remove = (email) => (emails.value = emails.value.filter((entry) => entry !== email));
@@ -31,7 +38,8 @@ function onKeydown(event) {
 </script>
 
 <template>
-	<label class="flex flex-wrap items-center gap-1.5 border-b border-outline-gray-1 py-1.5">
+	<!-- Without `for`, a click on the label would go to its first control: the first chip's remove button. -->
+	<label :for="inputId" class="flex flex-wrap items-center gap-1.5 border-b border-outline-gray-1 py-1.5">
 		<span class="w-8 text-sm text-ink-gray-5">{{ label }}</span>
 		<span
 			v-for="email in emails"
@@ -47,14 +55,22 @@ function onKeydown(event) {
 			/>
 		</span>
 		<input
+			:id="inputId"
 			v-model="query"
 			type="text"
 			:list="listId"
 			:aria-label="label"
-			class="min-w-40 flex-1 border-none bg-transparent p-0 text-base text-ink-gray-8 focus:ring-0"
+			:aria-invalid="isInvalid"
+			:aria-describedby="isInvalid ? errorId : undefined"
+			class="min-w-40 flex-1 border-none bg-transparent p-0 text-base focus:ring-0"
+			:class="isInvalid ? 'text-ink-red-7' : 'text-ink-gray-8'"
 			@keydown="onKeydown"
+			@input="recheckWhileInvalid"
 			@blur="addTyped"
 		/>
+		<span v-if="isInvalid" :id="errorId" role="alert" class="basis-full text-sm text-ink-red-8">
+			{{ __("Not a valid email address: {0}", [query]) }}
+		</span>
 		<datalist :id="listId">
 			<option v-for="suggestion in suggestions" :key="suggestion.value" :value="suggestion.value">
 				{{ suggestion.label }}

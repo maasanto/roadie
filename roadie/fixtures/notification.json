@@ -37,7 +37,7 @@
   "enabled": 1,
   "event": "Days Before",
   "is_standard": 0,
-  "message": "<p>{{ _('{0} is due today.').format('<b>' ~ doc.title ~ '</b>') }}</p>\n<p><a href=\"{{ frappe.utils.get_url('/roadie/tasks') }}\">{{ _('Open my tasks') }}</a></p>",
+  "message": "<p>{{ _('{0} is due today.').format('<b>' ~ doc.title ~ '</b>') }}</p>\n<p><a href=\"{{ frappe.utils.get_url('/roadie/tasks?task=' ~ doc.name) }}\">{{ _('Open my tasks') }}</a></p>",
   "message_type": "HTML",
   "module": "Roadie",
   "name": "Band Task Due Today",

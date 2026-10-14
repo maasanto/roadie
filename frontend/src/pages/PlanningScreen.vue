@@ -1,11 +1,11 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import Gantt from "frappe-gantt";
-import { Button, Dialog, ErrorMessage, call, toast, useCall } from "frappe-ui";
-import EmailThread from "../components/EmailThread.vue";
+import { Button, ErrorMessage, call, toast, useCall } from "frappe-ui";
 import EmptyState from "../components/EmptyState.vue";
 import GigPanel from "../components/GigPanel.vue";
 import ListSkeleton from "../components/ListSkeleton.vue";
+import TaskDialog from "../components/TaskDialog.vue";
 import { formatDate } from "../gig";
 import { useGigControls } from "../gigControls";
 import { UNDO_WINDOW_MS } from "../undo";
@@ -225,9 +225,12 @@ watch([chart, () => planning.data], ([element, bars]) => {
 			@close="isPanelOpen = false"
 			@saved="planning.reload()"
 		/>
-		<Dialog v-model:open="isTaskOpen" :title="openedTask?.label" size="2xl">
-			<EmailThread v-if="openedTask" doctype="Band Task" :name="openedTask.name" />
-		</Dialog>
+		<TaskDialog
+			v-if="openedTask"
+			v-model:open="isTaskOpen"
+			:name="openedTask.name"
+			:title="openedTask.label"
+		/>
 	</div>
 </template>
 
