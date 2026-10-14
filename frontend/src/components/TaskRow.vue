@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue";
-import { Avatar, Checkbox, Dialog } from "frappe-ui";
-import EmailThread from "./EmailThread.vue";
+import { Avatar, Checkbox } from "frappe-ui";
+import TaskDialog from "./TaskDialog.vue";
 import { daysUntil, formatDate } from "../gig";
 
 defineProps({
@@ -47,8 +47,6 @@ const isShowingEmails = ref(false);
 			size="sm"
 			:title="assignee.full_name"
 		/>
-		<Dialog v-model:open="isShowingEmails" :title="task.title" size="2xl">
-			<EmailThread doctype="Band Task" :name="task.name" />
-		</Dialog>
+		<TaskDialog v-model:open="isShowingEmails" :name="task.name" :title="task.title" />
 	</li>
 </template>
