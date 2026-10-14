@@ -1522,6 +1522,34 @@ msgstr ""
 msgid "{0} of {1} could not be updated."
 msgstr ""
 
+#: frontend/src/components/EmailThread.vue
+msgid "Forward"
+msgstr ""
+
+#: frontend/src/email.js
+msgid "Forwarded message"
+msgstr ""
+
+#: frontend/src/email.js
+msgid "From: {0}"
+msgstr ""
+
+#: frontend/src/email.js
+msgid "Date: {0}"
+msgstr ""
+
+#: frontend/src/email.js
+msgid "Subject: {0}"
+msgstr ""
+
+#: frontend/src/email.js
+msgid "To: {0}"
+msgstr ""
+
+#: frontend/src/email.js
+msgid "Cc: {0}"
+msgstr ""
+
 #: frontend/src/components/BulkEditBar.vue
 msgid "Delete {0} selected?"
 msgstr ""
