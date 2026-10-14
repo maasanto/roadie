@@ -5,6 +5,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import App from "./App.vue";
 import { directoryTypes } from "./directory";
 import { confirmDiscardDraft, hasEditedDraft } from "./draft";
+import { keepListQueries } from "./listQuery";
 import { refreshPushToken } from "./push";
 import "./style.css";
 
@@ -38,6 +39,7 @@ const router = createRouter({
 		{ path: "/settings", name: "Settings", component: () => import("./pages/SettingsScreen.vue") },
 	],
 });
+keepListQueries(router);
 
 // Another screen, or another mailbox thread, unmounts the composer. A query change is the screen's own business:
 // the pipeline asks before ?gig= switches its panel.

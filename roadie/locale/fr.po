@@ -369,6 +369,14 @@ msgstr "Les e-mails ne peuvent être listés que pour {0}, pas pour {1}"
 msgid "Error"
 msgstr "Erreur"
 
+#: frontend/src/taskScopes.js:15
+msgid "Every task has someone on it."
+msgstr "Chaque tâche a quelqu'un pour s'en occuper."
+
+#: frontend/src/taskScopes.js:18
+msgid "Everyone"
+msgstr "Tout le monde"
+
 #. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "February"
@@ -594,6 +602,10 @@ msgstr "Menu"
 msgid "Metal"
 msgstr "Metal"
 
+#: frontend/src/taskScopes.js:4
+msgid "Mine"
+msgstr "Les miennes"
+
 #: frontend/src/pages/PlanningScreen.vue:25
 msgid "Mode"
 msgstr "Vue"
@@ -688,9 +700,17 @@ msgstr "Aucun résultat pour « {0} »"
 msgid "No notifications yet"
 msgstr "Aucune notification pour l'instant"
 
+#: frontend/src/taskScopes.js:20
+msgid "No tasks yet"
+msgstr "Aucune tâche pour l'instant"
+
 #: frontend/src/components/GigTasks.vue:44
 msgid "No tasks yet."
 msgstr "Aucune tâche pour l'instant."
+
+#: frontend/src/taskScopes.js:14
+msgid "No unassigned tasks"
+msgstr "Aucune tâche non assignée"
 
 #: frontend/src/components/EmailRecipients.vue:72
 msgid "Not a valid email address: {0}"
@@ -767,6 +787,10 @@ msgstr "Seuls les formulaires {0} se personnalisent, pas {1}"
 #: roadie/api.py:258
 msgid "Only {0} bars can be rescheduled, not {1}"
 msgstr "Seules les barres {0} peuvent être replanifiées, pas {1}"
+
+#: frontend/src/taskScopes.js:21
+msgid "Open a gig and add a task to its checklist."
+msgstr "Ouvrez un concert et ajoutez une tâche à sa liste."
 
 #: frontend/src/pages/MyTasksScreen.vue:38
 msgid "Open a gig and add a task to its checklist. Whatever is assigned to you shows up here, overdue first."
@@ -1041,6 +1065,10 @@ msgstr "Les tâches qui vous sont assignées, les échéances et les mentions ap
 msgid "Tasks"
 msgstr "Tâches"
 
+#: frontend/src/pages/MyTasksScreen.vue:77
+msgid "Tasks to show"
+msgstr "Tâches à afficher"
+
 #. Genre option for the Band genre multiselect
 #: frontend/src/directory.js:43
 msgid "Techno"
@@ -1084,6 +1112,10 @@ msgstr "Aujourd'hui"
 #: frontend/src/components/FormCustomiser.vue:132
 msgid "Type"
 msgstr "Type"
+
+#: frontend/src/taskScopes.js:12
+msgid "Unassigned"
+msgstr "Non assignées"
 
 #: frontend/src/components/EntryContacts.vue:52
 #: frontend/src/pages/PipelineScreen.vue:74
@@ -1602,3 +1634,11 @@ msgstr "Échec de la modification pour {0} sur {1}."
 #: frontend/src/draft.js
 msgid "Discard the unsent email?"
 msgstr "Abandonner l'e-mail non envoyé ?"
+
+#: frontend/src/components/GigTasks.vue
+msgid "Show {0} done"
+msgstr "Afficher les tâches faites ({0})"
+
+#: frontend/src/components/GigTasks.vue
+msgid "Hide done"
+msgstr "Masquer les tâches faites"
