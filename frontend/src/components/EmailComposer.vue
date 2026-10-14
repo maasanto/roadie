@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
-import { Button, ErrorMessage, FileUploader, TextEditor, useCall, useList } from "frappe-ui";
+import { Button, ErrorMessage, FileUploader, TextEditor, call, toast, useCall, useList } from "frappe-ui";
 import DriveLinkDialog from "./DriveLinkDialog.vue";
 import EmailRecipients from "./EmailRecipients.vue";
 import { confirmDiscardDraft, trackDraft } from "../draft";
@@ -99,6 +99,9 @@ const suggestions = computed(() =>
 	(contacts.data || []).map((contact) => ({ label: contact.full_name, value: contact.email_id }))
 );
 
+// Matches EMAIL_DRAFT_FIELD in roadie/api.py, which only lets a draft delete the uploads stamped with it.
+const UPLOAD_ARGS = { fieldname: "roadie_email_draft", private: true };
+
 const send = useCall({
 	url: "/api/v2/method/frappe.core.doctype.communication.email.make",
 	method: "POST",
@@ -107,6 +110,28 @@ const send = useCall({
 		forgetDraft();
 		emit("sent");
 	},
+});
+
+// An upload is attached to the record as soon as it lands, so one the email never sends must be deleted.
+async function deleteUpload(file) {
+	try {
+		await call("roadie.api.delete_draft_attachment", { file: file.name });
+		return true;
+	} catch (error) {
+		toast.error(error.messages?.join("\n") || error.message);
+		return false;
+	}
+}
+
+async function removeAttachment(file) {
+	if (await deleteUpload(file)) {
+		attachments.value = attachments.value.filter((entry) => entry.name !== file.name);
+	}
+}
+
+// Discard, replying elsewhere and closing the record all unmount the draft. A send under way owns the files.
+onBeforeUnmount(() => {
+	if (!send.loading && !send.data) attachments.value.forEach(deleteUpload);
 });
 
 function submit(event) {
@@ -186,7 +211,8 @@ function submit(event) {
 					type="button"
 					class="lucide-x size-3.5 text-ink-gray-5 hover:text-ink-gray-8"
 					:aria-label="__('Remove {0}', [file.file_name])"
-					@click="attachments = attachments.filter((entry) => entry.name !== file.name)"
+					:disabled="send.loading"
+					@click="removeAttachment(file)"
 				/>
 			</li>
 		</ul>
@@ -194,7 +220,7 @@ function submit(event) {
 		<div class="mt-3 flex items-center justify-between">
 			<div class="flex items-start gap-1">
 				<FileUploader
-					:upload-args="doctype ? { doctype, docname: name, private: true } : { private: true }"
+					:upload-args="doctype ? { ...UPLOAD_ARGS, doctype, docname: name } : UPLOAD_ARGS"
 					@success="attachments.push($event)"
 				>
 					<template #default="{ openFileSelector, uploading, progress, error }">

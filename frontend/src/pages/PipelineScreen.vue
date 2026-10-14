@@ -36,6 +36,7 @@ import {
 } from "../gig";
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { useGigControls } from "../gigControls";
+import { useListCount } from "../listCount";
 import { orderBy, queryFilters, sortEmptyLast } from "../listFilters";
 import { useListQuery } from "../listQuery";
 import { useIsPhone } from "../media";
@@ -64,6 +65,12 @@ const meta = useMeta("Gig");
 const filterFields = computed(() =>
 	fieldsFromMeta(meta.data?.fields ?? [], controls.value).filter((field) => !field.hidden)
 );
+// The kanban's columns are the statuses, so a status quick filter there would empty all but one of them.
+const quickFilterFields = computed(() =>
+	view.value === "kanban"
+		? filterFields.value.filter((field) => field.fieldname !== "status")
+		: filterFields.value
+);
 // A link sorts by its generated id, a page of notes by its first word and a status by its English name rather
 // than its stage: none of them orders anything. The kanban is the view by stage.
 const sortFields = computed(() => [
@@ -80,7 +87,6 @@ const isFiltered = computed(() => Object.keys(activeFilters.value).length > 0);
 
 const isCustomisingQuickFilters = ref(false);
 const { loaded: quickFiltersLoaded } = useDirectoryQuickFilters("Gig");
-
 // ponytail: the whole pipeline in one unpaged fetch, page per column if a band ever tracks hundreds of gigs
 const gigs = useList({
 	// A ref, which the fetch reads as it changes: the board asks once the address can be read.
@@ -106,6 +112,7 @@ const gigs = useList({
 	transform: (rows) => (sort.value ? sortEmptyLast(rows, sort.value.fieldname) : rows),
 	limit: 500,
 });
+const { count, limitNotice } = useListCount(gigs, "Gig", () => activeFilters.value);
 
 const titleOf = (doctype, name) => linkLists[doctype].data?.find((row) => row.name === name)?.title;
 const linkedTitles = (gig) =>
@@ -189,25 +196,55 @@ async function assignOwner(gig, memberName) {
 	toast.success(__("Assigned to {0}", [ownerOf(gig).full_name]));
 }
 
-async function dropGig(column, columnElement) {
+function dropGig(column) {
 	const gig = draggedGig.value;
 	draggedGig.value = dropColumn.value = null;
 	if (!gig || column.statuses.includes(gig.status)) return;
+	moveGig(gig, column.statuses[0]);
+}
 
-	const previousStatus = gig.status;
-	const status = column.statuses[0];
-	if (!(await setStatus(gig, status))) return;
+const listSettled = () =>
+	new Promise((resolve) => {
+		const stop = watch(
+			() => gigs.loading,
+			(isLoading) => {
+				if (isLoading) return;
+				stop();
+				resolve();
+			}
+		);
+	});
 
+// A move renders the card anew in its new column, or back in its old one, so the focus its menu had is lost.
+// The board has a copy per screen size: the visible one gets the focus back, unless the member has moved on.
+function refocusCard(gig) {
+	const card = [...document.querySelectorAll(`[data-gig="${CSS.escape(gig.name)}"]`)].find(
+		(element) => element.getClientRects().length
+	);
+	if (!card || document.activeElement !== document.body) return card;
+	card.focus({ preventScroll: true });
+	// Following the card helps a keyboard member, but would pull a phone or mouse user away from where they were.
+	if (card.matches(":focus-visible")) card.scrollIntoView({ block: "nearest" });
+	return card;
+}
+
+function toastMove(gig, status, previousStatus) {
 	const undoable = {
 		action: { label: __("Undo"), onClick: () => setStatus(gig, previousStatus) },
 		duration: UNDO_WINDOW_MS,
 	};
-	if (celebrations[status]) {
-		burstConfetti(columnElement);
-		toast.success(celebrations[status](gig.title), undoable);
-	} else {
-		toast(__("Moved {0} to {1}", [gig.title, column.label]), undoable);
-	}
+	if (celebrations[status]) toast.success(celebrations[status](gig.title), undoable);
+	else toast(__("Moved {0} to {1}", [gig.title, __(status)]), undoable);
+}
+
+async function moveGig(gig, status) {
+	const previousStatus = gig.status;
+	const isSaved = await setStatus(gig, status);
+	if (isSaved) toastMove(gig, status, previousStatus);
+	// A save refetches the list, which moves the card again and drops the focus a second time.
+	if (gigs.loading) await listSettled();
+	const card = refocusCard(gig);
+	if (card && isSaved && celebrations[status]) burstConfetti(card);
 }
 
 const isPanelOpen = ref(false);
@@ -234,7 +271,10 @@ watch(
 <template>
 	<div class="p-6">
 		<div class="flex items-center justify-between">
-			<h1 class="text-2xl-semibold">{{ __("Pipeline") }}</h1>
+			<h1 class="text-2xl-semibold">
+				{{ __("Pipeline") }}
+				<span v-if="!hasNoGigs && !loadError && count" class="ms-1 text-ink-gray-5">{{ count }}</span>
+			</h1>
 			<Button
 				v-if="!hasNoGigs"
 				variant="solid"
@@ -245,12 +285,13 @@ watch(
 		</div>
 		<div v-if="!hasNoGigs" class="mt-4 flex flex-wrap items-center gap-2">
 			<TabButtons v-model="view" :options="views" />
+			<!-- Keyed by view so that leaving the list ends a customisation, whose chips the kanban's fields would hide. -->
 			<QuickFilterBar
-				v-if="view === 'list'"
+				:key="view"
 				v-model="filters"
 				v-model:customising="isCustomisingQuickFilters"
 				doctype="Gig"
-				:fields="filterFields"
+				:fields="quickFilterFields"
 			/>
 			<div v-if="!isCustomisingQuickFilters" class="ms-auto flex flex-wrap items-center gap-2">
 				<Button
@@ -317,6 +358,7 @@ watch(
 		</EmptyState>
 		<template v-else>
 			<ErrorMessage class="mt-4" :message="gigs.setValue.error" />
+			<p v-if="limitNotice" class="mt-4 text-p-sm text-ink-gray-6">{{ limitNotice }}</p>
 			<ListView
 				v-if="view === 'list'"
 				class="mt-4"
@@ -373,7 +415,7 @@ watch(
 					class="flex min-w-52 flex-1 flex-col rounded-6 bg-surface-gray-1 p-2"
 					:class="dropColumn === column.label ? 'ring-2 ring-outline-gray-3' : ''"
 					@dragover.prevent="dropColumn = column.label"
-					@drop.prevent="dropGig(column, $event.currentTarget)"
+					@drop.prevent="dropGig(column)"
 				>
 					<h2
 						class="flex items-center justify-between gap-2 px-1 pb-2 text-sm-medium text-ink-gray-7"
@@ -400,6 +442,7 @@ watch(
 							@dragend="draggedGig = dropColumn = null"
 							@click="openGig(gig.name)"
 							@assign="assignOwner(gig, $event)"
+							@move="moveGig(gig, $event)"
 						/>
 					</div>
 				</section>
@@ -422,6 +465,7 @@ watch(
 							:fee-label="feeLabel"
 							@click="openGig(gig.name)"
 							@assign="assignOwner(gig, $event)"
+							@move="moveGig(gig, $event)"
 						/>
 					</div>
 				</section>
