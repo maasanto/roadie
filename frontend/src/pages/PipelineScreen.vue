@@ -24,6 +24,7 @@ import ListSkeleton from "../components/ListSkeleton.vue";
 import ListSort from "../components/ListSort.vue";
 import QuickFilterBar from "../components/QuickFilterBar.vue";
 import { burstConfetti } from "../celebrate";
+import { confirmDiscardDraft } from "../draft";
 import { daysUntil, formatDate, isDeadlineClose, pipelineColumns } from "../gig";
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { useGigControls } from "../gigControls";
@@ -196,6 +197,7 @@ const isPanelOpen = ref(false);
 const openedName = ref(null);
 
 function openGig(name = null) {
+	if (isPanelOpen.value && name !== openedName.value && !confirmDiscardDraft()) return;
 	openedName.value = name;
 	isPanelOpen.value = true;
 }
