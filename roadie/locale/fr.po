@@ -1638,3 +1638,31 @@ msgstr "Afficher les tâches faites ({0})"
 #: frontend/src/components/GigTasks.vue
 msgid "Hide done"
 msgstr "Masquer les tâches faites"
+
+#: frontend/src/components/EmailThread.vue
+msgid "Forward"
+msgstr "Transférer"
+
+#: frontend/src/email.js
+msgid "Forwarded message"
+msgstr "Message transféré"
+
+#: frontend/src/email.js
+msgid "From: {0}"
+msgstr "De : {0}"
+
+#: frontend/src/email.js
+msgid "Date: {0}"
+msgstr "Date : {0}"
+
+#: frontend/src/email.js
+msgid "Subject: {0}"
+msgstr "Objet : {0}"
+
+#: frontend/src/email.js
+msgid "To: {0}"
+msgstr "À : {0}"
+
+#: frontend/src/email.js
+msgid "Cc: {0}"
+msgstr "Cc : {0}"
