@@ -24,10 +24,19 @@ import ListSkeleton from "../components/ListSkeleton.vue";
 import ListSort from "../components/ListSort.vue";
 import QuickFilterBar from "../components/QuickFilterBar.vue";
 import { burstConfetti } from "../celebrate";
-import { daysUntil, formatDate, isDeadlineClose, pipelineColumns } from "../gig";
+import {
+	daysUntil,
+	feeLabelOf,
+	formatDate,
+	formatFee,
+	isDeadlineClose,
+	pipelineColumns,
+	totalFee,
+} from "../gig";
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { useGigControls } from "../gigControls";
 import { orderBy, queryFilters, sortEmptyLast } from "../listFilters";
+import { useListQuery } from "../listQuery";
 import { useIsPhone } from "../media";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
@@ -64,9 +73,7 @@ const sortFields = computed(() => [
 	{ fieldname: "creation", label: __("Created") },
 ]);
 
-// ponytail: in memory only, like the directory's, so a reload starts unfiltered
-const filters = ref([]);
-const sort = ref(null);
+const { filters, sort, isReady } = useListQuery(meta, filterFields, sortFields);
 const activeFilters = computed(() => queryFilters(filters.value, filterFields.value));
 const isFiltered = computed(() => Object.keys(activeFilters.value).length > 0);
 
@@ -75,6 +82,9 @@ const { loaded: quickFiltersLoaded } = useDirectoryQuickFilters("Gig");
 
 // ponytail: the whole pipeline in one unpaged fetch, page per column if a band ever tracks hundreds of gigs
 const gigs = useList({
+	// A ref, which the fetch reads as it changes: the board asks once the address can be read.
+	immediate: isReady.value,
+	refetch: isReady,
 	doctype: "Gig",
 	fields: [
 		"name",
@@ -87,6 +97,8 @@ const gigs = useList({
 		"promoter",
 		"application_opens",
 		"application_closes",
+		// The server leaves it out for a member below its permission level.
+		"fee",
 	],
 	filters: () => activeFilters.value,
 	orderBy: () => (sort.value ? orderBy(sort.value) : "modified desc"),
@@ -110,14 +122,19 @@ watch(
 	() => gigs.data,
 	(data) => (hasNoGigs.value = data?.length === 0 && !isFiltered.value)
 );
+// Until the first answer, including while the board waits for the meta before asking at all.
+const isFirstLoad = computed(() => !gigs.data && !gigs.error);
 // A retry hides the last failure while it runs, as the directory does, rather than leaving it over the board.
 const loadError = computed(() => (gigs.loading ? null : gigs.error));
 
+const feeLabel = computed(() => feeLabelOf(meta.data?.fields ?? []));
+
 const columns = computed(() =>
-	pipelineColumns.map((column) => ({
-		...column,
-		gigs: (gigs.data || []).filter((gig) => column.statuses.includes(gig.status)),
-	}))
+	pipelineColumns.map((column) => {
+		const columnGigs = (gigs.data || []).filter((gig) => column.statuses.includes(gig.status));
+		const fee = feeLabel.value ? totalFee(columnGigs) : 0;
+		return { ...column, gigs: columnGigs, fee: fee ? formatFee(fee) : null };
+	})
 );
 // A card has no room for every date, so the opening date shows only while the board is ordered by it.
 const showsOpeningDate = computed(() => sort.value?.fieldname === "application_opens");
@@ -257,9 +274,9 @@ watch(
 				/>
 			</div>
 		</div>
-		<ListSkeleton v-if="gigs.loading && !gigs.data && view === 'list'" class="mt-4" />
+		<ListSkeleton v-if="isFirstLoad && view === 'list'" class="mt-4" />
 		<div
-			v-else-if="gigs.loading && !gigs.data"
+			v-else-if="isFirstLoad"
 			class="mt-4 flex gap-3 overflow-hidden"
 			aria-busy="true"
 			:aria-label="__('Loading')"
@@ -356,8 +373,14 @@ watch(
 					@dragover.prevent="dropColumn = column.label"
 					@drop.prevent="dropGig(column, $event.currentTarget)"
 				>
-					<h2 class="flex items-center justify-between px-1 pb-2 text-sm-medium text-ink-gray-7">
-						{{ column.label }}<span class="text-ink-gray-5">{{ column.gigs.length }}</span>
+					<h2
+						class="flex items-center justify-between gap-2 px-1 pb-2 text-sm-medium text-ink-gray-7"
+					>
+						{{ column.label }}
+						<span class="flex shrink-0 gap-2 text-ink-gray-5">
+							<span v-if="column.fee" :title="feeLabel">{{ column.fee }}</span>
+							{{ column.gigs.length }}
+						</span>
 					</h2>
 					<div class="min-h-24 flex-1 space-y-2">
 						<GigCard
@@ -368,6 +391,7 @@ watch(
 							:owner="ownerOf(gig)"
 							:members="members.data || []"
 							:shows-opening-date="showsOpeningDate"
+							:fee-label="feeLabel"
 							class="cursor-grab"
 							draggable="true"
 							@dragstart="draggedGig = gig"
@@ -381,7 +405,8 @@ watch(
 			<div v-if="view === 'kanban'" class="mt-4 space-y-6 md:hidden">
 				<section v-for="column in columns.filter((column) => column.gigs.length)" :key="column.label">
 					<h2 class="pb-2 text-sm-medium text-ink-gray-7">
-						{{ column.label }} · {{ column.gigs.length }}
+						{{ column.label }} · {{ column.gigs.length
+						}}<template v-if="column.fee"> · {{ column.fee }}</template>
 					</h2>
 					<div class="space-y-2">
 						<GigCard
@@ -392,6 +417,7 @@ watch(
 							:owner="ownerOf(gig)"
 							:members="members.data || []"
 							:shows-opening-date="showsOpeningDate"
+							:fee-label="feeLabel"
 							@click="openGig(gig.name)"
 							@assign="assignOwner(gig, $event)"
 						/>

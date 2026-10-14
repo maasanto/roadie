@@ -4,6 +4,7 @@ import { createApp } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 import App from "./App.vue";
 import { directoryTypes } from "./directory";
+import { keepListQueries } from "./listQuery";
 import { refreshPushToken } from "./push";
 import "./style.css";
 
@@ -37,6 +38,7 @@ const router = createRouter({
 		{ path: "/settings", name: "Settings", component: () => import("./pages/SettingsScreen.vue") },
 	],
 });
+keepListQueries(router);
 
 document.documentElement.lang = window.lang;
 // frappe-ui's date pickers lay out their weeks from dayjs's locale.

@@ -37,6 +37,28 @@ export function formatDate(isoDate) {
 	});
 }
 
+// Intl only knows ISO codes while Frappe takes any Currency name, and a site may have no default at all: either
+// way the fee shows as a plain amount rather than breaking the board.
+export function formatFee(amount) {
+	try {
+		return amount.toLocaleString(window.lang, {
+			style: "currency",
+			currency: window.currency,
+			trailingZeroDisplay: "stripIfInteger",
+		});
+	} catch {
+		return amount.toLocaleString(window.lang, { maximumFractionDigits: 2 });
+	}
+}
+
+// The band's own name for the fee, or null once the form customiser hid it.
+export function feeLabelOf(metaFields) {
+	const field = metaFields.find((metaField) => metaField.fieldname === "fee");
+	return field && !field.hidden ? __(field.label || field.fieldname) : null;
+}
+
+export const totalFee = (gigs) => gigs.reduce((total, gig) => total + (gig.fee || 0), 0);
+
 const toOptions = (rows, labelField) =>
 	(rows || []).map((row) => ({ label: row[labelField], value: row.name }));
 

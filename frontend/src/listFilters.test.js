@@ -5,8 +5,19 @@ import { test } from "node:test";
 globalThis.window = globalThis;
 window.translations = { Contains: "Contient" };
 await import("./translation.js");
-const { newFilter, operatorOptions, orderBy, queryFilters, quickValue, setQuickValue, sortEmptyLast } =
-	await import("./listFilters.js");
+const {
+	filtersFromQuery,
+	filtersToQuery,
+	newFilter,
+	operatorOptions,
+	orderBy,
+	queryFilters,
+	quickValue,
+	setQuickValue,
+	sortEmptyLast,
+	sortFromQuery,
+	sortToQuery,
+} = await import("./listFilters.js");
 
 const NAME = { fieldname: "title", label: "Name", type: "text" };
 const CAPACITY = { fieldname: "capacity", label: "Capacity", type: "number" };
@@ -111,4 +122,43 @@ test("rows without the sorted value move after the others, which keep the order 
 		sortEmptyLast(gigs, "application_opens").map((gig) => gig.title),
 		["September", "November", "Never set", "Cleared"]
 	);
+});
+
+test("filters and sort survive the round trip through the address, a filter still waiting for its value included", () => {
+	const filters = [
+		{ fieldname: "title", operator: "like", value: "jazz & blues" },
+		{ fieldname: "relevance", operator: ">=", value: 3 },
+		{ fieldname: "capacity", operator: ">", value: "" },
+	];
+	const sort = { fieldname: "usual_month", direction: "desc" };
+
+	assert.deepEqual(filtersFromQuery(filtersToQuery(filters), FIELDS), filters);
+	assert.deepEqual(sortFromQuery(sortToQuery(sort), FIELDS), sort);
+	assert.equal(filtersToQuery([]), undefined);
+	assert.equal(sortToQuery(null), undefined);
+});
+
+test("a hand-edited address keeps only the filters the menus could have made", () => {
+	for (const garbage of [undefined, "", "not json", "{}", "[1]", ["[]", "[]"]])
+		assert.deepEqual(filtersFromQuery(garbage, FIELDS), []);
+
+	const param = JSON.stringify([
+		["title", "like", "jazz"],
+		["title", "=", "duplicate"],
+		["password", "=", "x"],
+		["capacity", "drop table", "300"],
+		["is_active", "like", "Yes"],
+		["is_active", "=", "maybe"],
+		["usual_month", "is", "maybe"],
+		["relevance", ">", { nested: true }],
+		[42, "=", "x"],
+	]);
+	assert.deepEqual(filtersFromQuery(param, FIELDS), [
+		{ fieldname: "title", operator: "like", value: "jazz" },
+	]);
+});
+
+test("a hand-edited sort falls back to the list's own order unless the list offers it", () => {
+	for (const garbage of [undefined, "title", "title:up", "password:asc", ["title:asc"]])
+		assert.equal(sortFromQuery(garbage, FIELDS), null);
 });

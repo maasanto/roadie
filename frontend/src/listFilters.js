@@ -109,3 +109,50 @@ export function orderBy(sort) {
 // The database sorts an empty value first, so an ascending sort on a date would bury the dated rows under the rest.
 export const sortEmptyLast = (rows, fieldname) =>
 	rows.toSorted((first, second) => isBlank(first[fieldname]) - isBlank(second[fieldname]));
+
+// Filters and sort live in the address, so a reload, a shared link or the back button brings the same list back.
+// The address can be typed by hand, so only what the menus could have made for the list's fields is kept: the
+// menus and the request then agree on what filters the list.
+export const filtersToQuery = (filters) =>
+	filters.length
+		? JSON.stringify(filters.map(({ fieldname, operator, value }) => [fieldname, operator, value]))
+		: undefined;
+
+function fitsField(field, operator, value) {
+	const kind = filterKind(field);
+	if (!OPERATORS[kind].includes(operator)) return false;
+	if (operator === "is") return ["set", "not set"].includes(value);
+	if (kind === "check") return ["Yes", "No"].includes(value);
+	return typeof value === "string" || Number.isFinite(value);
+}
+
+export function filtersFromQuery(param, fields) {
+	let triples;
+	try {
+		triples = JSON.parse(param);
+	} catch {
+		return [];
+	}
+	if (!Array.isArray(triples)) return [];
+	const filters = [];
+	for (const triple of triples) {
+		if (!Array.isArray(triple)) continue;
+		const [fieldname, operator, value] = triple;
+		const field = fields.find((candidate) => candidate.fieldname === fieldname);
+		// One filter per field, as the Filter menu keeps them.
+		const isDuplicate = filters.some((filter) => filter.fieldname === fieldname);
+		if (field && !isDuplicate && fitsField(field, operator, value))
+			filters.push({ fieldname, operator, value });
+	}
+	return filters;
+}
+
+export const sortToQuery = (sort) => (sort ? `${sort.fieldname}:${sort.direction}` : undefined);
+
+// A sort on a field the list does not offer would reach the database as an unknown column.
+export function sortFromQuery(param, fields) {
+	const [fieldname, direction] = typeof param === "string" ? param.split(":") : [];
+	const isValid =
+		["asc", "desc"].includes(direction) && fields.some((field) => field.fieldname === fieldname);
+	return isValid ? { fieldname, direction } : null;
+}
