@@ -69,11 +69,8 @@ export function asHtml(content) {
 	return paragraphs.map((paragraph) => `<p>${paragraph.replaceAll("\n", "<br>")}</p>`).join("");
 }
 
-function quote(email) {
-	const author = email.sender_full_name || email.sender;
-	const attribution = __("On {0}, {1} wrote:", [formatDateTime(email.communication_date), author]);
-	return `<p></p><p>${attribution}</p><blockquote>${asHtml(email.content)}</blockquote>`;
-}
+// The folded-quote markers in QUOTE_SELECTOR expect exactly this shape: an intro paragraph, then the blockquote.
+const quote = (email, intro) => `<p></p><p>${intro}</p><blockquote>${asHtml(email.content)}</blockquote>`;
 
 // Received headers keep display names: "Bob <bob@example.com>".
 const bareAddress = (recipient) => (recipient.match(/<([^>]+)>/)?.[1] ?? recipient).trim();
@@ -82,13 +79,41 @@ export function replyDraft(email, mode) {
 	const isOtherParty = (address) => address.toLowerCase() !== (email.account_email || "").toLowerCase();
 	const addresses = (value) => splitEmails(value).map(bareAddress).filter(isOtherParty);
 	const isReceived = email.sent_or_received === "Received";
+	const author = email.sender_full_name || email.sender;
+	const attribution = __("On {0}, {1} wrote:", [formatDateTime(email.communication_date), author]);
 	const to = isReceived ? [email.sender] : addresses(email.recipients);
 	if (mode === "reply-all" && isReceived) to.push(...addresses(email.recipients));
 	return {
 		to: [...new Set(to)],
 		cc: mode === "reply-all" ? addresses(email.cc) : [],
 		subject: /^re:/i.test(email.subject || "") ? email.subject : `Re: ${email.subject || ""}`,
-		content: quote(email),
+		content: quote(email, attribution),
 		inReplyTo: email.name,
+	};
+}
+
+const escapeHtml = (text) => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+
+// Outlook in French prefixes forwards with "TR:", and French typography puts a space before the colon.
+const FORWARD_PREFIX = /^\s*(fwd?|tr)\s*:/i;
+
+// Not a reply, so no In-Reply-To: the new recipient never saw the original.
+export function forwardDraft(email) {
+	// Frappe stores the bare address as the full name when the sender gave none.
+	const hasDisplayName = email.sender_full_name && email.sender_full_name !== email.sender;
+	const sender = hasDisplayName ? `${email.sender_full_name} <${email.sender}>` : email.sender;
+	const header = [
+		`---------- ${__("Forwarded message")} ---------`,
+		__("From: {0}", [sender]),
+		__("Date: {0}", [formatDateTime(email.communication_date)]),
+		__("Subject: {0}", [email.subject || ""]),
+		// A Bcc copy has no To header.
+		email.recipients && __("To: {0}", [email.recipients]),
+		email.cc && __("Cc: {0}", [email.cc]),
+	].filter(Boolean);
+	return {
+		subject: FORWARD_PREFIX.test(email.subject || "") ? email.subject : `Fwd: ${email.subject || ""}`,
+		content: quote(email, header.map(escapeHtml).join("<br>")),
+		attachments: email.attachments,
 	};
 }

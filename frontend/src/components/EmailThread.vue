@@ -3,7 +3,7 @@ import { computed, ref, watch } from "vue";
 import { Avatar, Button, ErrorMessage, useCall } from "frappe-ui";
 import EmailBody from "./EmailBody.vue";
 import EmailComposer from "./EmailComposer.vue";
-import { QUOTE_SELECTOR, asHtml, formatDateTime, openByDefault, replyDraft } from "../email";
+import { QUOTE_SELECTOR, asHtml, formatDateTime, forwardDraft, openByDefault, replyDraft } from "../email";
 
 const props = defineProps({
 	doctype: { type: String, required: true },
@@ -137,6 +137,12 @@ function onSent() {
 							variant="ghost"
 							:label="__('Reply all')"
 							@click="compose(replyDraft(email, 'reply-all'))"
+						/>
+						<Button
+							icon-left="lucide-forward"
+							variant="ghost"
+							:label="__('Forward')"
+							@click="compose(forwardDraft(email))"
 						/>
 					</footer>
 				</div>

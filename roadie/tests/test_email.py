@@ -107,6 +107,41 @@ class TestEmail(IntegrationTestCase):
 		received_file = frappe.get_doc("File", thread[1].attachments[0].name)
 		self.assertTrue(received_file.is_downloadable())
 
+	def test_member_forwards_a_received_attachment(self):
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Le Petit Club residency"}).insert()
+		sent = make(
+			doctype="Gig",
+			name=gig.name,
+			subject="Stage plan",
+			content="<p>Could you send your stage plan?</p>",
+			recipients=[VENUE],
+			send_email=True,
+		)
+		frappe.set_user("Administrator")
+		reply = incoming_email(f"Le Petit Club <{VENUE}>", "Re: Stage plan", f"stage-plan-{sent['name']}")
+		reply["In-Reply-To"] = f"<{frappe.db.get_value('Communication', sent['name'], 'message_id')}>"
+		# Its own content: Frappe dedupes files by hash, and make() commits, so a shared blank PDF leaks into other tests.
+		reply.add_attachment(f"Stage plan {sent['name']}", filename="stage-plan.txt")
+		InboundMail(reply.as_string(), self.mailbox).process()
+
+		frappe.set_user(MEMBER)
+		original_file = get_emails("Gig", gig.name)[1].attachments[0]
+		make(
+			doctype="Gig",
+			name=gig.name,
+			subject="Fwd: Re: Stage plan",
+			content="<p>For the sound engineer</p>",
+			recipients=["agent@example.com"],
+			send_email=True,
+			attachments=[original_file.name],
+		)
+
+		forward = get_emails("Gig", gig.name)[2]
+		self.assertEqual(forward.subject, "Fwd: Re: Stage plan")
+		self.assertEqual([file.file_url for file in forward.attachments], [original_file.file_url])
+		self.assertTrue(frappe.get_doc("File", forward.attachments[0].name).is_downloadable())
+
 	def test_email_to_a_venue_contact_threads_on_the_venue_and_splits_by_mailbox(self):
 		frappe.set_user(MEMBER)
 		venue = frappe.get_doc({"doctype": "Venue", "title": "Le Petit Club"}).insert()
