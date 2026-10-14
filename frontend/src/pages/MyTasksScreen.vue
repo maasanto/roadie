@@ -85,7 +85,7 @@ watch(
 						v-for="task in section.tasks"
 						:key="task.name"
 						:task="task"
-						:context="task.gig_title"
+						:gig-title="task.gig_title"
 						@update:done="setDone(tasks, task, $event)"
 					/>
 				</ul>
