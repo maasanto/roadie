@@ -30,6 +30,7 @@ import { RATING_STARS, directoryControls, directoryType, toFraction, toStars } f
 import { columnFormat, fetchFields, formatCell } from "../listColumns";
 import { useListCount } from "../listCount";
 import { orderBy, queryFilters } from "../listFilters";
+import { useListQuery } from "../listQuery";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
 import { onKey } from "../keyboard";
@@ -53,9 +54,7 @@ const sortFields = computed(() => [
 	{ fieldname: "creation", label: __("Created") },
 ]);
 
-// ponytail: in memory only, so a reload starts unfiltered; persist per member if the band asks for saved views
-const filters = ref([]);
-const sort = ref(null);
+const { filters, sort, isReady } = useListQuery(meta, filterFields, sortFields);
 const activeFilters = computed(() => queryFilters(filters.value, filterFields.value));
 
 // ponytail: the whole type in one unpaged fetch, page server-side if a directory outgrows a few hundred entries
@@ -66,16 +65,18 @@ const entries = useList({
 	orderBy: () => orderBy(sort.value),
 	limit: 500,
 	immediate: false,
-	// Columns, filters and sort all change the request. Asking once the column setting is known keeps the first
-	// load from being abandoned for the next; a column reorder leaves the request as it was, so it asks for
-	// nothing. Text filters wait for the member to pause before they change it at all.
+	// Columns, filters and sort all change the request. Asking once the column setting and the address are known
+	// keeps the first load from being abandoned for the next; a column reorder leaves the request as it was, so it
+	// asks for nothing. Text filters wait for the member to pause before they change it at all.
 	refetch: false,
 });
 
-watch([loaded, () => entries.url], () => loaded.value && entries.execute(), { immediate: true });
+watch([loaded, isReady, () => entries.url], () => loaded.value && isReady.value && entries.execute(), {
+	immediate: true,
+});
 const { count, limitNotice } = useListCount(entries, props.doctype, () => activeFilters.value);
 
-const isLoading = computed(() => !loaded.value || (entries.loading && !entries.data));
+const isLoading = computed(() => !loaded.value || (!entries.data && !entries.error));
 // The previous rows stay in place when a refetch fails, so the error has to show over them, or the list would
 // look filtered by conditions the server never applied.
 const loadError = computed(() => (entries.loading ? null : entries.error));

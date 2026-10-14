@@ -408,6 +408,14 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
+#: frontend/src/taskScopes.js:15
+msgid "Every task has someone on it."
+msgstr ""
+
+#: frontend/src/taskScopes.js:18
+msgid "Everyone"
+msgstr ""
+
 #. Option for the 'Usual month' (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "February"
@@ -470,6 +478,10 @@ msgstr ""
 
 #: frontend/src/components/FormCustomiser.vue:115
 msgid "Hidden fields"
+msgstr ""
+
+#: frontend/src/components/GigTasks.vue:54
+msgid "Hide done"
 msgstr ""
 
 #: frontend/src/components/FormCustomiser.vue:60
@@ -640,6 +652,10 @@ msgstr ""
 msgid "Menu"
 msgstr ""
 
+#: frontend/src/taskScopes.js:4
+msgid "Mine"
+msgstr ""
+
 #: frontend/src/pages/PlanningScreen.vue:25
 msgid "Mode"
 msgstr ""
@@ -754,8 +770,16 @@ msgstr ""
 msgid "No notifications yet"
 msgstr ""
 
+#: frontend/src/taskScopes.js:20
+msgid "No tasks yet"
+msgstr ""
+
 #: frontend/src/components/GigTasks.vue:44
 msgid "No tasks yet."
+msgstr ""
+
+#: frontend/src/taskScopes.js:14
+msgid "No unassigned tasks"
 msgstr ""
 
 #: frontend/src/pages/DirectoryScreen.vue:203
@@ -850,6 +874,10 @@ msgstr ""
 
 #: roadie/api.py:301
 msgid "Only {0} bars can be rescheduled, not {1}"
+msgstr ""
+
+#: frontend/src/taskScopes.js:21
+msgid "Open a gig and add a task to its checklist."
 msgstr ""
 
 #: frontend/src/pages/MyTasksScreen.vue:38
@@ -1078,6 +1106,10 @@ msgstr ""
 msgid "Show"
 msgstr ""
 
+#: frontend/src/components/GigTasks.vue:54
+msgid "Show {0} done"
+msgstr ""
+
 #: frontend/src/listCount.js:33
 msgid "Showing the first {0} of {1}. Narrow it with a filter."
 msgstr ""
@@ -1144,6 +1176,10 @@ msgstr ""
 msgid "Tasks"
 msgstr ""
 
+#: frontend/src/pages/MyTasksScreen.vue:77
+msgid "Tasks to show"
+msgstr ""
+
 #: frontend/src/components/FormCustomiser.vue:13
 msgid "Text"
 msgstr ""
@@ -1197,6 +1233,10 @@ msgstr ""
 
 #: frontend/src/components/FormCustomiser.vue:132
 msgid "Type"
+msgstr ""
+
+#: frontend/src/taskScopes.js:12
+msgid "Unassigned"
 msgstr ""
 
 #: frontend/src/components/EntryContacts.vue:52
