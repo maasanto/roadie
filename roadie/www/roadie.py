@@ -33,6 +33,7 @@ def get_context():
 			"user_image": frappe.db.get_value("User", frappe.session.user, "user_image"),
 			"lang": frappe.local.lang,
 			"week_start": Weekday[first_day_of_the_week].value,
+			"currency": frappe.db.get_default("currency"),
 			# Only this app's catalogue: every SPA string is ours, and the full one weighs megabytes.
 			"translations": get_translations_from_apps(frappe.local.lang, apps=["roadie"]),
 			"drive_url": frappe.conf.get("band_drive_url") or ("/drive" if can_link_drive_items else None),
