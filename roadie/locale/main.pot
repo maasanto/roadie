@@ -1074,6 +1074,14 @@ msgstr ""
 msgid "Show"
 msgstr ""
 
+#: frontend/src/listCount.js:33
+msgid "Showing the first {0} of {1}. Narrow it with a filter."
+msgstr ""
+
+#: frontend/src/listCount.js:34
+msgid "Showing the first {0}. Narrow it with a filter."
+msgstr ""
+
 #: frontend/src/components/DriveLinkDialog.vue:17
 msgid "Site"
 msgstr ""
