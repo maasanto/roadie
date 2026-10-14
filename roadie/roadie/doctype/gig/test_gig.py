@@ -1,6 +1,9 @@
+import json
 from io import BytesIO
 
 import frappe
+from frappe.api.v2 import document_list
+from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 from frappe.tests import IntegrationTestCase
 from frappe.utils import set_request
 from frappe.website.path_resolver import resolve_redirect
@@ -127,6 +130,27 @@ class TestGig(IntegrationTestCase):
 			frappe.local.flags.redirect_location,
 			"/login?redirect-to=%2Froadie%2Fdirectory%2Ffestivals%3Fentry%3DFestival%3Aabc",
 		)
+
+	def test_board_reads_fees_in_the_site_currency(self):
+		self.addCleanup(frappe.db.set_default, "currency", frappe.db.get_default("currency"))
+		frappe.db.set_default("currency", "EUR")
+		frappe.set_user(MEMBER)
+		self.assertEqual(roadie_page.get_context().boot["currency"], "EUR")
+
+	def test_list_api_leaves_out_a_fee_above_the_members_permlevel(self):
+		"""The pipeline always asks for the fee and relies on this to keep it from a member who cannot read it."""
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Festival 2027", "fee": 1500}).insert()
+		restriction = make_property_setter("Gig", "fee", "permlevel", 1, "Int")
+		self.addCleanup(frappe.clear_cache, doctype="Gig")
+		self.addCleanup(frappe.delete_doc, "Property Setter", restriction.name, ignore_permissions=True)
+
+		frappe.set_user(MEMBER)
+		self.addCleanup(setattr, frappe.local, "form_dict", frappe.local.form_dict)
+		frappe.local.form_dict = frappe._dict(
+			fields=json.dumps(["name", "fee"]), filters=json.dumps({"name": gig.name})
+		)
+
+		self.assertEqual(document_list("Gig"), [{"name": gig.name}])
 
 	def test_old_band_links_land_on_roadie(self):
 		frappe.cache.delete_value("website_redirects")
