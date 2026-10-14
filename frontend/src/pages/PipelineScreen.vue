@@ -19,6 +19,7 @@ import BulkEditBar from "../components/BulkEditBar.vue";
 import EmptyState from "../components/EmptyState.vue";
 import GigCard from "../components/GigCard.vue";
 import GigPanel from "../components/GigPanel.vue";
+import ListColumnEditor from "../components/ListColumnEditor.vue";
 import ListFilter from "../components/ListFilter.vue";
 import ListSkeleton from "../components/ListSkeleton.vue";
 import ListSort from "../components/ListSort.vue";
@@ -34,8 +35,10 @@ import {
 	pipelineColumns,
 	totalFee,
 } from "../gig";
+import { useDirectoryColumns } from "../directoryColumns";
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { useGigControls } from "../gigControls";
+import { columnFormat, fetchFields, formatCell, isNameColumn } from "../listColumns";
 import { useListCount } from "../listCount";
 import { orderBy, queryFilters, sortEmptyLast } from "../listFilters";
 import { useListQuery } from "../listQuery";
@@ -87,26 +90,32 @@ const isFiltered = computed(() => Object.keys(activeFilters.value).length > 0);
 
 const isCustomisingQuickFilters = ref(false);
 const { loaded: quickFiltersLoaded } = useDirectoryQuickFilters("Gig");
+const { columns: listLayout, settled: listLayoutSettled } = useDirectoryColumns("Gig");
+// The list's columns change the request, so asking before they are known would abandon the first load.
+const canFetch = computed(() => isReady.value && listLayoutSettled.value);
+
+// What the cards read, whichever columns the list shows.
+const cardFields = [
+	"title",
+	"status",
+	"gig_owner",
+	"gig_date",
+	"festival",
+	"venue",
+	"promoter",
+	"application_opens",
+	"application_closes",
+	// The server leaves it out for a member below its permission level.
+	"fee",
+].map((fieldname) => ({ fieldname }));
+
 // ponytail: the whole pipeline in one unpaged fetch, page per column if a band ever tracks hundreds of gigs
 const gigs = useList({
-	// A ref, which the fetch reads as it changes: the board asks once the address can be read.
-	immediate: isReady.value,
-	refetch: isReady,
+	// A ref, which the fetch reads as it changes.
+	immediate: canFetch.value,
+	refetch: canFetch,
 	doctype: "Gig",
-	fields: [
-		"name",
-		"title",
-		"status",
-		"gig_owner",
-		"gig_date",
-		"festival",
-		"venue",
-		"promoter",
-		"application_opens",
-		"application_closes",
-		// The server leaves it out for a member below its permission level.
-		"fee",
-	],
+	fields: () => fetchFields([...cardFields, ...listLayout.value]),
 	filters: () => activeFilters.value,
 	orderBy: () => (sort.value ? orderBy(sort.value) : "modified desc"),
 	transform: (rows) => (sort.value ? sortEmptyLast(rows, sort.value.fieldname) : rows),
@@ -149,23 +158,21 @@ const showsOpeningDate = computed(() => sort.value?.fieldname === "application_o
 
 const isPhone = useIsPhone();
 // The ListView grid is as wide as its content, so every column but the title gets a fixed width, or the longest
-// label would set them all. The promoter stays in the panel, which leaves the title room on a laptop screen.
+// label would set them all. The deadline's header is the longest one, "Clôture des candidatures" in French.
+const listColumnWidths = { status: "9rem", gig_date: "7rem", application_closes: "10rem" };
 const listColumns = computed(() =>
-	[
-		{ key: "title", label: __("Title") },
-		{ key: "status", label: __("Status"), width: "9rem" },
-		{ key: "gig_date", label: __("Gig date"), width: "7rem" },
-		{ key: "festival", label: __("Festival"), width: "8rem" },
-		{ key: "venue", label: __("Venue"), width: "8rem" },
-		{ key: "application_closes", label: __("Apply by"), width: "8rem" },
-		{ key: "gig_owner", label: __("Owner"), width: "8rem" },
-	].slice(0, isPhone.value ? 2 : undefined)
+	listLayout.value.slice(0, isPhone.value ? 2 : undefined).map((column) => ({
+		key: column.fieldname,
+		label: __(column.label),
+		width: isNameColumn(column) ? undefined : listColumnWidths[column.fieldname] ?? "8rem",
+		format: columnFormat(column, filterFields.value),
+	}))
 );
 const listOptions = {
 	onRowClick: (gig) => openGig(gig.name),
 	rowHeight: 44,
 };
-const linkedDoctypes = { festival: "Festival", venue: "Venue" };
+const linkedDoctypes = { festival: "Festival", venue: "Venue", promoter: "Promoter" };
 
 const draggedGig = ref(null);
 const dropColumn = ref(null);
@@ -302,6 +309,7 @@ watch(
 				/>
 				<ListFilter v-model="filters" :fields="filterFields" />
 				<ListSort v-model="sort" :fields="sortFields" />
+				<ListColumnEditor v-if="view === 'list'" doctype="Gig" :controls="controls" />
 				<Dropdown
 					v-if="view === 'list'"
 					align="end"
@@ -372,8 +380,8 @@ watch(
 				<BulkEditBar doctype="Gig" :fields="filterFields" @updated="gigs.reload()" />
 				<template #cell="{ column, row }">
 					<Badge v-if="column.key === 'status'" :label="__(row.status)" />
-					<span v-else-if="column.key === 'gig_date' && row.gig_date" class="truncate">
-						{{ formatDate(row.gig_date) }}
+					<span v-else-if="column.key === 'fee'" class="truncate">
+						{{ row.fee ? formatFee(row.fee) : "" }}
 					</span>
 					<span
 						v-else-if="column.key === 'application_closes' && row.application_closes"
@@ -406,6 +414,14 @@ watch(
 					<span v-else-if="column.key === 'title'" class="truncate text-ink-gray-8">{{
 						row.title
 					}}</span>
+					<!-- An owner who is no longer a member shows no one, as on the card, rather than a login. -->
+					<span
+						v-else-if="column.key !== 'gig_owner'"
+						class="truncate"
+						:title="formatCell({ fieldname: column.key, format: column.format }, row)"
+					>
+						{{ formatCell({ fieldname: column.key, format: column.format }, row) }}
+					</span>
 				</template>
 			</ListView>
 			<div v-else class="mt-4 hidden gap-3 overflow-x-auto pb-2 md:flex">
