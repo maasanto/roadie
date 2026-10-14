@@ -28,6 +28,7 @@ import { daysUntil, formatDate, isDeadlineClose, pipelineColumns } from "../gig"
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { useGigControls } from "../gigControls";
 import { orderBy, queryFilters, sortEmptyLast } from "../listFilters";
+import { useListQuery } from "../listQuery";
 import { useIsPhone } from "../media";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
@@ -64,9 +65,7 @@ const sortFields = computed(() => [
 	{ fieldname: "creation", label: __("Created") },
 ]);
 
-// ponytail: in memory only, like the directory's, so a reload starts unfiltered
-const filters = ref([]);
-const sort = ref(null);
+const { filters, sort, isReady } = useListQuery(meta, filterFields, sortFields);
 const activeFilters = computed(() => queryFilters(filters.value, filterFields.value));
 const isFiltered = computed(() => Object.keys(activeFilters.value).length > 0);
 
@@ -75,6 +74,9 @@ const { loaded: quickFiltersLoaded } = useDirectoryQuickFilters("Gig");
 
 // ponytail: the whole pipeline in one unpaged fetch, page per column if a band ever tracks hundreds of gigs
 const gigs = useList({
+	// A ref, which the fetch reads as it changes: the board asks once the address can be read.
+	immediate: isReady.value,
+	refetch: isReady,
 	doctype: "Gig",
 	fields: [
 		"name",
@@ -110,6 +112,8 @@ watch(
 	() => gigs.data,
 	(data) => (hasNoGigs.value = data?.length === 0 && !isFiltered.value)
 );
+// Until the first answer, including while the board waits for the meta before asking at all.
+const isFirstLoad = computed(() => !gigs.data && !gigs.error);
 // A retry hides the last failure while it runs, as the directory does, rather than leaving it over the board.
 const loadError = computed(() => (gigs.loading ? null : gigs.error));
 
@@ -257,9 +261,9 @@ watch(
 				/>
 			</div>
 		</div>
-		<ListSkeleton v-if="gigs.loading && !gigs.data && view === 'list'" class="mt-4" />
+		<ListSkeleton v-if="isFirstLoad && view === 'list'" class="mt-4" />
 		<div
-			v-else-if="gigs.loading && !gigs.data"
+			v-else-if="isFirstLoad"
 			class="mt-4 flex gap-3 overflow-hidden"
 			aria-busy="true"
 			:aria-label="__('Loading')"
