@@ -3,9 +3,8 @@ import { test } from "node:test";
 
 globalThis.window = globalThis;
 await import("./translation.js");
-const { DRAFT_UPLOAD_ARGS, confirmDiscardDraft, isDraftUpload, keepOpenForDraft, trackDraft } = await import(
-	"./draft.js"
-);
+const { DRAFT_UPLOAD_ARGS, confirmDiscardDraft, isDraftUpload, keepOpenForDraft, pickedFile, trackDraft } =
+	await import("./draft.js");
 const { forwardDraft } = await import("./email.js");
 const { ref } = await import("vue");
 
@@ -71,6 +70,18 @@ test("discarding a forward or removing its chips deletes only the files the writ
 		attached_to_field: DRAFT_UPLOAD_ARGS.fieldname,
 	};
 	assert.deepEqual([...forwarded, setlist].filter(isDraftUpload), [setlist]);
+});
+
+test("a file picked from the gig is never deleted, even an earlier draft's upload left on it", () => {
+	const staleUpload = {
+		name: "file-3",
+		file_name: "stage-plan.pdf",
+		file_url: "/private/files/stage-plan.pdf",
+		attached_to_field: DRAFT_UPLOAD_ARGS.fieldname,
+	};
+	const picked = pickedFile(staleUpload);
+	assert.deepEqual(picked, { name: "file-3", file_name: "stage-plan.pdf" });
+	assert.equal(isDraftUpload(picked), false);
 });
 
 test("a dialog holding a kept draft stays open, and opens freely", (t) => {

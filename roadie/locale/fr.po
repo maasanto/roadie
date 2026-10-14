@@ -1763,6 +1763,10 @@ msgstr "À : {0}"
 msgid "Cc: {0}"
 msgstr "Cc : {0}"
 
+#: frontend/src/components/EmailComposer.vue
+msgid "From this gig"
+msgstr "Depuis ce concert"
+
 #: frontend/src/pages/MailboxScreen.vue
 msgid "Link to…"
 msgstr "Lier à…"

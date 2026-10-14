@@ -1550,6 +1550,10 @@ msgstr ""
 msgid "Cc: {0}"
 msgstr ""
 
+#: frontend/src/components/EmailComposer.vue
+msgid "From this gig"
+msgstr ""
+
 #: frontend/src/components/BulkEditBar.vue
 msgid "Delete {0} selected?"
 msgstr ""
