@@ -285,6 +285,34 @@ class TestEmail(IntegrationTestCase):
 			[received.name, reply["name"]],
 		)
 
+	def test_search_and_a_higher_limit_reach_mail_older_than_the_latest(self):
+		# Unique per run: InboundMail commits, so earlier runs' emails are still on the site.
+		sender, subject = frappe.generate_hash(), frappe.generate_hash()
+		enquiry = incoming_email(f"Sunny Fest <{sender}@sunnyfest.example.com>", f"Line-up {subject}", sender)
+		InboundMail(enquiry.as_string(), self.mailbox).process()
+		march = frappe.get_last_doc("Communication", filters={"subject": f"Line-up {subject}"})
+		frappe.db.set_value("Communication", march.name, "communication_date", "2000-03-12 09:00:00")
+		newer = incoming_email("Jane Roe <jane.roe@example.com>", "Photos", subject)
+		InboundMail(newer.as_string(), self.mailbox).process()
+		every_email = frappe.db.count(
+			"Communication",
+			{
+				"communication_medium": "Email",
+				"communication_type": "Communication",
+				"sent_or_received": "Received",
+			},
+		)
+
+		def listed(**kwargs):
+			return {row.name for row in get_mailbox("Received", **kwargs)}
+
+		frappe.set_user(MEMBER)
+		self.assertNotIn(march.name, listed(limit=1))
+		self.assertIn(march.name, listed(limit=every_email))
+		self.assertEqual(listed(query=f" {sender}@SUNNYFEST ", limit=1), {march.name})
+		self.assertEqual(listed(query=f"line-up {subject}"), {march.name})
+		self.assertEqual(listed(query=f"nothing like {subject}"), set())
+
 	def test_linked_thread_and_its_later_replies_file_under_the_gig(self):
 		enquiry = incoming_email(
 			"Jane Doe <jane.promoter@example.com>", "Summer booking", f"enquiry-{frappe.generate_hash()}"

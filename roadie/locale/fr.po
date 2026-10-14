@@ -561,6 +561,10 @@ msgstr "Lien vers un fichier ou un dossier du Drive"
 msgid "Linking Drive items needs Frappe Suite and the Suite User role"
 msgstr "Pour insérer des liens Drive, il faut Frappe Suite et le rôle Suite User"
 
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Load more"
+msgstr "Charger plus"
+
 #: frontend/src/components/EntryForm.vue:97
 #: frontend/src/components/ListSkeleton.vue:8
 #: frontend/src/pages/PipelineScreen.vue:110
@@ -683,6 +687,10 @@ msgstr "Aucun commentaire pour l'instant."
 #: frontend/src/components/EntryContacts.vue:89
 msgid "No contacts yet."
 msgstr "Aucun contact pour l'instant."
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "No emails match “{0}”"
+msgstr "Aucun e-mail ne correspond à « {0} »"
 
 #: frontend/src/pages/MailboxScreen.vue:49
 msgid "No emails received yet"
@@ -990,6 +998,10 @@ msgstr "La recherche est limitée à {0} caractères, pas {1}"
 msgid "Search results"
 msgstr "Résultats de recherche"
 
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Search subject, sender or recipient"
+msgstr "Rechercher par objet, expéditeur ou destinataire"
+
 #: frontend/src/components/EmailComposer.vue:173
 msgid "Send"
 msgstr "Envoyer"
@@ -1093,6 +1105,10 @@ msgstr "Texte"
 #: roadie/fixtures/notification.json:14
 msgid "The application for {0} closes on {1}, in {2} days, and the gig is still at {3}."
 msgstr "Les candidatures pour {0} ferment le {1}, dans {2} jours, et le concert est toujours au statut « {3} »."
+
+#: roadie/api.py
+msgid "The mailbox lists at least one email, not {0}"
+msgstr "La boîte liste au moins un e-mail, pas {0}"
 
 #: roadie/api.py:138
 msgid "This file isn't an unsent email attachment of yours, so it can't be deleted from a draft"
@@ -1420,6 +1436,10 @@ msgstr "Ajoutez les {0} avec lesquels vous travaillez, et les personnes à conta
 #: frontend/src/pages/DirectoryScreen.vue
 msgid "Clear all filters"
 msgstr "Effacer tous les filtres"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Clear search"
+msgstr "Effacer la recherche"
 
 #: frontend/src/pages/DirectoryScreen.vue
 msgid "Created"

@@ -40,6 +40,7 @@ EMAIL_SUMMARY_FIELDS = [
 	"communication_date",
 	"seen",
 ]
+MAILBOX_SEARCH_FIELDS = ("subject", "sender", "sender_full_name", "recipients", "cc")
 
 
 SEARCH_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
@@ -50,13 +51,9 @@ SEARCH_QUERY_MAX_LENGTH = 100
 @frappe.whitelist()
 def search(query: str) -> list[dict]:
 	"""Grouped, permission-checked matches for the command palette, a handful per type at most."""
-	query = (query or "").strip()
+	query = _clean_query(query)
 	if not query:
 		return []
-	if len(query) > SEARCH_QUERY_MAX_LENGTH:
-		frappe.throw(
-			_("Search is limited to {0} characters, not {1}").format(SEARCH_QUERY_MAX_LENGTH, len(query))
-		)
 
 	needle = f"%{query}%"
 	groups = []
@@ -79,6 +76,15 @@ def search(query: str) -> list[dict]:
 		if matches:
 			groups.append({"doctype": doctype, "results": matches})
 	return groups
+
+
+def _clean_query(query):
+	query = (query or "").strip()
+	if len(query) > SEARCH_QUERY_MAX_LENGTH:
+		frappe.throw(
+			_("Search is limited to {0} characters, not {1}").format(SEARCH_QUERY_MAX_LENGTH, len(query))
+		)
+	return query
 
 
 @frappe.whitelist()
@@ -219,14 +225,19 @@ def get_comments(doctype: str, name: str) -> list[dict]:
 
 
 @frappe.whitelist()
-def get_mailbox(sent_or_received: str) -> list[dict]:
+def get_mailbox(sent_or_received: str, query: str | None = None, limit: int = 200) -> list[dict]:
 	"""The shared account's threads, newest first: each one's latest email in this direction, with how many
-	emails and unread emails it holds in that direction."""
+	emails and unread emails it holds in that direction. Only the latest `limit` emails are read, and with a query
+	only those whose subject, sender or recipients contain it."""
 	frappe.only_for(MAILBOX_ROLES)
 	if sent_or_received not in ("Sent", "Received"):
 		frappe.throw(_("Mailbox is either Sent or Received, not {0}").format(sent_or_received))
+	# Frappe reads a limit of 0 as no limit at all.
+	if limit < 1:
+		frappe.throw(_("The mailbox lists at least one email, not {0}").format(limit))
 
-	# ponytail: last 200 emails of every account, page and filter by Email Account if the band adds a second mailbox
+	query = _clean_query(query)
+	# ponytail: every account's emails, filter by Email Account if the band adds a second mailbox
 	emails = frappe.get_all(
 		"Communication",
 		filters={
@@ -234,9 +245,10 @@ def get_mailbox(sent_or_received: str) -> list[dict]:
 			"communication_type": "Communication",
 			"sent_or_received": sent_or_received,
 		},
+		or_filters={field: ["like", f"%{query}%"] for field in MAILBOX_SEARCH_FIELDS} if query else None,
 		fields=[*EMAIL_SUMMARY_FIELDS, "reference_doctype", "reference_name"],
 		order_by="communication_date desc",
-		limit=200,
+		limit=limit,
 	)
 	links = _directory_links([email.name for email in emails])
 	threads = {}
