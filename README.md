@@ -41,7 +41,7 @@ Then, on the site:
 
 1. Give the first bandmate a user with the Band Member role. Any member then invites the others from Settings, and each invitee joins as a Band Member. Members land on `/roadie` when they log in and never need the Desk.
 2. Add the band's mailbox as an Email Account with incoming and outgoing enabled, and tick "Always use this email address as sender address". Roadie reads and sends through it, and without that box email goes out from the member's own address, so replies miss the shared Inbox. [Plugging in the band's mailbox](docs/email-account.md) walks through every setting, with OVH as the example.
-3. Drive comes from [Frappe Suite](https://github.com/frappe/suite), which members reach with the Suite User role; Roadie offers its link picker in the email composer, and a Drive link in the sidebar, to whoever holds it. Optionally, point that sidebar link at the band's shared folder instead:
+3. Drive comes from [Frappe Suite](https://github.com/frappe/suite), which members reach with the Suite User role; Roadie offers its link picker in the email composer, and a Drive link in the sidebar, to whoever holds it. Suite gives that role to users created after it is installed; give it to earlier members from Settings, with "Give Drive access". Optionally, point that sidebar link at the band's shared folder instead:
 
    ```bash
    bench --site <your-site> set-config band_drive_url "/drive/d/<folder-id>"
