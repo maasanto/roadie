@@ -24,7 +24,15 @@ import ListSkeleton from "../components/ListSkeleton.vue";
 import ListSort from "../components/ListSort.vue";
 import QuickFilterBar from "../components/QuickFilterBar.vue";
 import { burstConfetti } from "../celebrate";
-import { daysUntil, formatDate, isDeadlineClose, pipelineColumns } from "../gig";
+import {
+	daysUntil,
+	feeLabelOf,
+	formatDate,
+	formatFee,
+	isDeadlineClose,
+	pipelineColumns,
+	totalFee,
+} from "../gig";
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { useGigControls } from "../gigControls";
 import { orderBy, queryFilters, sortEmptyLast } from "../listFilters";
@@ -87,6 +95,8 @@ const gigs = useList({
 		"promoter",
 		"application_opens",
 		"application_closes",
+		// The server leaves it out for a member below its permission level.
+		"fee",
 	],
 	filters: () => activeFilters.value,
 	orderBy: () => (sort.value ? orderBy(sort.value) : "modified desc"),
@@ -113,11 +123,14 @@ watch(
 // A retry hides the last failure while it runs, as the directory does, rather than leaving it over the board.
 const loadError = computed(() => (gigs.loading ? null : gigs.error));
 
+const feeLabel = computed(() => feeLabelOf(meta.data?.fields ?? []));
+
 const columns = computed(() =>
-	pipelineColumns.map((column) => ({
-		...column,
-		gigs: (gigs.data || []).filter((gig) => column.statuses.includes(gig.status)),
-	}))
+	pipelineColumns.map((column) => {
+		const columnGigs = (gigs.data || []).filter((gig) => column.statuses.includes(gig.status));
+		const fee = feeLabel.value ? totalFee(columnGigs) : 0;
+		return { ...column, gigs: columnGigs, fee: fee ? formatFee(fee) : null };
+	})
 );
 // A card has no room for every date, so the opening date shows only while the board is ordered by it.
 const showsOpeningDate = computed(() => sort.value?.fieldname === "application_opens");
@@ -356,8 +369,14 @@ watch(
 					@dragover.prevent="dropColumn = column.label"
 					@drop.prevent="dropGig(column, $event.currentTarget)"
 				>
-					<h2 class="flex items-center justify-between px-1 pb-2 text-sm-medium text-ink-gray-7">
-						{{ column.label }}<span class="text-ink-gray-5">{{ column.gigs.length }}</span>
+					<h2
+						class="flex items-center justify-between gap-2 px-1 pb-2 text-sm-medium text-ink-gray-7"
+					>
+						{{ column.label }}
+						<span class="flex shrink-0 gap-2 text-ink-gray-5">
+							<span v-if="column.fee" :title="feeLabel">{{ column.fee }}</span>
+							{{ column.gigs.length }}
+						</span>
 					</h2>
 					<div class="min-h-24 flex-1 space-y-2">
 						<GigCard
@@ -368,6 +387,7 @@ watch(
 							:owner="ownerOf(gig)"
 							:members="members.data || []"
 							:shows-opening-date="showsOpeningDate"
+							:fee-label="feeLabel"
 							class="cursor-grab"
 							draggable="true"
 							@dragstart="draggedGig = gig"
@@ -381,7 +401,8 @@ watch(
 			<div v-if="view === 'kanban'" class="mt-4 space-y-6 md:hidden">
 				<section v-for="column in columns.filter((column) => column.gigs.length)" :key="column.label">
 					<h2 class="pb-2 text-sm-medium text-ink-gray-7">
-						{{ column.label }} · {{ column.gigs.length }}
+						{{ column.label }} · {{ column.gigs.length
+						}}<template v-if="column.fee"> · {{ column.fee }}</template>
 					</h2>
 					<div class="space-y-2">
 						<GigCard
@@ -392,6 +413,7 @@ watch(
 							:owner="ownerOf(gig)"
 							:members="members.data || []"
 							:shows-opening-date="showsOpeningDate"
+							:fee-label="feeLabel"
 							@click="openGig(gig.name)"
 							@assign="assignOwner(gig, $event)"
 						/>
