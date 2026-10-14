@@ -1,5 +1,5 @@
 import { directoryType, splitList } from "./directory.js";
-import { formatDate } from "./gig.js";
+import { formatDate, gigListColumns } from "./gig.js";
 
 // How a column reads the value behind it: `number` groups digits, `label` translates a value the database
 // keeps in English, `list` joins a comma-separated one, `date` reads as it does on a gig card, `check` ticks
@@ -10,7 +10,9 @@ const FORMATS = ["text", "number", "label", "list", "date", "check", "rating"];
 // The column that names the row. It leads every list and cannot be moved or removed.
 export const isNameColumn = (column) => column.fieldname === "title";
 
-export const defaultColumns = (doctype) => [...(directoryType(doctype)?.columns ?? [])];
+export const defaultColumns = (doctype) => [
+	...((doctype === "Gig" ? gigListColumns : directoryType(doctype)?.columns) ?? []),
+];
 
 // A saved layout is user input that outlives the app that wrote it, and the row is a Code field anyone can
 // hand-edit in Desk: keep what still names a field, in order, once each, and drop the rest.

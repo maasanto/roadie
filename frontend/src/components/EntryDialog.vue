@@ -2,13 +2,15 @@
 import { ref } from "vue";
 import { Dialog } from "frappe-ui";
 import EntryForm from "./EntryForm.vue";
+import { keepOpenForDraft } from "../draft";
 
 defineProps({
 	doctype: { type: String, required: true },
 	name: { type: String, default: null },
 	controls: { type: Object, default: () => ({}) },
 });
-const open = defineModel("open", { type: Boolean, default: false });
+const openModel = defineModel("open", { type: Boolean, default: false });
+const open = keepOpenForDraft(openModel);
 const emit = defineEmits(["saved"]);
 
 const entryForm = ref(null);

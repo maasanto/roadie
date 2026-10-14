@@ -8,15 +8,19 @@ from frappe.email.receive import InboundMail
 from frappe.tests import IntegrationTestCase
 
 from roadie.api import (
+	EMAIL_DRAFT_FIELD,
+	delete_draft_attachment,
 	delete_email,
 	delete_threads,
+	get_attachments,
 	get_emails,
 	get_mailbox,
+	link_thread,
 	mark_threads_read,
 	mark_threads_unread,
 )
 from roadie.install import grant_communication_access
-from roadie.roadie.doctype.gig.test_gig import MEMBER, blank_pdf, make_member
+from roadie.roadie.doctype.gig.test_gig import MEMBER, OTHER_MEMBER, blank_pdf, make_member
 
 MAILBOX = "band@example.com"
 VENUE = "venue@example.com"
@@ -309,6 +313,45 @@ class TestEmail(IntegrationTestCase):
 		self.assertEqual(listed(query=f"line-up {subject}"), {march.name})
 		self.assertEqual(listed(query=f"nothing like {subject}"), set())
 
+	def test_linked_thread_and_its_later_replies_file_under_the_gig(self):
+		enquiry = incoming_email(
+			"Jane Doe <jane.promoter@example.com>", "Summer booking", f"enquiry-{frappe.generate_hash()}"
+		)
+		InboundMail(enquiry.as_string(), self.mailbox).process()
+		received = frappe.get_last_doc("Communication", filters={"subject": "Summer booking"})
+
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme summer festival"}).insert()
+		reply = make(
+			doctype="Communication",
+			name=received.name,
+			subject="Re: Summer booking",
+			content="<p>We would love to.</p>",
+			recipients=["jane.promoter@example.com"],
+			send_email=True,
+		)
+		link_thread(received.name, "Gig", gig.name)
+
+		frappe.set_user("Administrator")
+		answer = incoming_email(
+			"Jane Doe <jane.promoter@example.com>", "Re: Summer booking", f"answer-{frappe.generate_hash()}"
+		)
+		answer["In-Reply-To"] = f"<{frappe.db.get_value('Communication', reply['name'], 'message_id')}>"
+		InboundMail(answer.as_string(), self.mailbox).process()
+		answered = frappe.get_last_doc("Communication", filters={"in_reply_to": reply["name"]})
+
+		frappe.set_user(MEMBER)
+		self.assertEqual(
+			[email.name for email in get_emails("Gig", gig.name)],
+			[received.name, reply["name"], answered.name],
+		)
+		inbox = {row.name: row.thread for row in get_mailbox("Received")}
+		self.assertEqual(inbox[answered.name], {"doctype": "Gig", "name": gig.name})
+		self.assertNotIn(received.name, inbox)
+		other_gig = frappe.get_doc({"doctype": "Gig", "title": "Acme winter festival"}).insert()
+		with self.assertRaises(frappe.ValidationError):
+			link_thread(received.name, "Gig", other_gig.name)
+
 	def test_new_email_from_the_inbox_needs_no_record(self):
 		frappe.set_user(MEMBER)
 		# Its own content: Frappe dedupes files by hash, and make() commits, so a shared blank PDF leaks into other tests.
@@ -393,6 +436,56 @@ class TestEmail(IntegrationTestCase):
 		self.assertEqual(get_emails("Gig", gig.name), [])
 		with self.assertRaises(frappe.ValidationError):
 			delete_email(reminder.name)
+
+	def test_draft_only_deletes_its_own_unsent_uploads(self):
+		make_member(OTHER_MEMBER, "Jane")
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Festival 2028"}).insert()
+
+		def upload(file_name, content=None, attached_to_field=EMAIL_DRAFT_FIELD):
+			# Unique by default: make() commits, and Frappe dedupes files by hash across runs.
+			return frappe.get_doc(
+				{
+					"doctype": "File",
+					"file_name": file_name,
+					"content": content or f"{file_name} {frappe.generate_hash()}",
+					"is_private": 1,
+					"attached_to_doctype": "Gig",
+					"attached_to_name": gig.name,
+					"attached_to_field": attached_to_field,
+				}
+			).insert()
+
+		dropped = upload("dropped-from-draft.txt")
+		already_on_gig = upload("stage-plan.txt", attached_to_field=None)
+		rider = f"Acme rider {frappe.generate_hash()}"
+		sent_file = upload("rider.txt", rider)
+		make(
+			doctype="Gig",
+			name=gig.name,
+			subject="Rider",
+			content="<p>Our rider is attached.</p>",
+			recipients=[VENUE],
+			send_email=True,
+			attachments=[sent_file.name],
+		)
+		frappe.set_user(OTHER_MEMBER)
+		other_members_draft = upload("their-draft.txt")
+
+		frappe.set_user(MEMBER)
+		# The same bytes as the sent rider, so Frappe hands this draft upload the sent copy's URL.
+		rider_attached_again = upload("rider-again.txt", rider)
+		self.assertEqual(rider_attached_again.file_url, sent_file.file_url)
+		delete_draft_attachment(dropped.name)
+		delete_draft_attachment(rider_attached_again.name)
+		for kept in (already_on_gig, sent_file, other_members_draft):
+			with self.assertRaises(frappe.PermissionError):
+				delete_draft_attachment(kept.name)
+
+		self.assertCountEqual(
+			[file.name for file in get_attachments(gig.name)],
+			[already_on_gig.name, sent_file.name, other_members_draft.name],
+		)
 
 	def test_emails_are_only_listed_for_email_doctypes(self):
 		frappe.set_user(MEMBER)

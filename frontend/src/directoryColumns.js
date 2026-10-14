@@ -11,6 +11,9 @@ export const useDirectoryColumns = (doctype) => {
 	// Whether the setting is known. The editor waits on this rather than on the list, which is content to draw
 	// the defaults: editing before it arrives would write over the columns that are really there.
 	const loaded = computed(() => setting.isFinished === true && !setting.error);
+	// Whether the setting has answered once, even with an error the defaults stand in for. A reload keeps the
+	// answer it had, so a save does not read as the setting going missing.
+	const settled = computed(() => Boolean(setting.data || setting.error));
 	const saved = computed(() => Boolean(setting.data?.[doctype]?.length));
 	const saving = ref(false);
 
@@ -41,5 +44,5 @@ export const useDirectoryColumns = (doctype) => {
 			__("Back to the usual columns")
 		);
 
-	return { columns, loaded, saved, saving, save, reset };
+	return { columns, loaded, settled, saved, saving, save, reset };
 };

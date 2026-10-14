@@ -29,6 +29,25 @@ test("a type opens with the columns that suit it", () => {
 	assert.deepEqual(defaultColumns("Unknown"), []);
 });
 
+test("the gig list opens on the columns it always showed, and keeps its title first", () => {
+	const gigColumns = [
+		"title",
+		"status",
+		"gig_date",
+		"festival",
+		"venue",
+		"application_closes",
+		"gig_owner",
+	];
+
+	assert.deepEqual(fieldnames(columnsFor("Gig", null)), gigColumns);
+	assert.deepEqual(fieldnames(columnsFor("Gig", [{ fieldname: "fee" }, { fieldname: "promoter" }])), [
+		"title",
+		"fee",
+		"promoter",
+	]);
+});
+
 test("a member with no saved layout gets the defaults", () => {
 	for (const saved of [null, undefined, "", "[]", "not json at all", "{}"]) {
 		assert.deepEqual(fieldnames(columnsFor("Venue", saved)), ["title", "relevance", "city", "capacity"]);

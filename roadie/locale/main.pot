@@ -1228,6 +1228,10 @@ msgstr ""
 msgid "They get an email with a link to join the band."
 msgstr ""
 
+#: roadie/api.py:138
+msgid "This file isn't an unsent email attachment of yours, so it can't be deleted from a draft"
+msgstr ""
+
 #: frontend/src/components/DriveLinkDialog.vue:119
 msgid "This folder is empty."
 msgstr ""
@@ -1518,7 +1522,31 @@ msgstr ""
 msgid "{0} of {1} could not be updated."
 msgstr ""
 
-#: frontend/src/components/EmailThread.vue frontend/src/pages/MailboxScreen.vue
+#: frontend/src/components/BulkEditBar.vue
+msgid "Delete {0} selected?"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Their comments and attached files go with them, for the whole band, and this cannot be undone."
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Delete {0} selected"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} deleted"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} of {1} could not be deleted while other records, such as contacts, tasks or gigs, link to them."
+msgstr ""
+
+#: frontend/src/draft.js
+msgid "Discard the unsent email?"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue frontend/src/components/EmailThread.vue frontend/src/pages/MailboxScreen.vue
 msgid "Delete"
 msgstr ""
 
@@ -1556,4 +1584,28 @@ msgstr ""
 
 #: roadie/api.py
 msgid "Only the emails Roadie lists can be deleted here, not {0}"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Link to…"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Search the gig or directory entry to file this thread under"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Filed under {0}"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Send or discard your email first."
+msgstr ""
+
+#: roadie/api.py
+msgid "Emails can only be filed under {0}, not {1}"
+msgstr ""
+
+#: roadie/api.py
+msgid "Only conversations filed under no gig, task or directory entry can be linked, not {0}"
 msgstr ""
