@@ -26,6 +26,8 @@ const EDITOR_BUTTONS = [
 	"Redo",
 ];
 
+// A draft's attachments are existing File records ({ name, file_name }): sending copies them, nothing is re-uploaded.
+const { attachments: draftAttachments = [], ...draftFields } = props.draft;
 const email = reactive({
 	to: [],
 	cc: [],
@@ -33,12 +35,12 @@ const email = reactive({
 	subject: "",
 	content: "",
 	inReplyTo: null,
-	...props.draft,
+	...draftFields,
 });
 const invalidRecipientFields = reactive({ to: false, cc: false, bcc: false });
 const hasInvalidRecipient = computed(() => Object.values(invalidRecipientFields).some(Boolean));
 const sendButton = ref(null);
-const attachments = ref([]);
+const attachments = ref([...draftAttachments]);
 const isShowingCopies = ref(email.cc.length > 0);
 const canLinkDriveItems = window.can_link_drive_items;
 const isPickingDriveItem = ref(false);
