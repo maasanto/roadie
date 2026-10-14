@@ -61,7 +61,10 @@ async function saveDraft() {
 		</div>
 	</div>
 	<!-- A phone gives the filters a row of their own, two abreast, above the buttons, unless there are none. -->
-	<div v-else-if="quickFields.length" class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:min-w-0 sm:flex-1 sm:flex-wrap">
+	<div
+		v-else-if="quickFields.length"
+		class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:min-w-0 sm:flex-1 sm:flex-wrap"
+	>
 		<div v-for="field in quickFields" :key="field.fieldname" class="sm:w-40">
 			<QuickFilterField
 				:field="field"
