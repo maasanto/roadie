@@ -10,7 +10,8 @@ from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns,
 
 DIRECTORY_DOCTYPES = ("Festival", "Venue", "Promoter", "Band")
 CUSTOMISABLE_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
-QUICK_FILTER_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
+# The lists whose columns and quick filters the band sets: the directory's and the gig list.
+LIST_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 # The pipeline, the planning and the reminders read these, so hiding one would quietly break them.
 PROTECTED_FIELDS = ("title", "status", "gig_owner", "gig_date", "application_opens", "application_closes")
 # Text, long text, number, date, checkbox and choice list: the types a form edits without a picker.
@@ -338,7 +339,7 @@ def get_members() -> list[dict]:
 
 @frappe.whitelist()
 def get_directory_columns() -> dict:
-	"""The columns each directory list shows, keyed by DocType: one setting for the whole site."""
+	"""The columns each directory list and the gig list show, keyed by DocType: one setting for the whole site."""
 	frappe.only_for(("Band Member", "System Manager"))
 
 	return frappe.parse_json(frappe.db.get_single_value("Roadie Settings", "directory_columns") or "{}") or {}
@@ -348,7 +349,7 @@ def get_directory_columns() -> dict:
 def set_directory_columns(doctype: str, columns: str) -> None:
 	"""Replace one type's columns. An empty list puts that type back on the columns the app ships."""
 	frappe.only_for(("Band Member", "System Manager"))
-	if doctype not in DIRECTORY_DOCTYPES:
+	if doctype not in LIST_DOCTYPES:
 		frappe.throw(_("{0} is not a directory list").format(doctype))
 
 	settings = frappe.get_doc("Roadie Settings")
@@ -373,7 +374,7 @@ def get_directory_quick_filters() -> dict:
 def set_directory_quick_filters(doctype: str, fieldnames: str) -> None:
 	"""Replace one type's quick filters. An empty list leaves that type with none."""
 	frappe.only_for(("Band Member", "System Manager"))
-	if doctype not in QUICK_FILTER_DOCTYPES:
+	if doctype not in LIST_DOCTYPES:
 		frappe.throw(_("{0} is not a directory list").format(doctype))
 
 	settings = frappe.get_doc("Roadie Settings")
