@@ -6,6 +6,9 @@ import frappe
 from frappe.push_notification import PushNotification
 from frappe.utils import get_url, strip_html
 
+from roadie.api import SEARCH_DOCTYPES
+from roadie.mentions import record_path
+
 # The relay keys its Firebase credentials by project, so this must match the project registered there.
 PUSH_PROJECT = "roadie"
 SPA_ROUTE = "/roadie"
@@ -36,11 +39,18 @@ def send_push(notification_log: str) -> None:
 		notification.for_user,
 		title=_plain_text(notification.subject),
 		body=_plain_text(notification.email_content),
-		link=get_url(_spa_path(notification.link)),
+		link=get_url(_push_path(notification)),
 		icon=get_url(PUSH_ICON),
 		# Already plain: a second pass would delete text like "doors < 18h" that the first one unescaped
 		strip_html=False,
 	)
+
+
+def _push_path(notification) -> str:
+	"""A push about a record opens it, as the in-app panel does (notificationRoute in frontend/src/notifications.js)."""
+	if notification.document_name and notification.document_type in SEARCH_DOCTYPES:
+		return record_path(notification.document_type, notification.document_name)
+	return _spa_path(notification.link)
 
 
 def _spa_path(link: str | None) -> str:
