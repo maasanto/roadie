@@ -25,6 +25,8 @@ THREAD_DOCTYPES = (*EMAIL_DOCTYPES, "Communication")
 # The composer stamps its uploads with this, so a draft can only ever delete a file it uploaded itself.
 EMAIL_DRAFT_FIELD = "roadie_email_draft"
 MAILBOX_ROLES = ("Band Member", "System Manager")
+# Suite's own role: it opens Drive, and Suite's Mail, Calendar and Meet with it.
+DRIVE_ROLE = "Suite User"
 EMAIL_SUMMARY_FIELDS = [
 	"name",
 	"subject",
@@ -499,13 +501,28 @@ def reschedule(kind: str, name: str, start: str | None = None, end: str | None =
 def get_members() -> list[dict]:
 	frappe.only_for(("Band Member", "System Manager"))
 
-	return frappe.get_all(
+	members = frappe.get_all(
 		"User",
 		filters=[["Has Role", "role", "=", "Band Member"], ["enabled", "=", 1]],
 		fields=["name", "full_name", "user_image"],
 		order_by="full_name asc",
 		distinct=True,
 	)
+	if is_drive_installed():
+		drive_users = set(
+			frappe.get_all(
+				"Has Role",
+				filters={
+					"role": DRIVE_ROLE,
+					"parenttype": "User",
+					"parent": ["in", [member.name for member in members]],
+				},
+				pluck="parent",
+			)
+		)
+		for member in members:
+			member.has_drive_access = member.name in drive_users
+	return members
 
 
 @frappe.whitelist()
@@ -635,10 +652,37 @@ def clean_label(label: str) -> str:
 	return label
 
 
+def is_drive_installed() -> bool:
+	# Drive ships inside the suite app since the standalone one was archived.
+	return "suite" in frappe.get_installed_apps()
+
+
 def can_use_drive() -> bool:
-	# Drive ships inside the suite app since the standalone one was archived, and refuses its share
-	# and permission calls to anyone without the role it reads.
-	return "suite" in frappe.get_installed_apps() and "Suite User" in frappe.get_roles()
+	# Drive refuses its share and permission calls to anyone without the role it reads.
+	return is_drive_installed() and DRIVE_ROLE in frappe.get_roles()
+
+
+@frappe.whitelist(methods=["POST"])
+def grant_drive_access(member: str) -> None:
+	frappe.only_for(("Band Member", "System Manager"))
+	if not is_drive_installed():
+		frappe.throw(_("Drive access needs Frappe Suite, which this site does not have"))
+
+	if member not in {listed.name for listed in get_members()}:
+		frappe.throw(_("{0} is not a band member").format(member), frappe.PermissionError)
+	user = frappe.get_doc("User", member)
+	if DRIVE_ROLE in {row.role for row in user.roles}:
+		return
+	# Members invite each other without any right over User records, and this hands out Drive's role alone.
+	user.flags.ignore_permissions = True
+	user.add_roles(DRIVE_ROLE)
+	# A role profile or a custom user type rewrites the roles on save, dropping any it does not list.
+	if DRIVE_ROLE not in {row.role for row in user.roles}:
+		frappe.throw(
+			_(
+				"{0}'s role profile or user type decides their roles: an administrator has to add Suite User there"
+			).format(member)
+		)
 
 
 def is_in_drive(entity) -> bool:
