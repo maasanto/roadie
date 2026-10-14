@@ -1,6 +1,5 @@
 <script setup>
 import { computed, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
 import {
 	Button,
 	Dropdown,
@@ -28,12 +27,14 @@ import { useDirectoryColumns } from "../directoryColumns";
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { RATING_STARS, directoryControls, directoryType, toFraction, toStars } from "../directory";
 import { columnFormat, fetchFields, formatCell } from "../listColumns";
+import { useListCount } from "../listCount";
 import { orderBy, queryFilters } from "../listFilters";
 import { useListQuery } from "../listQuery";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
 import { onKey } from "../keyboard";
 import { useIsPhone } from "../media";
+import { useOpenRecord } from "../openRecord";
 
 const props = defineProps({ doctype: { type: String, required: true } });
 
@@ -73,6 +74,7 @@ const entries = useList({
 watch([loaded, isReady, () => entries.url], () => loaded.value && isReady.value && entries.execute(), {
 	immediate: true,
 });
+const { count, limitNotice } = useListCount(entries, props.doctype, () => activeFilters.value);
 
 const isLoading = computed(() => !loaded.value || (!entries.data && !entries.error));
 // The previous rows stay in place when a refetch fails, so the error has to show over them, or the list would
@@ -111,9 +113,24 @@ const placeholderRows = Array.from({ length: 4 }, (unused, index) => ({
 
 const listRows = computed(() => (isLoading.value ? placeholderRows : rows.value));
 
+// The search palette and notifications address an entry by type as well, as one link serves every directory.
+const {
+	name: editingName,
+	isOpen: isEntryOpen,
+	routeTo: entryRoute,
+	create: createEntry,
+	close: closeEntry,
+} = useOpenRecord("entry", {
+	toQuery: (name) => `${props.doctype}:${name}`,
+	fromQuery: (entry) => {
+		const [doctype, name] = entry.split(":");
+		return doctype === props.doctype ? name : null;
+	},
+});
+
 const options = computed(() => ({
 	// A skeleton row is not an entry, so it can be neither opened nor selected.
-	onRowClick: (row) => !row.__skeleton && openEntry(row.name),
+	getRowRoute: (row) => !row.__skeleton && entryRoute(row.name),
 	selectable: !isLoading.value,
 	showTooltip: true,
 	rowHeight: 44,
@@ -132,36 +149,16 @@ async function rate(row, fieldname, stars) {
 		toast.error(error.messages?.join("\n") || error.message);
 	}
 }
-
-const isDialogOpen = ref(false);
-const editingName = ref(null);
-
-function openEntry(name = null) {
-	editingName.value = name;
-	isDialogOpen.value = true;
-}
-
-// The search palette sends a record through the query, and it is cleared once the dialog has it.
-const route = useRoute();
-const router = useRouter();
-watch(
-	() => route.query.entry,
-	(entry) => {
-		if (!entry) return;
-		const [doctype, name] = entry.split(":");
-		if (doctype !== props.doctype) return;
-		openEntry(name);
-		router.replace({ query: { ...route.query, entry: undefined } });
-	},
-	{ immediate: true }
-);
 </script>
 
 <template>
 	<div class="p-6">
 		<div class="flex flex-wrap items-center justify-between gap-3">
-			<h1 class="text-2xl-semibold">{{ type.plural }}</h1>
-			<Button variant="solid" icon-left="lucide-plus" :label="__('New')" @click="openEntry()" />
+			<h1 class="text-2xl-semibold">
+				{{ type.plural }}
+				<span v-if="!isLoading && !loadError && count" class="ms-1 text-ink-gray-5">{{ count }}</span>
+			</h1>
+			<Button variant="solid" icon-left="lucide-plus" :label="__('New')" @click="createEntry()" />
 		</div>
 		<div class="mt-4 flex flex-wrap items-center gap-2">
 			<div ref="quickFilterBar" class="contents">
@@ -196,6 +193,7 @@ watch(
 				/>
 			</div>
 		</div>
+		<p v-if="limitNotice && !loadError" class="mt-4 text-p-sm text-ink-gray-6">{{ limitNotice }}</p>
 		<ErrorMessage v-if="loadError" class="mt-4" :message="loadError" />
 		<EmptyState
 			v-else-if="!isLoading && !rows.length && Object.keys(activeFilters).length"
@@ -217,7 +215,7 @@ watch(
 				])
 			"
 		>
-			<Button icon-left="lucide-plus" :label="__('Add the first one')" @click="openEntry()" />
+			<Button icon-left="lucide-plus" :label="__('Add the first one')" @click="createEntry()" />
 		</EmptyState>
 		<ListView
 			v-else
@@ -236,8 +234,13 @@ watch(
 					class="h-4 rounded"
 					:class="column.key === 'title' ? 'w-40' : 'w-16'"
 				/>
-				<!-- Rating a row is not opening it. -->
-				<div v-else-if="column.format === 'rating'" class="inline-flex" @click.stop>
+				<!-- Rating a row is not opening it, and the row is a link the browser would follow or drag on its own. -->
+				<div
+					v-else-if="column.format === 'rating'"
+					class="inline-flex"
+					@click.stop.prevent
+					@mousedown.prevent
+				>
 					<Rating
 						:model-value="toStars(row[column.key])"
 						:max="RATING_STARS"
@@ -251,10 +254,11 @@ watch(
 			</template>
 		</ListView>
 		<EntryDialog
-			v-model:open="isDialogOpen"
+			:open="isEntryOpen"
 			:doctype="doctype"
 			:name="editingName"
 			:controls="directoryControls[doctype]"
+			@update:open="(open) => open || closeEntry()"
 			@saved="entries.reload()"
 		>
 			<template #default="{ entryName }">

@@ -16,6 +16,17 @@ export const pipelineColumns = [
 	{ label: __("Declined / Dropped"), statuses: ["Declined", "Dropped"] },
 ];
 
+// The columns the gig list opens with, labelled in the DocType's own words like a directory list's.
+export const gigListColumns = [
+	{ fieldname: "title", label: "Title" },
+	{ fieldname: "status", label: "Status" },
+	{ fieldname: "gig_date", label: "Gig date", format: "date" },
+	{ fieldname: "festival", label: "Festival" },
+	{ fieldname: "venue", label: "Venue" },
+	{ fieldname: "application_closes", label: "Application closes", format: "date" },
+	{ fieldname: "gig_owner", label: "Owner" },
+];
+
 // Matches the owner reminder sent 7 days before an application closes.
 const DEADLINE_WARNING_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;

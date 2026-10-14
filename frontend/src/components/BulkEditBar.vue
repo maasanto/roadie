@@ -1,11 +1,11 @@
 <script setup>
 // Adapted from Frappe CRM's ListBulkActions.vue and EditValueModal.vue (https://github.com/frappe/crm), Copyright
-// (C) Frappe Technologies Pvt. Ltd., AGPL-3.0. Modified for Roadie in October 2026: the edit action only, the
-// form's own controls for the value, and a bar fixed to the screen, since Roadie's lists grow with the page.
+// (C) Frappe Technologies Pvt. Ltd., AGPL-3.0. Modified for Roadie in October 2026: the edit and delete actions
+// only, the form's own controls for the value, and a bar fixed to the screen, since Roadie's lists grow with the page.
 // It replaces the ListView's select banner, so it goes in the ListView's default slot.
 import { computed, inject, ref, watch } from "vue";
 import { Button, Dialog, FormControl, Rating, call, toast } from "frappe-ui";
-import { blankValue, updateInBatches } from "../bulkEdit";
+import { DELETE_BATCH_SIZE, UPDATE_BATCH_SIZE, blankValue, runInBatches } from "../bulkEdit";
 import { RATING_STARS } from "../directory";
 import { isBlank } from "../listFilters";
 import { toStoredValue } from "../metaFields";
@@ -72,7 +72,7 @@ async function save() {
 	// An emptied field is cleared, where an empty string would be refused by a date.
 	const change = { [fieldname.value]: isBlank(stored) ? null : stored };
 	isSaving.value = true;
-	const failed = await updateInBatches(names.value, (docnames) =>
+	const failed = await runInBatches(names.value, UPDATE_BATCH_SIZE, (docnames) =>
 		call("frappe.desk.doctype.bulk_update.bulk_update.submit_cancel_or_update_docs", {
 			doctype: props.doctype,
 			docnames,
@@ -82,13 +82,50 @@ async function save() {
 	);
 	isSaving.value = false;
 	isDialogOpen.value = false;
-	emit("updated");
-	// What failed stays selected, so it can be opened to see why or tried again.
-	list.value.toggleAllRows(false);
-	failed.forEach((name) => selections.value.add(name));
+	reloadKeepingFailedSelected(failed);
 	if (failed.length)
 		toast.error(__("{0} of {1} could not be updated.", [failed.length, names.value.length]));
 	else toast.success(__("Saved"));
+}
+
+const isDeleteDialogOpen = ref(false);
+
+function confirmDelete() {
+	names.value = [...selections.value];
+	isDeleteDialogOpen.value = true;
+}
+
+async function deleteSelected() {
+	isSaving.value = true;
+	// A record still linked from another one is refused by Frappe and comes back among the failed names. Frappe
+	// reads the names as a JSON string.
+	const failed = await runInBatches(names.value, DELETE_BATCH_SIZE, (items) =>
+		call("frappe.desk.reportview.delete_items", { doctype: props.doctype, items: JSON.stringify(items) })
+	);
+	isSaving.value = false;
+	isDeleteDialogOpen.value = false;
+	reloadKeepingFailedSelected(failed);
+	// frappe-ui drops Frappe's reason from a request that succeeds, and for a member it is a link that refuses a delete.
+	if (failed.length)
+		toast.error(
+			__(
+				"{0} of {1} could not be deleted while other records, such as contacts, tasks or gigs, link to them.",
+				[failed.length, names.value.length]
+			)
+		);
+	else toast.success(__("{0} deleted", [names.value.length]));
+}
+
+// The batches go on once started, so the dialog stays until they are done rather than look cancelled.
+function setDeleteDialogOpen(isOpen) {
+	if (!isSaving.value) isDeleteDialogOpen.value = isOpen;
+}
+
+// What failed stays selected, so it can be looked into or tried again.
+function reloadKeepingFailedSelected(failed) {
+	emit("updated");
+	list.value.toggleAllRows(false);
+	failed.forEach((name) => selections.value.add(name));
 }
 </script>
 
@@ -101,6 +138,13 @@ async function save() {
 	>
 		<span class="me-2 text-ink-gray-9">{{ __("{0} selected", [selections.size]) }}</span>
 		<Button variant="solid" icon-left="lucide-pencil" :label="__('Edit')" @click="openDialog" />
+		<Button
+			variant="subtle"
+			theme="red"
+			icon-left="lucide-trash-2"
+			:label="__('Delete')"
+			@click="confirmDelete"
+		/>
 		<Button
 			variant="ghost"
 			:label="__('Select all')"
@@ -149,6 +193,36 @@ async function save() {
 					:disabled="!canSave"
 					:loading="isSaving"
 					@click="save"
+				/>
+			</div>
+		</template>
+	</Dialog>
+	<Dialog
+		:open="isDeleteDialogOpen"
+		:title="__('Delete {0} selected?', [names.length])"
+		@update:open="setDeleteDialogOpen"
+	>
+		<p class="text-p-base text-ink-gray-7">
+			{{
+				__(
+					"Their comments and attached files go with them, for the whole band, and this cannot be undone."
+				)
+			}}
+		</p>
+		<template #actions>
+			<div class="flex justify-end gap-2">
+				<Button
+					:label="__('Cancel')"
+					variant="ghost"
+					:disabled="isSaving"
+					@click="setDeleteDialogOpen(false)"
+				/>
+				<Button
+					variant="solid"
+					theme="red"
+					:label="__('Delete {0} selected', [names.length])"
+					:loading="isSaving"
+					@click="deleteSelected"
 				/>
 			</div>
 		</template>

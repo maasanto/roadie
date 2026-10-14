@@ -3,7 +3,9 @@ import { test } from "node:test";
 
 globalThis.window = globalThis;
 await import("./translation.js");
-const { forwardDraft, openByDefault, replyDraft, splitRecipients } = await import("./email.js");
+const { forwardDraft, isFailedDelivery, openByDefault, replyDraft, splitRecipients } = await import(
+	"./email.js"
+);
 
 const received = {
 	name: "comm-1",
@@ -62,6 +64,15 @@ test("a mistyped recipient is kept apart from the addresses, never dropped", () 
 		invalid: ["john@exmple"],
 	});
 	assert.deepEqual(splitRecipients(" , "), { valid: [], invalid: [] });
+});
+
+test("only an email that failed to go out counts as a failed delivery, not a queued, delivered or received one", () => {
+	for (const status of ["Error", "Expired", "Bounced"]) {
+		assert.equal(isFailedDelivery(status), true, status);
+	}
+	for (const status of ["", null, undefined, "Sending", "Sent", "Read"]) {
+		assert.equal(isFailedDelivery(status), false, String(status));
+	}
 });
 
 test("a thread opens on its latest email and on unread ones, the read history stays folded", () => {

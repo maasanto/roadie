@@ -48,9 +48,20 @@ class TestDirectoryColumns(IntegrationTestCase):
 		with self.assertRaises(frappe.ValidationError):
 			set_directory_columns(DOCTYPE, '{"fieldname": "title"}')
 
-	def test_a_doctype_that_is_not_a_directory_list_is_refused(self):
+	def test_the_gig_list_keeps_its_own_layout_beside_the_directorys(self):
+		set_directory_columns(
+			"Gig", '[{"fieldname": "title"}, {"fieldname": "promoter"}, {"fieldname": "fee"}]'
+		)
+		set_directory_columns(DOCTYPE, '[{"fieldname": "city"}]')
+
+		self.assertEqual(
+			[column["fieldname"] for column in self.columns("Gig")], ["title", "promoter", "fee"]
+		)
+		self.assertEqual([column["fieldname"] for column in self.columns()], ["city"])
+
+	def test_a_doctype_that_is_not_a_list_is_refused(self):
 		with self.assertRaises(frappe.ValidationError):
-			set_directory_columns("Gig", "[]")
+			set_directory_columns("Band Task", "[]")
 
 	def test_one_members_change_is_what_another_member_reads(self):
 		"""The columns are edited globally: there is one layout, not one per member."""

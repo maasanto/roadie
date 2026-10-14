@@ -1,8 +1,9 @@
 <script setup>
-import { computed, reactive, ref } from "vue";
-import { Button, ErrorMessage, FileUploader, TextEditor, useCall, useList } from "frappe-ui";
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { Button, ErrorMessage, FileUploader, TextEditor, call, toast, useCall, useList } from "frappe-ui";
 import DriveLinkDialog from "./DriveLinkDialog.vue";
 import EmailRecipients from "./EmailRecipients.vue";
+import { confirmDiscardDraft, trackDraft } from "../draft";
 
 const props = defineProps({
 	// Left out for a new email from the Inbox: Frappe then threads it on the recipient's contact, or on itself.
@@ -46,6 +47,32 @@ const canLinkDriveItems = window.can_link_drive_items;
 const isPickingDriveItem = ref(false);
 const textEditor = ref(null);
 
+// The first click in a quoted reply makes the editor append an empty paragraph, which is no edit.
+const currentState = () =>
+	JSON.stringify([
+		email.to,
+		email.cc,
+		email.bcc,
+		email.subject,
+		attachments.value,
+		textEditor.value.editor.getHTML().replace(/(<p><\/p>)+$/, ""),
+	]);
+let untouchedState;
+// Once on its way, the email is no longer the writer's to lose: the request completes without the composer.
+const isEdited = () => !send.loading && currentState() !== untouchedState;
+let forgetDraft;
+onMounted(() => {
+	untouchedState = currentState();
+	forgetDraft = trackDraft(isEdited);
+});
+// Before the editor inside is torn down, which would leave the check reading a destroyed editor.
+onBeforeUnmount(() => forgetDraft());
+defineExpose({ isEdited });
+
+function discard() {
+	if (confirmDiscardDraft(isEdited)) emit("discard");
+}
+
 function insertLink({ url, label }) {
 	const { editor } = textEditor.value;
 	if (!editor.state.selection.empty) {
@@ -74,11 +101,39 @@ const suggestions = computed(() =>
 	(contacts.data || []).map((contact) => ({ label: contact.full_name, value: contact.email_id }))
 );
 
+// Matches EMAIL_DRAFT_FIELD in roadie/api.py, which only lets a draft delete the uploads stamped with it.
+const UPLOAD_ARGS = { fieldname: "roadie_email_draft", private: true };
+
 const send = useCall({
 	url: "/api/v2/method/frappe.core.doctype.communication.email.make",
 	method: "POST",
 	immediate: false,
-	onSuccess: () => emit("sent"),
+	onSuccess: () => {
+		forgetDraft();
+		emit("sent");
+	},
+});
+
+// An upload is attached to the record as soon as it lands, so one the email never sends must be deleted.
+async function deleteUpload(file) {
+	try {
+		await call("roadie.api.delete_draft_attachment", { file: file.name });
+		return true;
+	} catch (error) {
+		toast.error(error.messages?.join("\n") || error.message);
+		return false;
+	}
+}
+
+async function removeAttachment(file) {
+	if (await deleteUpload(file)) {
+		attachments.value = attachments.value.filter((entry) => entry.name !== file.name);
+	}
+}
+
+// Discard, replying elsewhere and closing the record all unmount the draft. A send under way owns the files.
+onBeforeUnmount(() => {
+	if (!send.loading && !send.data) attachments.value.forEach(deleteUpload);
 });
 
 function submit(event) {
@@ -158,7 +213,8 @@ function submit(event) {
 					type="button"
 					class="lucide-x size-3.5 text-ink-gray-5 hover:text-ink-gray-8"
 					:aria-label="__('Remove {0}', [file.file_name])"
-					@click="attachments = attachments.filter((entry) => entry.name !== file.name)"
+					:disabled="send.loading"
+					@click="removeAttachment(file)"
 				/>
 			</li>
 		</ul>
@@ -166,7 +222,7 @@ function submit(event) {
 		<div class="mt-3 flex items-center justify-between">
 			<div class="flex items-start gap-1">
 				<FileUploader
-					:upload-args="doctype ? { doctype, docname: name, private: true } : { private: true }"
+					:upload-args="doctype ? { ...UPLOAD_ARGS, doctype, docname: name } : UPLOAD_ARGS"
 					@success="attachments.push($event)"
 				>
 					<template #default="{ openFileSelector, uploading, progress, error }">
@@ -189,7 +245,7 @@ function submit(event) {
 				/>
 			</div>
 			<div class="flex gap-2">
-				<Button :label="__('Discard')" variant="ghost" @click="emit('discard')" />
+				<Button :label="__('Discard')" variant="ghost" @click="discard" />
 				<Button
 					ref="sendButton"
 					type="submit"

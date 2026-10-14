@@ -28,7 +28,7 @@ Records are named by a random hash, so always look a record up by `title` first 
 - **Promoter** — `title`, `city`, `website`, `instagram`, `notes`.
 - **Band** — `title`, `city`, `website`, `instagram`, `genre` (a comma-separated list of genres), `notes`.
 - **Band Task** — `title`, `assignee` (User), `gig`, `start_date`, `due_date`, `done`.
-- **Roadie Settings** — one site-wide record; its `directory_columns` holds the columns each directory list shows, keyed by DocType.
+- **Roadie Settings** — one site-wide record; its `directory_columns` holds the columns each directory list and the gig list show, keyed by DocType.
 
 Gig statuses, in pipeline order: `Idea`, `Contacted`, `Applied`, `Negotiating`, `Booked`, `Played`, `Declined`, `Dropped`.
 

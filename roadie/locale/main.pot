@@ -237,6 +237,10 @@ msgstr ""
 msgid "Clear all filters"
 msgstr ""
 
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Clear search"
+msgstr ""
+
 #: frontend/src/components/GigPanel.vue:29
 #: frontend/src/components/NotificationPanel.vue:49
 #: frontend/src/pages/MailboxScreen.vue:126
@@ -604,6 +608,10 @@ msgstr ""
 msgid "Linking Drive items needs Frappe Suite and the Suite User role"
 msgstr ""
 
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Load more"
+msgstr ""
+
 #: frontend/src/components/EntryForm.vue:127
 #: frontend/src/components/ListSkeleton.vue:8
 #: frontend/src/pages/PipelineScreen.vue:136
@@ -666,6 +674,10 @@ msgstr ""
 
 #: frontend/src/pages/DirectoryScreen.vue:194
 msgid "More options"
+msgstr ""
+
+#: frontend/src/components/GigCard.vue:101
+msgid "Move to"
 msgstr ""
 
 #: frontend/src/components/ListColumnEditor.vue:70
@@ -744,6 +756,10 @@ msgstr ""
 
 #: frontend/src/components/EntryContacts.vue:89
 msgid "No contacts yet."
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "No emails match “{0}”"
 msgstr ""
 
 #: frontend/src/pages/MailboxScreen.vue:49
@@ -1081,6 +1097,10 @@ msgstr ""
 msgid "Search results"
 msgstr ""
 
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Search subject, sender or recipient"
+msgstr ""
+
 #: frontend/src/components/EmailComposer.vue:173
 msgid "Send"
 msgstr ""
@@ -1108,6 +1128,14 @@ msgstr ""
 
 #: frontend/src/components/GigTasks.vue:54
 msgid "Show {0} done"
+msgstr ""
+
+#: frontend/src/listCount.js:33
+msgid "Showing the first {0} of {1}. Narrow it with a filter."
+msgstr ""
+
+#: frontend/src/listCount.js:34
+msgid "Showing the first {0}. Narrow it with a filter."
 msgstr ""
 
 #: frontend/src/components/DriveLinkDialog.vue:17
@@ -1180,6 +1208,10 @@ msgstr ""
 msgid "The application for {0} closes on {1}, in {2} days, and the gig is still at {3}."
 msgstr ""
 
+#: roadie/api.py
+msgid "The mailbox lists at least one email, not {0}"
+msgstr ""
+
 #. Description of the 'Directory Columns' (Code) field in DocType 'Roadie
 #. Settings'
 #: roadie/roadie/doctype/roadie_settings/roadie_settings.json
@@ -1194,6 +1226,10 @@ msgstr ""
 
 #: frontend/src/components/BandMembers.vue:105
 msgid "They get an email with a link to join the band."
+msgstr ""
+
+#: roadie/api.py:138
+msgid "This file isn't an unsent email attachment of yours, so it can't be deleted from a draft"
 msgstr ""
 
 #: frontend/src/components/DriveLinkDialog.vue:119
@@ -1440,6 +1476,7 @@ msgid "The push relay refused this device ({0})"
 msgstr ""
 
 #: frontend/src/components/BulkEditBar.vue
+#: frontend/src/pages/MailboxScreen.vue
 msgid "{0} selected"
 msgstr ""
 
@@ -1448,10 +1485,12 @@ msgid "Edit"
 msgstr ""
 
 #: frontend/src/components/BulkEditBar.vue
+#: frontend/src/pages/MailboxScreen.vue
 msgid "Select all"
 msgstr ""
 
 #: frontend/src/components/BulkEditBar.vue
+#: frontend/src/pages/MailboxScreen.vue
 msgid "Clear selection"
 msgstr ""
 
@@ -1511,3 +1550,90 @@ msgstr ""
 msgid "Cc: {0}"
 msgstr ""
 
+#: frontend/src/components/BulkEditBar.vue
+msgid "Delete {0} selected?"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Their comments and attached files go with them, for the whole band, and this cannot be undone."
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Delete {0} selected"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} deleted"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} of {1} could not be deleted while other records, such as contacts, tasks or gigs, link to them."
+msgstr ""
+
+#: frontend/src/draft.js
+msgid "Discard the unsent email?"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue frontend/src/components/EmailThread.vue frontend/src/pages/MailboxScreen.vue
+msgid "Delete"
+msgstr ""
+
+#: frontend/src/components/EmailThread.vue
+msgid "Email deleted"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Conversation deleted"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "{0} conversations deleted"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Mark as read"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Mark as unread"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Only conversations linked to no gig, task or directory entry can be deleted together"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Select {0}"
+msgstr ""
+
+#: roadie/api.py
+msgid "Only conversations filed under no gig, task or directory entry can be deleted in bulk, not {0}"
+msgstr ""
+
+#: roadie/api.py
+msgid "Only the emails Roadie lists can be deleted here, not {0}"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Link to…"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Search the gig or directory entry to file this thread under"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Filed under {0}"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Send or discard your email first."
+msgstr ""
+
+#: roadie/api.py
+msgid "Emails can only be filed under {0}, not {1}"
+msgstr ""
+
+#: roadie/api.py
+msgid "Only conversations filed under no gig, task or directory entry can be linked, not {0}"
+msgstr ""

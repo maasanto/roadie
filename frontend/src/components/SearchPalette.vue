@@ -1,12 +1,15 @@
 <script setup>
 import { computed, nextTick, ref, watch } from "vue";
-import { useRouter } from "vue-router";
 import { Dialog, TextInput, useCall } from "frappe-ui";
 import SearchResultItem from "./SearchResultItem.vue";
-import { onShortcut } from "../keyboard";
-import { resultRoute, searchGroups } from "../search";
+import { searchGroups } from "../search";
 
-const router = useRouter();
+const props = defineProps({
+	doctypes: { type: Array, default: null },
+	placeholder: { type: String, default: null },
+});
+const emit = defineEmits(["select"]);
+
 const isOpen = ref(false);
 const query = ref("");
 const results = ref([]);
@@ -34,7 +37,12 @@ watch(query, (value) => {
 	pending = setTimeout(() => search.submit({ query: value }), SEARCH_DEBOUNCE_MS);
 });
 
-const groups = computed(() => searchGroups(query.value, results.value));
+const groups = computed(() =>
+	searchGroups(
+		query.value,
+		results.value.filter((group) => !props.doctypes || props.doctypes.includes(group.doctype))
+	)
+);
 // One flat list for the arrow keys, in the order the groups render.
 const items = computed(() => groups.value.flatMap((group) => group.items));
 const activeOptionId = computed(() =>
@@ -45,21 +53,14 @@ function optionId(item) {
 	return `roadie-search-option-${items.value.indexOf(item)}`;
 }
 
-onShortcut({ key: "k", ctrl: true }, open);
-
 function open() {
 	isOpen.value = true;
 	nextTick(() => input.value?.el?.focus());
 }
 
-// A result on the screen already open keeps that screen's own query, such as the pipeline's list view.
 function select(item) {
 	isOpen.value = false;
-	const target = resultRoute(item);
-	const current = router.currentRoute.value;
-	router.push(
-		target.name === current.name ? { ...target, query: { ...current.query, ...target.query } } : target
-	);
+	emit("select", item);
 }
 
 function onKeydown(event) {
@@ -89,7 +90,7 @@ defineExpose({ open });
 					ref="input"
 					v-model="query"
 					type="search"
-					:placeholder="__('Search gigs, venues, promoters, bands and tasks')"
+					:placeholder="placeholder || __('Search gigs, venues, promoters, bands and tasks')"
 					:aria-activedescendant="activeOptionId"
 					class="w-full"
 				/>
