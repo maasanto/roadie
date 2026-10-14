@@ -1763,7 +1763,7 @@ msgstr "À : {0}"
 msgid "Cc: {0}"
 msgstr "Cc : {0}"
 
-#:frontend/src/pages/MailboxScreen.vue
+#: frontend/src/pages/MailboxScreen.vue
 msgid "Link to…"
 msgstr "Lier à…"
 
