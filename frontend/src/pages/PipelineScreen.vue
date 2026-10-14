@@ -25,6 +25,7 @@ import QuickFilterBar from "../components/QuickFilterBar.vue";
 import { burstConfetti } from "../celebrate";
 import { daysUntil, formatDate, isDeadlineClose, pipelineColumns } from "../gig";
 import { useGigControls } from "../gigControls";
+import { useListCount } from "../listCount";
 import { orderBy, queryFilters, sortEmptyLast } from "../listFilters";
 import { useIsPhone } from "../media";
 import { useMeta } from "../meta";
@@ -88,6 +89,7 @@ const gigs = useList({
 	transform: (rows) => (sort.value ? sortEmptyLast(rows, sort.value.fieldname) : rows),
 	limit: 500,
 });
+const { count, limitNotice } = useListCount(gigs, "Gig", () => activeFilters.value);
 
 const titleOf = (doctype, name) => linkLists[doctype].data?.find((row) => row.name === name)?.title;
 const linkedTitles = (gig) =>
@@ -210,7 +212,10 @@ watch(
 <template>
 	<div class="p-6">
 		<div class="flex items-center justify-between">
-			<h1 class="text-2xl-semibold">{{ __("Pipeline") }}</h1>
+			<h1 class="text-2xl-semibold">
+				{{ __("Pipeline") }}
+				<span v-if="!hasNoGigs && !loadError && count" class="ms-1 text-ink-gray-5">{{ count }}</span>
+			</h1>
 			<Button
 				v-if="!hasNoGigs"
 				variant="solid"
@@ -274,6 +279,7 @@ watch(
 		</EmptyState>
 		<template v-else>
 			<ErrorMessage class="mt-4" :message="gigs.setValue.error" />
+			<p v-if="limitNotice" class="mt-4 text-p-sm text-ink-gray-6">{{ limitNotice }}</p>
 			<ListView
 				v-if="view === 'list'"
 				class="mt-4"
