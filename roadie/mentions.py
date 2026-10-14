@@ -43,7 +43,7 @@ def notify_mentioned_members(comment, method=None):
 				"document_name": comment.reference_name,
 				"source_doctype": comment.doctype,
 				"source_name": comment.name,
-				"link": get_url(_record_path(comment.reference_doctype, comment.reference_name)),
+				"link": get_url(record_path(comment.reference_doctype, comment.reference_name)),
 				"subject": _("{0} mentioned you in a comment in {1} {2}").format(
 					frappe.bold(get_fullname(comment.owner)),
 					frappe.bold(_(comment.reference_doctype)),
@@ -57,10 +57,12 @@ def notify_mentioned_members(comment, method=None):
 	)
 
 
-def _record_path(doctype: str, name: str) -> str:
-	"""Members can't open the Desk form Frappe links to by default. A gig opens its panel on the Pipeline, and each
-	directory type has its own screen named after the DocType (frontend/src/directory.js), whose query opens the
-	record as the search palette does (resultRoute in frontend/src/search.js)."""
+def record_path(doctype: str, name: str) -> str:
+	"""Members can't open the Desk form Frappe links to by default. A gig opens its panel on the Pipeline, a task its
+	dialog on My tasks, and each directory type has its own screen named after the DocType (frontend/src/directory.js),
+	whose query opens the record as the search palette does (resultRoute in frontend/src/search.js)."""
 	if doctype == "Gig":
 		return f"/roadie?gig={name}"
+	if doctype == "Band Task":
+		return f"/roadie/tasks?task={name}"
 	return f"/roadie/directory/{doctype.lower()}s?entry={doctype}:{name}"
