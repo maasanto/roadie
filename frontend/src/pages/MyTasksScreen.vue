@@ -19,13 +19,9 @@ const tasks = useList({
 	limit: 500,
 });
 
-const sections = computed(() => {
-	const rows = tasks.data || [];
-	return [
-		{ label: __("To do"), tasks: rows.filter((task) => !task.done).sort(byDueDate) },
-		{ label: __("Done"), tasks: rows.filter((task) => task.done).sort(byDueDate) },
-	];
-});
+const openTasks = computed(() => (tasks.data || []).filter((task) => !task.done).sort(byDueDate));
+const doneTasks = computed(() => (tasks.data || []).filter((task) => task.done).sort(byDueDate));
+const isShowingDone = ref(false);
 
 const isTaskOpen = ref(false);
 const openedTask = ref(null);
@@ -72,17 +68,39 @@ watch(
 			>
 				<Button :label="__('Open the pipeline')" route="/" />
 			</EmptyState>
-			<section
-				v-for="section in sections.filter((section) => section.tasks.length)"
-				:key="section.label"
-				class="mt-6"
-			>
+			<section v-if="openTasks.length" class="mt-6">
 				<h2 class="pb-2 text-sm-medium text-ink-gray-7">
-					{{ section.label }} · {{ section.tasks.length }}
+					{{ __("To do") }} · {{ openTasks.length }}
 				</h2>
 				<ul class="divide-y divide-outline-gray-1 rounded-6 border">
 					<TaskRow
-						v-for="task in section.tasks"
+						v-for="task in openTasks"
+						:key="task.name"
+						:task="task"
+						:gig-title="task.gig_title"
+						@update:done="setDone(tasks, task, $event)"
+					/>
+				</ul>
+			</section>
+			<section v-if="doneTasks.length" class="mt-6">
+				<h2 class="pb-2 text-sm-medium text-ink-gray-7">
+					<button
+						type="button"
+						class="flex items-center gap-1 rounded-6 hover:text-ink-gray-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3"
+						:aria-expanded="isShowingDone"
+						@click="isShowingDone = !isShowingDone"
+					>
+						<span
+							class="size-3.5"
+							:class="isShowingDone ? 'lucide-chevron-down' : 'lucide-chevron-right'"
+							aria-hidden="true"
+						/>
+						{{ __("Done") }} · {{ doneTasks.length }}
+					</button>
+				</h2>
+				<ul v-if="isShowingDone" class="divide-y divide-outline-gray-1 rounded-6 border">
+					<TaskRow
+						v-for="task in doneTasks"
 						:key="task.name"
 						:task="task"
 						:gig-title="task.gig_title"
