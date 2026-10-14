@@ -35,6 +35,9 @@ const email = reactive({
 	inReplyTo: null,
 	...props.draft,
 });
+const invalidRecipientFields = reactive({ to: false, cc: false, bcc: false });
+const hasInvalidRecipient = computed(() => Object.values(invalidRecipientFields).some(Boolean));
+const sendButton = ref(null);
 const attachments = ref([]);
 const isShowingCopies = ref(email.cc.length > 0);
 const canLinkDriveItems = window.can_link_drive_items;
@@ -76,7 +79,9 @@ const send = useCall({
 	onSuccess: () => emit("sent"),
 });
 
-function submit() {
+function submit(event) {
+	// The editor's toolbar buttons are submit buttons too: a Bold click, or Enter in the subject, would send the email.
+	if (event.submitter !== sendButton.value.rootRef) return;
 	send.submit({
 		doctype: props.doctype,
 		name: props.name,
@@ -95,7 +100,13 @@ function submit() {
 <template>
 	<form data-draft class="rounded-6 border border-outline-gray-2 px-3 pb-3" @submit.prevent="submit">
 		<div class="flex items-start gap-2">
-			<EmailRecipients v-model="email.to" class="flex-1" :label="__('To')" :suggestions="suggestions" />
+			<EmailRecipients
+				v-model="email.to"
+				v-model:invalid="invalidRecipientFields.to"
+				class="flex-1"
+				:label="__('To')"
+				:suggestions="suggestions"
+			/>
 			<Button
 				v-if="!isShowingCopies"
 				class="mt-1.5"
@@ -105,8 +116,18 @@ function submit() {
 			/>
 		</div>
 		<template v-if="isShowingCopies">
-			<EmailRecipients v-model="email.cc" :label="__('Cc')" :suggestions="suggestions" />
-			<EmailRecipients v-model="email.bcc" :label="__('Bcc')" :suggestions="suggestions" />
+			<EmailRecipients
+				v-model="email.cc"
+				v-model:invalid="invalidRecipientFields.cc"
+				:label="__('Cc')"
+				:suggestions="suggestions"
+			/>
+			<EmailRecipients
+				v-model="email.bcc"
+				v-model:invalid="invalidRecipientFields.bcc"
+				:label="__('Bcc')"
+				:suggestions="suggestions"
+			/>
 		</template>
 		<input
 			v-model="email.subject"
@@ -168,12 +189,13 @@ function submit() {
 			<div class="flex gap-2">
 				<Button :label="__('Discard')" variant="ghost" @click="emit('discard')" />
 				<Button
+					ref="sendButton"
 					type="submit"
 					variant="solid"
 					icon-left="lucide-send"
 					:label="__('Send')"
 					:loading="send.loading"
-					:disabled="!email.to.length"
+					:disabled="!email.to.length || hasInvalidRecipient"
 				/>
 			</div>
 		</div>

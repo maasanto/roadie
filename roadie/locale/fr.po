@@ -692,6 +692,10 @@ msgstr "Aucune notification pour l'instant"
 msgid "No tasks yet."
 msgstr "Aucune tâche pour l'instant."
 
+#: frontend/src/components/EmailRecipients.vue:72
+msgid "Not a valid email address: {0}"
+msgstr "Adresse e-mail invalide : {0}"
+
 #. Label of the notes (Small Text) field in DocType 'Band'
 #. Label of the notes (Small Text) field in DocType 'Festival'
 #. Label of the notes (Small Text) field in DocType 'Gig'

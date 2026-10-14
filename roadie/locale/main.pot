@@ -771,6 +771,10 @@ msgstr ""
 msgid "No {0} yet"
 msgstr ""
 
+#: frontend/src/components/EmailRecipients.vue:72
+msgid "Not a valid email address: {0}"
+msgstr ""
+
 #: frontend/src/listFilters.js:31
 msgid "Not equals"
 msgstr ""

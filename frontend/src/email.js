@@ -6,6 +6,11 @@ export const splitEmails = (value) =>
 
 export const isEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
+export function splitRecipients(text) {
+	const entries = text.split(/[,;\s]+/).filter(Boolean);
+	return { valid: entries.filter(isEmail), invalid: entries.filter((entry) => !isEmail(entry)) };
+}
+
 const FAILED_STATUSES = [
 	"Bounced",
 	"Soft-Bounced",

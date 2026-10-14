@@ -27,12 +27,12 @@ export function searchGroups(query, groupedResults, limit = RESULTS_PER_GROUP) {
 	}, []);
 }
 
-// Where a result takes the user: a gig opens its panel on the Pipeline, a task the tasks screen, and every
-// directory record the screen for its own type, which reads the record back from the query. Any other
+// Where a result takes the user: a gig opens its panel on the Pipeline, a task its dialog on the tasks screen,
+// and every directory record the screen for its own type, which reads the record back from the query. Any other
 // DocType has no screen, so there is nowhere to go.
 export function resultRoute({ doctype, name }) {
 	if (doctype === "Gig") return { name: "Pipeline", query: { gig: name } };
-	if (doctype === "Band Task") return { name: "MyTasks" };
+	if (doctype === "Band Task") return { name: "MyTasks", query: { task: name } };
 	const type = directoryType(doctype);
 	return type ? { name: type.route.name, query: { entry: `${doctype}:${name}` } } : null;
 }

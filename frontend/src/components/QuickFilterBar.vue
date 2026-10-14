@@ -2,7 +2,7 @@
 // Adapted from the quick filter row of Frappe CRM's ViewControls.vue (https://github.com/frappe/crm), Copyright
 // (C) Frappe Technologies Pvt. Ltd., AGPL-3.0. Modified for Roadie in October 2026: the filters in a row, and the
 // same row turned into chips to customise them.
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { Button, Dropdown } from "frappe-ui";
 import QuickFilterField from "./QuickFilterField.vue";
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
@@ -24,6 +24,9 @@ const quickFields = computed(() => fieldsNamed(fieldnames.value));
 
 const draft = ref([]);
 watch(isCustomising, (customising) => customising && (draft.value = [...fieldnames.value]));
+// A bar that leaves the page, the pipeline's when its kanban shows, takes an unsaved customisation with it, or
+// the page would keep its toolbar hidden and come back to an empty draft.
+onBeforeUnmount(() => (isCustomising.value = false));
 
 const draftFields = computed(() => fieldsNamed(draft.value));
 const addOptions = computed(() =>

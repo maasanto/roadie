@@ -1,10 +1,15 @@
 <script setup>
-import { computed, ref } from "vue";
-import { Button, ErrorMessage, useList } from "frappe-ui";
+import { computed, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { Button, ErrorMessage, call, toast, useList } from "frappe-ui";
 import EmptyState from "../components/EmptyState.vue";
 import ListSkeleton from "../components/ListSkeleton.vue";
+import TaskDialog from "../components/TaskDialog.vue";
 import TaskRow from "../components/TaskRow.vue";
 import { TASK_FIELDS, byDueDate, setDone } from "../task";
+
+const route = useRoute();
+const router = useRouter();
 
 // ponytail: done tasks are never archived, add a date cut-off if the list grows long
 const tasks = useList({
@@ -17,6 +22,31 @@ const tasks = useList({
 const openTasks = computed(() => (tasks.data || []).filter((task) => !task.done).sort(byDueDate));
 const doneTasks = computed(() => (tasks.data || []).filter((task) => task.done).sort(byDueDate));
 const isShowingDone = ref(false);
+
+const isTaskOpen = ref(false);
+const openedTask = ref(null);
+let requestedTask = null;
+
+// Search and notifications send a task through the query, and it is cleared once read. The task may be
+// assigned to someone else and so missing from this list, which is why it is fetched. Only the last task
+// picked opens, whichever request answers first.
+watch(
+	() => route.query.task,
+	async (name) => {
+		if (!name || route.name !== "MyTasks") return;
+		requestedTask = name;
+		router.replace({ query: { ...route.query, task: undefined } });
+		try {
+			const task = await call("frappe.client.get", { doctype: "Band Task", name });
+			if (requestedTask !== name) return;
+			openedTask.value = task;
+			isTaskOpen.value = true;
+		} catch (error) {
+			toast.error(error.messages?.join("\n") || error.message);
+		}
+	},
+	{ immediate: true }
+);
 </script>
 
 <template>
@@ -47,7 +77,7 @@ const isShowingDone = ref(false);
 						v-for="task in openTasks"
 						:key="task.name"
 						:task="task"
-						:context="task.gig_title"
+						:gig-title="task.gig_title"
 						@update:done="setDone(tasks, task, $event)"
 					/>
 				</ul>
@@ -73,11 +103,17 @@ const isShowingDone = ref(false);
 						v-for="task in doneTasks"
 						:key="task.name"
 						:task="task"
-						:context="task.gig_title"
+						:gig-title="task.gig_title"
 						@update:done="setDone(tasks, task, $event)"
 					/>
 				</ul>
 			</section>
 		</template>
+		<TaskDialog
+			v-if="openedTask"
+			v-model:open="isTaskOpen"
+			:name="openedTask.name"
+			:title="openedTask.title"
+		/>
 	</div>
 </template>

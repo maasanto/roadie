@@ -5,6 +5,7 @@ import {
 	Avatar,
 	Badge,
 	Button,
+	Dropdown,
 	ErrorMessage,
 	ListHeader,
 	ListRows,
@@ -24,6 +25,7 @@ import ListSort from "../components/ListSort.vue";
 import QuickFilterBar from "../components/QuickFilterBar.vue";
 import { burstConfetti } from "../celebrate";
 import { daysUntil, formatDate, isDeadlineClose, pipelineColumns } from "../gig";
+import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { useGigControls } from "../gigControls";
 import { orderBy, queryFilters, sortEmptyLast } from "../listFilters";
 import { useIsPhone } from "../media";
@@ -67,6 +69,9 @@ const filters = ref([]);
 const sort = ref(null);
 const activeFilters = computed(() => queryFilters(filters.value, filterFields.value));
 const isFiltered = computed(() => Object.keys(activeFilters.value).length > 0);
+
+const isCustomisingQuickFilters = ref(false);
+const { loaded: quickFiltersLoaded } = useDirectoryQuickFilters("Gig");
 
 // ponytail: the whole pipeline in one unpaged fetch, page per column if a band ever tracks hundreds of gigs
 const gigs = useList({
@@ -221,8 +226,14 @@ watch(
 		</div>
 		<div v-if="!hasNoGigs" class="mt-4 flex flex-wrap items-center gap-2">
 			<TabButtons v-model="view" :options="views" />
-			<QuickFilterBar v-if="view === 'list'" v-model="filters" doctype="Gig" :fields="filterFields" />
-			<div class="ms-auto flex flex-wrap items-center gap-2">
+			<QuickFilterBar
+				v-if="view === 'list'"
+				v-model="filters"
+				v-model:customising="isCustomisingQuickFilters"
+				doctype="Gig"
+				:fields="filterFields"
+			/>
+			<div v-if="!isCustomisingQuickFilters" class="ms-auto flex flex-wrap items-center gap-2">
 				<Button
 					icon="lucide-refresh-ccw"
 					:label="__('Refresh')"
@@ -231,6 +242,19 @@ watch(
 				/>
 				<ListFilter v-model="filters" :fields="filterFields" />
 				<ListSort v-model="sort" :fields="sortFields" />
+				<Dropdown
+					v-if="view === 'list'"
+					align="end"
+					:options="[
+						{
+							label: __('Customise quick filters'),
+							icon: 'lucide-sliders-horizontal',
+							disabled: !quickFiltersLoaded,
+							onClick: () => (isCustomisingQuickFilters = true),
+						},
+					]"
+					:button="{ icon: 'lucide-ellipsis', label: __('More options') }"
+				/>
 			</div>
 		</div>
 		<ListSkeleton v-if="gigs.loading && !gigs.data && view === 'list'" class="mt-4" />
