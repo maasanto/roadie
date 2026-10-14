@@ -52,6 +52,12 @@ const meta = useMeta("Gig");
 const filterFields = computed(() =>
 	fieldsFromMeta(meta.data?.fields ?? [], controls.value).filter((field) => !field.hidden)
 );
+// The kanban's columns are the statuses, so a status quick filter there would empty all but one of them.
+const quickFilterFields = computed(() =>
+	view.value === "kanban"
+		? filterFields.value.filter((field) => field.fieldname !== "status")
+		: filterFields.value
+);
 // A link sorts by its generated id, a page of notes by its first word and a status by its English name rather
 // than its stage: none of them orders anything. The kanban is the view by stage.
 const sortFields = computed(() => [
@@ -221,7 +227,7 @@ watch(
 		</div>
 		<div v-if="!hasNoGigs" class="mt-4 flex flex-wrap items-center gap-2">
 			<TabButtons v-model="view" :options="views" />
-			<QuickFilterBar v-if="view === 'list'" v-model="filters" doctype="Gig" :fields="filterFields" />
+			<QuickFilterBar v-model="filters" doctype="Gig" :fields="quickFilterFields" />
 			<div class="ms-auto flex flex-wrap items-center gap-2">
 				<Button
 					icon="lucide-refresh-ccw"
