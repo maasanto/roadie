@@ -1686,3 +1686,27 @@ msgstr "Afficher les tâches faites ({0})"
 #: frontend/src/components/GigTasks.vue
 msgid "Hide done"
 msgstr "Masquer les tâches faites"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Link to…"
+msgstr "Lier à…"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Search the gig or directory entry to file this thread under"
+msgstr "Cherchez le concert ou la fiche de l'annuaire où classer cette conversation"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Filed under {0}"
+msgstr "Classée dans {0}"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Send or discard your email first."
+msgstr "Envoyez ou abandonnez d'abord votre e-mail."
+
+#: roadie/api.py
+msgid "Emails can only be filed under {0}, not {1}"
+msgstr "Les e-mails ne peuvent être classés que dans {0}, pas dans {1}"
+
+#: roadie/api.py
+msgid "Only conversations filed under no gig, task or directory entry can be linked, not {0}"
+msgstr "Seules les conversations rattachées à aucun concert, aucune tâche ni aucune fiche de l'annuaire peuvent être liées, pas {0}"

@@ -4,6 +4,7 @@ from urllib.parse import urlsplit
 import frappe
 from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
+from frappe.email import relink
 from markupsafe import Markup
 
 from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns, clean_quick_filters
@@ -22,6 +23,8 @@ COMMENT_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 # Frappe roots a thread linked to no record on its first Communication, so that Communication is a thread too.
 THREAD_DOCTYPES = (*EMAIL_DOCTYPES, "Communication")
 MAILBOX_ROLES = ("Band Member", "System Manager")
+# A task's emails show in its dialog only, so a thread filed there would drop out of every record's history.
+LINKABLE_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 EMAIL_SUMMARY_FIELDS = [
 	"name",
 	"subject",
@@ -374,6 +377,35 @@ def _delete_email(name):
 	# Members have no delete right on Communication: these endpoints are the only way in, and they check access.
 	# force skips the link check that in_reply_to and reference_name would trip.
 	frappe.delete_doc("Communication", name, ignore_permissions=True, force=True)
+
+
+@frappe.whitelist(methods=["POST"])
+def link_thread(communication: str, doctype: str, name: str) -> None:
+	"""Files a conversation filed under nothing under a gig or directory record. A reply takes its record from the
+	Email Queue entry it answers, or else from the email itself, so both move for later replies to follow."""
+	if doctype not in LINKABLE_DOCTYPES:
+		frappe.throw(
+			_("Emails can only be filed under {0}, not {1}").format(", ".join(LINKABLE_DOCTYPES), doctype)
+		)
+	# The right Frappe asks for to send an email from the record itself.
+	frappe.get_doc(doctype, name).check_permission("email")
+	emails = [email.name for email in _mailbox_thread({"doctype": "Communication", "name": communication})]
+	# A reply or a filed email would move without the rest of its conversation.
+	if communication not in emails:
+		frappe.throw(
+			_("Only conversations filed under no gig, task or directory entry can be linked, not {0}").format(
+				communication
+			)
+		)
+
+	for email in emails:
+		relink(email, doctype, name)
+	frappe.db.set_value(
+		"Email Queue",
+		{"communication": ["in", emails]},
+		{"reference_doctype": doctype, "reference_name": name},
+		update_modified=False,
+	)
 
 
 @frappe.whitelist()

@@ -17,8 +17,10 @@ import { useRoute, useRouter } from "vue-router";
 import NotificationPanel from "./components/NotificationPanel.vue";
 import SearchPalette from "./components/SearchPalette.vue";
 import { directoryTypes } from "./directory";
+import { onShortcut } from "./keyboard";
 import { unreadCount } from "./notifications";
 import { disablePush, isPushAvailable, isPushEnabled } from "./push";
+import { resultRoute } from "./search";
 import { user } from "./user";
 
 const route = useRoute();
@@ -94,6 +96,16 @@ const phoneMenu = [
 ];
 
 const searchPalette = ref(null);
+onShortcut({ key: "k", ctrl: true }, () => searchPalette.value.open());
+
+// A result on the screen already open keeps that screen's own query, such as the pipeline's list view.
+function openResult(item) {
+	const target = resultRoute(item);
+	const current = router.currentRoute.value;
+	router.push(
+		target.name === current.name ? { ...target, query: { ...current.query, ...target.query } } : target
+	);
+}
 </script>
 
 <template>
@@ -212,7 +224,7 @@ const searchPalette = ref(null);
 					<span class="max-w-full truncate">{{ screen.shortLabel }}</span>
 				</router-link>
 			</nav>
-			<SearchPalette ref="searchPalette" />
+			<SearchPalette ref="searchPalette" @select="openResult" />
 		</div>
 		<NotificationPanel v-model:open="showNotifications" :notifications="notifications" />
 	</FrappeUIProvider>
