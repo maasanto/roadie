@@ -668,6 +668,10 @@ msgstr ""
 msgid "More options"
 msgstr ""
 
+#: frontend/src/components/GigCard.vue:101
+msgid "Move to"
+msgstr ""
+
 #: frontend/src/components/ListColumnEditor.vue:70
 msgid "Move {0} down"
 msgstr ""

@@ -195,25 +195,55 @@ async function assignOwner(gig, memberName) {
 	toast.success(__("Assigned to {0}", [ownerOf(gig).full_name]));
 }
 
-async function dropGig(column, columnElement) {
+function dropGig(column) {
 	const gig = draggedGig.value;
 	draggedGig.value = dropColumn.value = null;
 	if (!gig || column.statuses.includes(gig.status)) return;
+	moveGig(gig, column.statuses[0]);
+}
 
-	const previousStatus = gig.status;
-	const status = column.statuses[0];
-	if (!(await setStatus(gig, status))) return;
+const listSettled = () =>
+	new Promise((resolve) => {
+		const stop = watch(
+			() => gigs.loading,
+			(isLoading) => {
+				if (isLoading) return;
+				stop();
+				resolve();
+			}
+		);
+	});
 
+// A move renders the card anew in its new column, or back in its old one, so the focus its menu had is lost.
+// The board has a copy per screen size: the visible one gets the focus back, unless the member has moved on.
+function refocusCard(gig) {
+	const card = [...document.querySelectorAll(`[data-gig="${CSS.escape(gig.name)}"]`)].find(
+		(element) => element.getClientRects().length
+	);
+	if (!card || document.activeElement !== document.body) return card;
+	card.focus({ preventScroll: true });
+	// Following the card helps a keyboard member, but would pull a phone or mouse user away from where they were.
+	if (card.matches(":focus-visible")) card.scrollIntoView({ block: "nearest" });
+	return card;
+}
+
+function toastMove(gig, status, previousStatus) {
 	const undoable = {
 		action: { label: __("Undo"), onClick: () => setStatus(gig, previousStatus) },
 		duration: UNDO_WINDOW_MS,
 	};
-	if (celebrations[status]) {
-		burstConfetti(columnElement);
-		toast.success(celebrations[status](gig.title), undoable);
-	} else {
-		toast(__("Moved {0} to {1}", [gig.title, column.label]), undoable);
-	}
+	if (celebrations[status]) toast.success(celebrations[status](gig.title), undoable);
+	else toast(__("Moved {0} to {1}", [gig.title, __(status)]), undoable);
+}
+
+async function moveGig(gig, status) {
+	const previousStatus = gig.status;
+	const isSaved = await setStatus(gig, status);
+	if (isSaved) toastMove(gig, status, previousStatus);
+	// A save refetches the list, which moves the card again and drops the focus a second time.
+	if (gigs.loading) await listSettled();
+	const card = refocusCard(gig);
+	if (card && isSaved && celebrations[status]) burstConfetti(card);
 }
 
 const isPanelOpen = ref(false);
@@ -383,7 +413,7 @@ watch(
 					class="flex min-w-52 flex-1 flex-col rounded-6 bg-surface-gray-1 p-2"
 					:class="dropColumn === column.label ? 'ring-2 ring-outline-gray-3' : ''"
 					@dragover.prevent="dropColumn = column.label"
-					@drop.prevent="dropGig(column, $event.currentTarget)"
+					@drop.prevent="dropGig(column)"
 				>
 					<h2
 						class="flex items-center justify-between gap-2 px-1 pb-2 text-sm-medium text-ink-gray-7"
@@ -410,6 +440,7 @@ watch(
 							@dragend="draggedGig = dropColumn = null"
 							@click="openGig(gig.name)"
 							@assign="assignOwner(gig, $event)"
+							@move="moveGig(gig, $event)"
 						/>
 					</div>
 				</section>
@@ -432,6 +463,7 @@ watch(
 							:fee-label="feeLabel"
 							@click="openGig(gig.name)"
 							@assign="assignOwner(gig, $event)"
+							@move="moveGig(gig, $event)"
 						/>
 					</div>
 				</section>
