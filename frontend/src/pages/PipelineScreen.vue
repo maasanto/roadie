@@ -19,6 +19,7 @@ import BulkEditBar from "../components/BulkEditBar.vue";
 import EmptyState from "../components/EmptyState.vue";
 import GigCard from "../components/GigCard.vue";
 import GigPanel from "../components/GigPanel.vue";
+import ListColumnEditor from "../components/ListColumnEditor.vue";
 import ListFilter from "../components/ListFilter.vue";
 import ListSkeleton from "../components/ListSkeleton.vue";
 import ListSort from "../components/ListSort.vue";
@@ -33,14 +34,17 @@ import {
 	pipelineColumns,
 	totalFee,
 } from "../gig";
+import { useDirectoryColumns } from "../directoryColumns";
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { useGigControls } from "../gigControls";
+import { columnFormat, fetchFields, formatCell, isNameColumn } from "../listColumns";
 import { useListCount } from "../listCount";
 import { orderBy, queryFilters, sortEmptyLast } from "../listFilters";
 import { useListQuery } from "../listQuery";
 import { useIsPhone } from "../media";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
+import { useOpenRecord } from "../openRecord";
 import { UNDO_WINDOW_MS } from "../undo";
 
 const route = useRoute();
@@ -86,26 +90,32 @@ const isFiltered = computed(() => Object.keys(activeFilters.value).length > 0);
 
 const isCustomisingQuickFilters = ref(false);
 const { loaded: quickFiltersLoaded } = useDirectoryQuickFilters("Gig");
+const { columns: listLayout, settled: listLayoutSettled } = useDirectoryColumns("Gig");
+// The list's columns change the request, so asking before they are known would abandon the first load.
+const canFetch = computed(() => isReady.value && listLayoutSettled.value);
+
+// What the cards read, whichever columns the list shows.
+const cardFields = [
+	"title",
+	"status",
+	"gig_owner",
+	"gig_date",
+	"festival",
+	"venue",
+	"promoter",
+	"application_opens",
+	"application_closes",
+	// The server leaves it out for a member below its permission level.
+	"fee",
+].map((fieldname) => ({ fieldname }));
+
 // ponytail: the whole pipeline in one unpaged fetch, page per column if a band ever tracks hundreds of gigs
 const gigs = useList({
-	// A ref, which the fetch reads as it changes: the board asks once the address can be read.
-	immediate: isReady.value,
-	refetch: isReady,
+	// A ref, which the fetch reads as it changes.
+	immediate: canFetch.value,
+	refetch: canFetch,
 	doctype: "Gig",
-	fields: [
-		"name",
-		"title",
-		"status",
-		"gig_owner",
-		"gig_date",
-		"festival",
-		"venue",
-		"promoter",
-		"application_opens",
-		"application_closes",
-		// The server leaves it out for a member below its permission level.
-		"fee",
-	],
+	fields: () => fetchFields([...cardFields, ...listLayout.value]),
 	filters: () => activeFilters.value,
 	orderBy: () => (sort.value ? orderBy(sort.value) : "modified desc"),
 	transform: (rows) => (sort.value ? sortEmptyLast(rows, sort.value.fieldname) : rows),
@@ -148,23 +158,29 @@ const showsOpeningDate = computed(() => sort.value?.fieldname === "application_o
 
 const isPhone = useIsPhone();
 // The ListView grid is as wide as its content, so every column but the title gets a fixed width, or the longest
-// label would set them all. The promoter stays in the panel, which leaves the title room on a laptop screen.
+// label would set them all. The deadline's header is the longest one, "Clôture des candidatures" in French.
+const listColumnWidths = { status: "9rem", gig_date: "7rem", application_closes: "10rem" };
 const listColumns = computed(() =>
-	[
-		{ key: "title", label: __("Title") },
-		{ key: "status", label: __("Status"), width: "9rem" },
-		{ key: "gig_date", label: __("Gig date"), width: "7rem" },
-		{ key: "festival", label: __("Festival"), width: "8rem" },
-		{ key: "venue", label: __("Venue"), width: "8rem" },
-		{ key: "application_closes", label: __("Apply by"), width: "8rem" },
-		{ key: "gig_owner", label: __("Owner"), width: "8rem" },
-	].slice(0, isPhone.value ? 2 : undefined)
+	listLayout.value.slice(0, isPhone.value ? 2 : undefined).map((column) => ({
+		key: column.fieldname,
+		label: __(column.label),
+		width: isNameColumn(column) ? undefined : listColumnWidths[column.fieldname] ?? "8rem",
+		format: columnFormat(column, filterFields.value),
+	}))
 );
+const {
+	name: openedName,
+	isOpen: isPanelOpen,
+	routeTo: gigRoute,
+	open: openGig,
+	create: createGig,
+	close: closeGig,
+} = useOpenRecord("gig");
 const listOptions = {
-	onRowClick: (gig) => openGig(gig.name),
+	getRowRoute: (gig) => gigRoute(gig.name),
 	rowHeight: 44,
 };
-const linkedDoctypes = { festival: "Festival", venue: "Venue" };
+const linkedDoctypes = { festival: "Festival", venue: "Venue", promoter: "Promoter" };
 
 const draggedGig = ref(null);
 const dropColumn = ref(null);
@@ -195,45 +211,56 @@ async function assignOwner(gig, memberName) {
 	toast.success(__("Assigned to {0}", [ownerOf(gig).full_name]));
 }
 
-async function dropGig(column, columnElement) {
+function dropGig(column) {
 	const gig = draggedGig.value;
 	draggedGig.value = dropColumn.value = null;
 	if (!gig || column.statuses.includes(gig.status)) return;
+	moveGig(gig, column.statuses[0]);
+}
 
-	const previousStatus = gig.status;
-	const status = column.statuses[0];
-	if (!(await setStatus(gig, status))) return;
+const listSettled = () =>
+	new Promise((resolve) => {
+		const stop = watch(
+			() => gigs.loading,
+			(isLoading) => {
+				if (isLoading) return;
+				stop();
+				resolve();
+			}
+		);
+	});
 
+// A move renders the card anew in its new column, or back in its old one, so the focus its menu had is lost.
+// The board has a copy per screen size: the visible one gets the focus back, unless the member has moved on.
+function refocusCard(gig) {
+	const card = [...document.querySelectorAll(`[data-gig="${CSS.escape(gig.name)}"]`)].find(
+		(element) => element.getClientRects().length
+	);
+	if (!card || document.activeElement !== document.body) return card;
+	card.focus({ preventScroll: true });
+	// Following the card helps a keyboard member, but would pull a phone or mouse user away from where they were.
+	if (card.matches(":focus-visible")) card.scrollIntoView({ block: "nearest" });
+	return card;
+}
+
+function toastMove(gig, status, previousStatus) {
 	const undoable = {
 		action: { label: __("Undo"), onClick: () => setStatus(gig, previousStatus) },
 		duration: UNDO_WINDOW_MS,
 	};
-	if (celebrations[status]) {
-		burstConfetti(columnElement);
-		toast.success(celebrations[status](gig.title), undoable);
-	} else {
-		toast(__("Moved {0} to {1}", [gig.title, column.label]), undoable);
-	}
+	if (celebrations[status]) toast.success(celebrations[status](gig.title), undoable);
+	else toast(__("Moved {0} to {1}", [gig.title, __(status)]), undoable);
 }
 
-const isPanelOpen = ref(false);
-const openedName = ref(null);
-
-function openGig(name = null) {
-	openedName.value = name;
-	isPanelOpen.value = true;
+async function moveGig(gig, status) {
+	const previousStatus = gig.status;
+	const isSaved = await setStatus(gig, status);
+	if (isSaved) toastMove(gig, status, previousStatus);
+	// A save refetches the list, which moves the card again and drops the focus a second time.
+	if (gigs.loading) await listSettled();
+	const card = refocusCard(gig);
+	if (card && isSaved && celebrations[status]) burstConfetti(card);
 }
-
-// The search palette sends a gig name through the query, and it is cleared once the panel has it.
-watch(
-	() => route.query.gig,
-	(name) => {
-		if (!name || route.name !== "Pipeline") return;
-		openGig(name);
-		router.replace({ query: { ...route.query, gig: undefined } });
-	},
-	{ immediate: true }
-);
 </script>
 
 <template>
@@ -248,7 +275,7 @@ watch(
 				variant="solid"
 				icon-left="lucide-plus"
 				:label="__('New gig')"
-				@click="openGig()"
+				@click="createGig()"
 			/>
 		</div>
 		<div v-if="!hasNoGigs" class="mt-4 flex flex-wrap items-center gap-2">
@@ -270,6 +297,7 @@ watch(
 				/>
 				<ListFilter v-model="filters" :fields="filterFields" />
 				<ListSort v-model="sort" :fields="sortFields" />
+				<ListColumnEditor v-if="view === 'list'" doctype="Gig" :controls="controls" />
 				<Dropdown
 					v-if="view === 'list'"
 					align="end"
@@ -313,7 +341,7 @@ watch(
 				)
 			"
 		>
-			<Button variant="solid" icon-left="lucide-plus" :label="__('New gig')" @click="openGig()" />
+			<Button variant="solid" icon-left="lucide-plus" :label="__('New gig')" @click="createGig()" />
 		</EmptyState>
 		<EmptyState
 			v-else-if="!gigs.data?.length"
@@ -340,8 +368,8 @@ watch(
 				<BulkEditBar doctype="Gig" :fields="filterFields" @updated="gigs.reload()" />
 				<template #cell="{ column, row }">
 					<Badge v-if="column.key === 'status'" :label="__(row.status)" />
-					<span v-else-if="column.key === 'gig_date' && row.gig_date" class="truncate">
-						{{ formatDate(row.gig_date) }}
+					<span v-else-if="column.key === 'fee'" class="truncate">
+						{{ row.fee ? formatFee(row.fee) : "" }}
 					</span>
 					<span
 						v-else-if="column.key === 'application_closes' && row.application_closes"
@@ -374,6 +402,14 @@ watch(
 					<span v-else-if="column.key === 'title'" class="truncate text-ink-gray-8">{{
 						row.title
 					}}</span>
+					<!-- An owner who is no longer a member shows no one, as on the card, rather than a login. -->
+					<span
+						v-else-if="column.key !== 'gig_owner'"
+						class="truncate"
+						:title="formatCell({ fieldname: column.key, format: column.format }, row)"
+					>
+						{{ formatCell({ fieldname: column.key, format: column.format }, row) }}
+					</span>
 				</template>
 			</ListView>
 			<div v-else class="mt-4 hidden gap-3 overflow-x-auto pb-2 md:flex">
@@ -383,7 +419,7 @@ watch(
 					class="flex min-w-52 flex-1 flex-col rounded-6 bg-surface-gray-1 p-2"
 					:class="dropColumn === column.label ? 'ring-2 ring-outline-gray-3' : ''"
 					@dragover.prevent="dropColumn = column.label"
-					@drop.prevent="dropGig(column, $event.currentTarget)"
+					@drop.prevent="dropGig(column)"
 				>
 					<h2
 						class="flex items-center justify-between gap-2 px-1 pb-2 text-sm-medium text-ink-gray-7"
@@ -410,6 +446,7 @@ watch(
 							@dragend="draggedGig = dropColumn = null"
 							@click="openGig(gig.name)"
 							@assign="assignOwner(gig, $event)"
+							@move="moveGig(gig, $event)"
 						/>
 					</div>
 				</section>
@@ -432,6 +469,7 @@ watch(
 							:fee-label="feeLabel"
 							@click="openGig(gig.name)"
 							@assign="assignOwner(gig, $event)"
+							@move="moveGig(gig, $event)"
 						/>
 					</div>
 				</section>
@@ -441,7 +479,7 @@ watch(
 			v-if="isPanelOpen"
 			:name="openedName"
 			:controls="controls"
-			@close="isPanelOpen = false"
+			@close="closeGig()"
 			@saved="gigs.reload()"
 		/>
 	</div>

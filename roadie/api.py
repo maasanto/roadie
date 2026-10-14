@@ -11,7 +11,8 @@ from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns,
 
 DIRECTORY_DOCTYPES = ("Festival", "Venue", "Promoter", "Band")
 CUSTOMISABLE_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
-QUICK_FILTER_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
+# The lists whose columns and quick filters the band sets: the directory's and the gig list.
+LIST_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 # The pipeline, the planning and the reminders read these, so hiding one would quietly break them.
 PROTECTED_FIELDS = ("title", "status", "gig_owner", "gig_date", "application_opens", "application_closes")
 # Text, long text, number, date, checkbox and choice list: the types a form edits without a picker.
@@ -22,6 +23,8 @@ EMAIL_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
 COMMENT_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 # Frappe roots a thread linked to no record on its first Communication, so that Communication is a thread too.
 THREAD_DOCTYPES = (*EMAIL_DOCTYPES, "Communication")
+# The composer stamps its uploads with this, so a draft can only ever delete a file it uploaded itself.
+EMAIL_DRAFT_FIELD = "roadie_email_draft"
 MAILBOX_ROLES = ("Band Member", "System Manager")
 # A task's emails show in its dialog only, so a thread filed there would drop out of every record's history.
 LINKABLE_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
@@ -115,6 +118,33 @@ def get_attachments(gig: str) -> list[dict]:
 		fields=["name", "file_name", "file_url", "file_size", "owner", "creation"],
 		order_by="creation asc",
 	)
+
+
+@frappe.whitelist(methods=["POST"])
+def delete_draft_attachment(file: str) -> None:
+	"""The composer attaches an upload to the record straight away, so a file the email never sent must go."""
+	draft_file = frappe.get_doc("File", file)
+	# Sending copies the file onto the Communication with the same URL. Frappe dedupes uploads by content,
+	# so an older email of the same bytes shares that URL too: only a copy made since this upload means sent.
+	is_sent = frappe.db.exists(
+		"File",
+		{
+			"file_url": draft_file.file_url,
+			"attached_to_doctype": "Communication",
+			"creation": [">=", draft_file.creation],
+			"name": ["!=", file],
+		},
+	)
+	if (
+		draft_file.owner != frappe.session.user
+		or draft_file.attached_to_field != EMAIL_DRAFT_FIELD
+		or is_sent
+	):
+		frappe.throw(
+			_("This file isn't an unsent email attachment of yours, so it can't be deleted from a draft"),
+			frappe.PermissionError,
+		)
+	draft_file.delete()
 
 
 @frappe.whitelist()
@@ -512,7 +542,7 @@ def get_members() -> list[dict]:
 
 @frappe.whitelist()
 def get_directory_columns() -> dict:
-	"""The columns each directory list shows, keyed by DocType: one setting for the whole site."""
+	"""The columns each directory list and the gig list show, keyed by DocType: one setting for the whole site."""
 	frappe.only_for(("Band Member", "System Manager"))
 
 	return frappe.parse_json(frappe.db.get_single_value("Roadie Settings", "directory_columns") or "{}") or {}
@@ -522,7 +552,7 @@ def get_directory_columns() -> dict:
 def set_directory_columns(doctype: str, columns: str) -> None:
 	"""Replace one type's columns. An empty list puts that type back on the columns the app ships."""
 	frappe.only_for(("Band Member", "System Manager"))
-	if doctype not in DIRECTORY_DOCTYPES:
+	if doctype not in LIST_DOCTYPES:
 		frappe.throw(_("{0} is not a directory list").format(doctype))
 
 	settings = frappe.get_doc("Roadie Settings")
@@ -547,7 +577,7 @@ def get_directory_quick_filters() -> dict:
 def set_directory_quick_filters(doctype: str, fieldnames: str) -> None:
 	"""Replace one type's quick filters. An empty list leaves that type with none."""
 	frappe.only_for(("Band Member", "System Manager"))
-	if doctype not in QUICK_FILTER_DOCTYPES:
+	if doctype not in LIST_DOCTYPES:
 		frappe.throw(_("{0} is not a directory list").format(doctype))
 
 	settings = frappe.get_doc("Roadie Settings")

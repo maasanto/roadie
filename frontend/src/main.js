@@ -4,6 +4,7 @@ import { createApp } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 import App from "./App.vue";
 import { directoryTypes } from "./directory";
+import { confirmDiscardDraft, hasEditedDraft } from "./draft";
 import { keepListQueries } from "./listQuery";
 import { refreshPushToken } from "./push";
 import "./style.css";
@@ -39,6 +40,16 @@ const router = createRouter({
 	],
 });
 keepListQueries(router);
+
+// Another screen, or another mailbox thread, unmounts the composer. A query change is the screen's own business:
+// useOpenRecord asks before ?gig= or ?entry= switches the open record.
+router.beforeEach((to, from) => to.path === from.path || confirmDiscardDraft());
+window.addEventListener("beforeunload", (event) => {
+	if (!hasEditedDraft()) return;
+	event.preventDefault();
+	// Chromium before 119, still in some Android WebViews, only warns when returnValue is set.
+	event.returnValue = true;
+});
 
 document.documentElement.lang = window.lang;
 // frappe-ui's date pickers lay out their weeks from dayjs's locale.

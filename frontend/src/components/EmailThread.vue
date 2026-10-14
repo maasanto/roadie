@@ -7,10 +7,19 @@ const deletedEmails = ref(new Set());
 </script>
 
 <script setup>
-import { Avatar, Button, ErrorMessage, call, toast, useCall } from "frappe-ui";
+import { Avatar, Badge, Button, ErrorMessage, call, toast, useCall } from "frappe-ui";
 import EmailBody from "./EmailBody.vue";
 import EmailComposer from "./EmailComposer.vue";
-import { QUOTE_SELECTOR, asHtml, formatDateTime, openByDefault, replyDraft } from "../email";
+import { confirmDiscardDraft } from "../draft";
+import {
+	QUOTE_SELECTOR,
+	asHtml,
+	deliveryState,
+	formatDateTime,
+	isFailedDelivery,
+	openByDefault,
+	replyDraft,
+} from "../email";
 import { toastWithUndo } from "../undo";
 
 const props = defineProps({
@@ -97,7 +106,10 @@ const previews = computed(
 const draft = ref(null);
 const composerKey = ref(0);
 
+const composer = ref(null);
+
 function compose(nextDraft) {
+	if (composer.value && !confirmDiscardDraft(composer.value.isEdited)) return;
 	draft.value = nextDraft;
 	composerKey.value++;
 }
@@ -144,6 +156,12 @@ function onSent() {
 							{{ previews.get(email.name) }}
 						</span>
 					</span>
+					<!-- Failures only: the thread doesn't refresh as the queue sends, so a Queued badge would go stale. -->
+					<Badge
+						v-if="isFailedDelivery(email.delivery_status)"
+						v-bind="deliveryState(email.delivery_status)"
+						class="shrink-0"
+					/>
 					<span class="shrink-0 text-sm text-ink-gray-5">{{
 						formatDateTime(email.communication_date)
 					}}</span>
@@ -192,6 +210,7 @@ function onSent() {
 		<EmailComposer
 			v-if="draft"
 			:key="composerKey"
+			ref="composer"
 			class="mt-3"
 			:doctype="doctype"
 			:name="name"

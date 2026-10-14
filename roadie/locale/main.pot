@@ -668,6 +668,10 @@ msgstr ""
 msgid "More options"
 msgstr ""
 
+#: frontend/src/components/GigCard.vue:101
+msgid "Move to"
+msgstr ""
+
 #: frontend/src/components/ListColumnEditor.vue:70
 msgid "Move {0} down"
 msgstr ""
@@ -1204,6 +1208,10 @@ msgstr ""
 msgid "They get an email with a link to join the band."
 msgstr ""
 
+#: roadie/api.py:138
+msgid "This file isn't an unsent email attachment of yours, so it can't be deleted from a draft"
+msgstr ""
+
 #: frontend/src/components/DriveLinkDialog.vue:119
 msgid "This folder is empty."
 msgstr ""
@@ -1494,7 +1502,31 @@ msgstr ""
 msgid "{0} of {1} could not be updated."
 msgstr ""
 
-#: frontend/src/components/EmailThread.vue frontend/src/pages/MailboxScreen.vue
+#: frontend/src/components/BulkEditBar.vue
+msgid "Delete {0} selected?"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Their comments and attached files go with them, for the whole band, and this cannot be undone."
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "Delete {0} selected"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} deleted"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue
+msgid "{0} of {1} could not be deleted while other records, such as contacts, tasks or gigs, link to them."
+msgstr ""
+
+#: frontend/src/draft.js
+msgid "Discard the unsent email?"
+msgstr ""
+
+#: frontend/src/components/BulkEditBar.vue frontend/src/components/EmailThread.vue frontend/src/pages/MailboxScreen.vue
 msgid "Delete"
 msgstr ""
 
