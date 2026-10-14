@@ -1561,10 +1561,6 @@ msgid "Kanban"
 msgstr "Kanban"
 
 #: frontend/src/pages/PipelineScreen.vue
-msgid "Apply by"
-msgstr "Candidater avant le"
-
-#: frontend/src/pages/PipelineScreen.vue
 msgid "List"
 msgstr "Liste"
 
