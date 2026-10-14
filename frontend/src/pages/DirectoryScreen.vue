@@ -27,7 +27,7 @@ import QuickFilterBar from "../components/QuickFilterBar.vue";
 import { useDirectoryColumns } from "../directoryColumns";
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { RATING_STARS, directoryControls, directoryType, toFraction, toStars } from "../directory";
-import { fetchFields, formatCell } from "../listColumns";
+import { columnFormat, fetchFields, formatCell } from "../listColumns";
 import { orderBy, queryFilters } from "../listFilters";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
@@ -41,11 +41,10 @@ const { columns, loaded } = useDirectoryColumns(props.doctype);
 const fields = computed(() => fetchFields(columns.value));
 
 const meta = useMeta(props.doctype);
-const filterFields = computed(() =>
-	fieldsFromMeta(meta.data?.fields ?? [], directoryControls[props.doctype] ?? {}).filter(
-		(field) => !field.hidden
-	)
+const formFields = computed(() =>
+	fieldsFromMeta(meta.data?.fields ?? [], directoryControls[props.doctype] ?? {})
 );
+const filterFields = computed(() => formFields.value.filter((field) => !field.hidden));
 // Sorting on an address or a page of notes orders nothing anyone reads.
 const sortFields = computed(() => [
 	...filterFields.value.filter((field) => field.type !== "textarea"),
@@ -91,14 +90,17 @@ const isPhone = useIsPhone();
 const listColumns = computed(() =>
 	// The list owns its grid, so a phone drops the trailing columns rather than hiding their cells: two tracks
 	// are what a phone can read.
-	columns.value.slice(0, isPhone.value ? 2 : undefined).map((column) => ({
-		key: column.fieldname,
-		label: __(column.label),
-		// The name takes the room; the rest share what is left. Stars keep the width of five, or a phone's
-		// narrow track would clip the last ones.
-		width: column.fieldname === "title" ? 3 : column.format === "rating" ? "6rem" : 1,
-		format: column.format,
-	}))
+	columns.value.slice(0, isPhone.value ? 2 : undefined).map((column) => {
+		const format = columnFormat(column, formFields.value);
+		return {
+			key: column.fieldname,
+			label: __(column.label),
+			// The name takes the room; the rest share what is left. Stars keep the width of five, or a phone's
+			// narrow track would clip the last ones.
+			width: column.fieldname === "title" ? 3 : format === "rating" ? "6rem" : 1,
+			format,
+		};
+	})
 );
 
 const placeholderRows = Array.from({ length: 4 }, (unused, index) => ({

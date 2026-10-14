@@ -7,6 +7,7 @@ window.lang = "en";
 window.translations = { March: "mars" };
 await import("./translation.js");
 const {
+	columnFormat,
 	columnFromField,
 	columnsFor,
 	defaultColumns,
@@ -16,6 +17,7 @@ const {
 	moveColumn,
 	parseColumns,
 } = await import("./listColumns.js");
+const { fieldsFromMeta } = await import("./metaFields.js");
 
 const fieldnames = (columns) => columns.map((column) => column.fieldname);
 
@@ -133,7 +135,47 @@ test("a field picked from the meta becomes a column that reads its value", () =>
 	assert.equal(columnFromField({ type: "select" }).format, "label");
 	assert.equal(columnFromField({ type: "multiselect" }).format, "list");
 	assert.equal(columnFromField({ type: "rating" }).format, "rating");
-	assert.equal(columnFromField({ type: "date" }).format, "text");
+	assert.equal(columnFromField({ type: "date" }).format, "date");
+	assert.equal(columnFromField({ type: "checkbox" }).format, "check");
+	assert.equal(columnFromField({ type: "url" }).format, "text");
+});
+
+test("a column saved as text before its field had a format reads as its field", () => {
+	const fields = fieldsFromMeta([
+		{ fieldname: "application_opens", fieldtype: "Date" },
+		{ fieldname: "camping_on_site", fieldtype: "Check" },
+	]);
+	const saved = columnsFor("Festival", [
+		{ fieldname: "application_opens", format: "text" },
+		{ fieldname: "camping_on_site", format: "text" },
+	]);
+	const cells = saved.map((column) =>
+		formatCell(
+			{ ...column, format: columnFormat(column, fields) },
+			{ title: "Acme Festival", application_opens: "2024-03-01", camping_on_site: 1 }
+		)
+	);
+
+	assert.deepEqual(cells, ["Acme Festival", "Mar 1, 2024", "✓"]);
+});
+
+test("before the meta is in, a column reads by its stored format", () => {
+	assert.equal(columnFormat({ fieldname: "capacity", format: "number" }, []), "number");
+});
+
+test("a date column reads like the dates on a gig card", () => {
+	const column = { fieldname: "application_opens", format: "date" };
+
+	assert.equal(formatCell(column, { application_opens: "2024-03-01" }), "Mar 1, 2024");
+	assert.equal(formatCell(column, { application_opens: "next spring" }), "next spring");
+});
+
+test("a checkbox column ticks a set box and leaves an unset one blank", () => {
+	const column = { fieldname: "camping_on_site", format: "check" };
+
+	assert.equal(formatCell(column, { camping_on_site: 1 }), "✓");
+	assert.equal(formatCell(column, { camping_on_site: 0 }), "");
+	assert.equal(formatCell(column, { camping_on_site: "0" }), "");
 });
 
 test("a number column groups its digits in the language the member is reading", () => {
