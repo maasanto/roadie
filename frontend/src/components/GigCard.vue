@@ -1,7 +1,15 @@
 <script setup>
 import { computed } from "vue";
 import { Avatar, Badge, Dropdown } from "frappe-ui";
-import { GIG_STATUSES, daysUntil, formatDate, isDeadlineClose, memberOptions, pipelineColumns } from "../gig";
+import {
+	GIG_STATUSES,
+	daysUntil,
+	formatDate,
+	formatFee,
+	isDeadlineClose,
+	memberOptions,
+	pipelineColumns,
+} from "../gig";
 import { translatedOptions } from "../translation";
 
 const props = defineProps({
@@ -10,6 +18,7 @@ const props = defineProps({
 	owner: { type: Object, default: null },
 	members: { type: Array, default: () => [] },
 	showsOpeningDate: { type: Boolean, default: false },
+	feeLabel: { type: String, default: null },
 });
 const emit = defineEmits(["assign", "move"]);
 
@@ -64,6 +73,10 @@ const moveOptions = computed(() =>
 		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-gray-5">
 			<span v-if="gig.gig_date" class="flex items-center gap-1">
 				<span class="lucide-calendar size-3.5" aria-hidden="true" />{{ formatDate(gig.gig_date) }}
+			</span>
+			<span v-if="feeLabel && gig.fee" class="flex items-center gap-1">
+				<span class="lucide-banknote size-3.5" aria-hidden="true" />{{ feeLabel }}
+				{{ formatFee(gig.fee) }}
 			</span>
 			<span v-if="showsOpeningDate && gig.application_opens" class="flex items-center gap-1">
 				<span class="lucide-calendar-clock size-3.5" aria-hidden="true" />{{
