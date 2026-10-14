@@ -1,9 +1,17 @@
 <script setup>
 import { computed, ref, watch } from "vue";
-import { Avatar, Button, ErrorMessage, useCall } from "frappe-ui";
+import { Avatar, Badge, Button, ErrorMessage, useCall } from "frappe-ui";
 import EmailBody from "./EmailBody.vue";
 import EmailComposer from "./EmailComposer.vue";
-import { QUOTE_SELECTOR, asHtml, formatDateTime, openByDefault, replyDraft } from "../email";
+import {
+	QUOTE_SELECTOR,
+	asHtml,
+	deliveryState,
+	formatDateTime,
+	isFailedDelivery,
+	openByDefault,
+	replyDraft,
+} from "../email";
 
 const props = defineProps({
 	doctype: { type: String, required: true },
@@ -106,6 +114,12 @@ function onSent() {
 							{{ previews.get(email.name) }}
 						</span>
 					</span>
+					<!-- Failures only: the thread doesn't refresh as the queue sends, so a Queued badge would go stale. -->
+					<Badge
+						v-if="isFailedDelivery(email.delivery_status)"
+						v-bind="deliveryState(email.delivery_status)"
+						class="shrink-0"
+					/>
 					<span class="shrink-0 text-sm text-ink-gray-5">{{
 						formatDateTime(email.communication_date)
 					}}</span>
