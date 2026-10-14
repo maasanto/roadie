@@ -1,6 +1,7 @@
 import { onMounted, onUnmounted } from "vue";
 
-const FIELDS = "input, textarea, select, [contenteditable]";
+// A ticked checkbox keeps focus but takes no typing, so shortcuts still apply after selecting a row.
+const FIELDS = "input:not([type=checkbox]), textarea, select, [contenteditable]";
 const isOverlayOpen = () =>
 	Boolean(document.querySelector(':is([role="dialog"], [role="menu"])[data-state="open"]'));
 

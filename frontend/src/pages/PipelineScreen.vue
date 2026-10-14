@@ -35,6 +35,7 @@ import {
 } from "../gig";
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { useGigControls } from "../gigControls";
+import { useListCount } from "../listCount";
 import { orderBy, queryFilters, sortEmptyLast } from "../listFilters";
 import { useListQuery } from "../listQuery";
 import { useIsPhone } from "../media";
@@ -63,6 +64,12 @@ const meta = useMeta("Gig");
 const filterFields = computed(() =>
 	fieldsFromMeta(meta.data?.fields ?? [], controls.value).filter((field) => !field.hidden)
 );
+// The kanban's columns are the statuses, so a status quick filter there would empty all but one of them.
+const quickFilterFields = computed(() =>
+	view.value === "kanban"
+		? filterFields.value.filter((field) => field.fieldname !== "status")
+		: filterFields.value
+);
 // A link sorts by its generated id, a page of notes by its first word and a status by its English name rather
 // than its stage: none of them orders anything. The kanban is the view by stage.
 const sortFields = computed(() => [
@@ -79,7 +86,6 @@ const isFiltered = computed(() => Object.keys(activeFilters.value).length > 0);
 
 const isCustomisingQuickFilters = ref(false);
 const { loaded: quickFiltersLoaded } = useDirectoryQuickFilters("Gig");
-
 // ponytail: the whole pipeline in one unpaged fetch, page per column if a band ever tracks hundreds of gigs
 const gigs = useList({
 	// A ref, which the fetch reads as it changes: the board asks once the address can be read.
@@ -105,6 +111,7 @@ const gigs = useList({
 	transform: (rows) => (sort.value ? sortEmptyLast(rows, sort.value.fieldname) : rows),
 	limit: 500,
 });
+const { count, limitNotice } = useListCount(gigs, "Gig", () => activeFilters.value);
 
 const titleOf = (doctype, name) => linkLists[doctype].data?.find((row) => row.name === name)?.title;
 const linkedTitles = (gig) =>
@@ -262,7 +269,10 @@ watch(
 <template>
 	<div class="p-6">
 		<div class="flex items-center justify-between">
-			<h1 class="text-2xl-semibold">{{ __("Pipeline") }}</h1>
+			<h1 class="text-2xl-semibold">
+				{{ __("Pipeline") }}
+				<span v-if="!hasNoGigs && !loadError && count" class="ms-1 text-ink-gray-5">{{ count }}</span>
+			</h1>
 			<Button
 				v-if="!hasNoGigs"
 				variant="solid"
@@ -273,12 +283,13 @@ watch(
 		</div>
 		<div v-if="!hasNoGigs" class="mt-4 flex flex-wrap items-center gap-2">
 			<TabButtons v-model="view" :options="views" />
+			<!-- Keyed by view so that leaving the list ends a customisation, whose chips the kanban's fields would hide. -->
 			<QuickFilterBar
-				v-if="view === 'list'"
+				:key="view"
 				v-model="filters"
 				v-model:customising="isCustomisingQuickFilters"
 				doctype="Gig"
-				:fields="filterFields"
+				:fields="quickFilterFields"
 			/>
 			<div v-if="!isCustomisingQuickFilters" class="ms-auto flex flex-wrap items-center gap-2">
 				<Button
@@ -345,6 +356,7 @@ watch(
 		</EmptyState>
 		<template v-else>
 			<ErrorMessage class="mt-4" :message="gigs.setValue.error" />
+			<p v-if="limitNotice" class="mt-4 text-p-sm text-ink-gray-6">{{ limitNotice }}</p>
 			<ListView
 				v-if="view === 'list'"
 				class="mt-4"
