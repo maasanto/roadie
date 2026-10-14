@@ -20,6 +20,8 @@ EMAIL_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
 COMMENT_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 # Frappe roots a thread linked to no record on its first Communication, so that Communication is a thread too.
 THREAD_DOCTYPES = (*EMAIL_DOCTYPES, "Communication")
+# The composer stamps its uploads with this, so a draft can only ever delete a file it uploaded itself.
+EMAIL_DRAFT_FIELD = "roadie_email_draft"
 EMAIL_SUMMARY_FIELDS = [
 	"name",
 	"subject",
@@ -110,6 +112,33 @@ def get_attachments(gig: str) -> list[dict]:
 		fields=["name", "file_name", "file_url", "file_size", "owner", "creation"],
 		order_by="creation asc",
 	)
+
+
+@frappe.whitelist(methods=["POST"])
+def delete_draft_attachment(file: str) -> None:
+	"""The composer attaches an upload to the record straight away, so a file the email never sent must go."""
+	draft_file = frappe.get_doc("File", file)
+	# Sending copies the file onto the Communication with the same URL. Frappe dedupes uploads by content,
+	# so an older email of the same bytes shares that URL too: only a copy made since this upload means sent.
+	is_sent = frappe.db.exists(
+		"File",
+		{
+			"file_url": draft_file.file_url,
+			"attached_to_doctype": "Communication",
+			"creation": [">=", draft_file.creation],
+			"name": ["!=", file],
+		},
+	)
+	if (
+		draft_file.owner != frappe.session.user
+		or draft_file.attached_to_field != EMAIL_DRAFT_FIELD
+		or is_sent
+	):
+		frappe.throw(
+			_("This file isn't an unsent email attachment of yours, so it can't be deleted from a draft"),
+			frappe.PermissionError,
+		)
+	draft_file.delete()
 
 
 @frappe.whitelist()
