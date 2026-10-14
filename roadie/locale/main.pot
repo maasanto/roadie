@@ -668,6 +668,10 @@ msgstr ""
 msgid "More options"
 msgstr ""
 
+#: frontend/src/components/GigCard.vue:101
+msgid "Move to"
+msgstr ""
+
 #: frontend/src/components/ListColumnEditor.vue:70
 msgid "Move {0} down"
 msgstr ""
@@ -1110,6 +1114,14 @@ msgstr ""
 msgid "Show {0} done"
 msgstr ""
 
+#: frontend/src/listCount.js:33
+msgid "Showing the first {0} of {1}. Narrow it with a filter."
+msgstr ""
+
+#: frontend/src/listCount.js:34
+msgid "Showing the first {0}. Narrow it with a filter."
+msgstr ""
+
 #: frontend/src/components/DriveLinkDialog.vue:17
 msgid "Site"
 msgstr ""
@@ -1444,6 +1456,7 @@ msgid "The push relay refused this device ({0})"
 msgstr ""
 
 #: frontend/src/components/BulkEditBar.vue
+#: frontend/src/pages/MailboxScreen.vue
 msgid "{0} selected"
 msgstr ""
 
@@ -1452,10 +1465,12 @@ msgid "Edit"
 msgstr ""
 
 #: frontend/src/components/BulkEditBar.vue
+#: frontend/src/pages/MailboxScreen.vue
 msgid "Select all"
 msgstr ""
 
 #: frontend/src/components/BulkEditBar.vue
+#: frontend/src/pages/MailboxScreen.vue
 msgid "Clear selection"
 msgstr ""
 
@@ -1487,3 +1502,42 @@ msgstr ""
 msgid "{0} of {1} could not be updated."
 msgstr ""
 
+#: frontend/src/components/EmailThread.vue frontend/src/pages/MailboxScreen.vue
+msgid "Delete"
+msgstr ""
+
+#: frontend/src/components/EmailThread.vue
+msgid "Email deleted"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Conversation deleted"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "{0} conversations deleted"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Mark as read"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Mark as unread"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Only conversations linked to no gig, task or directory entry can be deleted together"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Select {0}"
+msgstr ""
+
+#: roadie/api.py
+msgid "Only conversations filed under no gig, task or directory entry can be deleted in bulk, not {0}"
+msgstr ""
+
+#: roadie/api.py
+msgid "Only the emails Roadie lists can be deleted here, not {0}"
+msgstr ""

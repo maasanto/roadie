@@ -1,7 +1,14 @@
+<script>
+import { computed, ref, watch } from "vue";
+
+// Module scope: a delete still waiting on its toast must outlive this screen, which remounts on every switch
+// between Inbox and Outbox. A thread stays hidden once deleted, its key never comes back.
+const deletedKeys = ref(new Set());
+</script>
+
 <script setup>
-import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Avatar, Badge, Button, ErrorMessage, toast, useCall } from "frappe-ui";
+import { Avatar, Badge, Button, ErrorMessage, Tooltip, call, toast, useCall } from "frappe-ui";
 import EmailComposer from "../components/EmailComposer.vue";
 import EmailThread from "../components/EmailThread.vue";
 import EmptyState from "../components/EmptyState.vue";
@@ -9,6 +16,7 @@ import ListSkeleton from "../components/ListSkeleton.vue";
 import { deliveryState, formatListDate, isUnread } from "../email";
 import { onKey, onShortcut } from "../keyboard";
 import { resultRoute } from "../search";
+import { toastWithUndo } from "../undo";
 
 const props = defineProps({
 	sentOrReceived: { type: String, required: true },
@@ -22,24 +30,103 @@ const mailbox = useCall({
 	params: () => ({ sent_or_received: props.sentOrReceived }),
 	refetch: true,
 });
-const markSeen = useCall({
-	url: "/api/v2/method/roadie.api.mark_thread_seen",
-	method: "POST",
-	immediate: false,
-	onSuccess: () => mailbox.reload(),
-});
 
 const isUnreadOnly = ref(false);
 const isComposing = ref(false);
 const openThread = computed(() =>
 	route.params.doctype ? { doctype: route.params.doctype, name: route.params.name } : null
 );
-const isOpen = (row) =>
-	row.thread.doctype === openThread.value?.doctype && row.thread.name === openThread.value?.name;
+const threadKey = (thread) => `${thread.doctype}:${thread.name}`;
+const isOpen = (row) => Boolean(openThread.value) && threadKey(row.thread) === threadKey(openThread.value);
 // The open thread stays listed once read, or it would vanish under the reader and j/k would lose their place.
 const rows = computed(() =>
-	(mailbox.data || []).filter((row) => !isUnreadOnly.value || row.unread || isOpen(row))
+	(mailbox.data || []).filter(
+		(row) =>
+			!deletedKeys.value.has(threadKey(row.thread)) &&
+			(!isUnreadOnly.value || row.unread || isOpen(row))
+	)
 );
+
+// frappe-ui's Checkbox reports no shift key, which range selection needs, so a native one wears its classes.
+const CHECKBOX_CLASS =
+	"size-3.5 rounded-sm border-outline-gray-4 bg-surface-base text-ink-gray-9 hover:border-outline-gray-7 focus:ring-0 focus:ring-offset-0";
+const selectedKeys = ref(new Set());
+const isSelected = (row) => selectedKeys.value.has(threadKey(row.thread));
+const selectedRows = computed(() => rows.value.filter(isSelected));
+const isEveryRowSelected = computed(() => selectedRows.value.length === rows.value.length);
+// A gig's or a venue's mail is deleted one email at a time, from the thread, never in bulk.
+const canDeleteSelection = computed(() =>
+	selectedRows.value.every((row) => row.thread.doctype === "Communication" && !row.holds_filed_mail)
+);
+let selectionAnchor = null;
+
+function toggleSelection(row, event) {
+	const index = rows.value.indexOf(row);
+	const anchor = rows.value.findIndex((each) => threadKey(each.thread) === selectionAnchor);
+	const range =
+		event.shiftKey && anchor !== -1
+			? rows.value.slice(Math.min(anchor, index), Math.max(anchor, index) + 1)
+			: [row];
+	const isSelecting = !isSelected(row);
+	const next = new Set(selectedKeys.value);
+	for (const each of range) {
+		if (isSelecting) next.add(threadKey(each.thread));
+		else next.delete(threadKey(each.thread));
+	}
+	selectedKeys.value = next;
+	selectionAnchor = threadKey(row.thread);
+}
+
+const clearSelection = () => (selectedKeys.value = new Set());
+
+function toggleEveryRow() {
+	selectedKeys.value = isEveryRowSelected.value
+		? new Set()
+		: new Set(rows.value.map((row) => threadKey(row.thread)));
+}
+
+const showError = (error) => toast.error(error.messages?.join("\n") || error.message);
+
+// One request per action: a shared useCall would abort the previous one, opening a thread included.
+async function changeSeen(method, args) {
+	try {
+		await call(`roadie.api.${method}`, args);
+	} catch (error) {
+		showError(error);
+	}
+	mailbox.reload();
+}
+
+function markSelection(method) {
+	changeSeen(method, { threads: selectedRows.value.map((row) => row.thread) });
+	clearSelection();
+}
+
+function deleteSelection() {
+	const threads = selectedRows.value.map((row) => row.thread);
+	const keys = threads.map(threadKey);
+	if (selectedRows.value.some(isOpen)) close();
+	keys.forEach((key) => deletedKeys.value.add(key));
+	clearSelection();
+	toastWithUndo(
+		threads.length === 1 ? __("Conversation deleted") : __("{0} conversations deleted", [threads.length]),
+		{
+			undo: () => keys.forEach((key) => deletedKeys.value.delete(key)),
+			commit: () => deleteForGood(threads),
+		}
+	);
+}
+
+async function deleteForGood(threads) {
+	try {
+		await call("roadie.api.delete_threads", { names: threads.map(({ name }) => name) });
+	} catch (error) {
+		showError(error);
+		threads.forEach((thread) => deletedKeys.value.delete(threadKey(thread)));
+	}
+	mailbox.reload();
+}
+
 const threadSubject = ref("");
 
 const list = ref(null);
@@ -67,10 +154,37 @@ function onNewEmailSent() {
 
 // Read once the thread is on screen, so its unread emails are still the ones it opens on. Decided from the thread
 // itself, not its row, which a deep link can reach before the mailbox has loaded.
+let scrolledThreadKey = null;
+
 function onThreadLoaded(thread) {
 	threadSubject.value = thread.at(-1)?.subject || threadSubject.value;
-	if (isInbox.value && thread.some(isUnread)) markSeen.submit(openThread.value);
+	if (isInbox.value && thread.some(isUnread)) changeSeen("mark_thread_seen", openThread.value);
+	// Once per thread: the reload after a reply or a delete leaves the reader where they were.
+	if (scrolledThreadKey === threadKey(openThread.value)) return;
+	scrolledThreadKey = threadKey(openThread.value);
 	pane.value?.querySelector("[data-email]:last-child")?.scrollIntoView({ block: "start" });
+}
+
+// A thread reopened after the pane closed is a fresh pane, which should land on its latest email again.
+watch(openThread, (thread) => {
+	if (!thread) scrolledThreadKey = null;
+});
+
+// Deleting the email an unlinked conversation is keyed on hands the conversation to the next one. Each such move
+// is remembered: a second delete queued before the first landed still reports the conversation's old key.
+const movedThreads = new Map();
+
+// The delete lands once its toast closes, by which time the reader may have opened another thread.
+function onEmailDeleted({ thread, name, promoted, remaining }) {
+	mailbox.reload();
+	let key = threadKey(thread);
+	while (movedThreads.has(key)) key = movedThreads.get(key);
+	if (!openThread.value || key !== threadKey(openThread.value)) return;
+	if (!remaining) return close();
+	if (!promoted || openThread.value.name !== name) return;
+	movedThreads.set(key, threadKey({ doctype: "Communication", name: promoted }));
+	scrolledThreadKey = movedThreads.get(key);
+	router.replace({ name: route.name, params: { doctype: "Communication", name: promoted } });
 }
 
 // Moving to another thread would unmount an unsent new email or reply.
@@ -86,6 +200,10 @@ function step(offset) {
 // No arrow keys: they scroll the reading pane. And no modifier, which would steal Ctrl+J and the like.
 onShortcut({ key: "j" }, () => step(1));
 onShortcut({ key: "k" }, () => step(-1));
+onShortcut({ key: "x" }, () => {
+	const row = rows.value.find(isOpen);
+	if (row) toggleSelection(row, {});
+});
 onKey("Escape", () => !hasDraft() && close());
 </script>
 
@@ -95,7 +213,62 @@ onKey("Escape", () => !hasDraft() && close());
 			class="flex min-w-0 flex-1 flex-col md:max-w-md md:border-r"
 			:class="{ 'max-md:hidden': openThread || isComposing }"
 		>
-			<header class="flex h-12 shrink-0 items-center gap-2 px-4">
+			<header v-if="selectedRows.length" class="flex h-12 shrink-0 items-center gap-1 px-4">
+				<input
+					type="checkbox"
+					:class="CHECKBOX_CLASS"
+					:checked="isEveryRowSelected"
+					:indeterminate="!isEveryRowSelected"
+					:aria-label="__('Select all')"
+					@click="toggleEveryRow"
+				/>
+				<span class="ml-2 flex-1 text-base-medium text-ink-gray-8">
+					{{ __("{0} selected", [selectedRows.length]) }}
+				</span>
+				<template v-if="isInbox">
+					<Button
+						icon="lucide-mail-open"
+						variant="ghost"
+						:label="__('Mark as read')"
+						:tooltip="__('Mark as read')"
+						@click="markSelection('mark_threads_read')"
+					/>
+					<Button
+						icon="lucide-mail"
+						variant="ghost"
+						:label="__('Mark as unread')"
+						:tooltip="__('Mark as unread')"
+						@click="markSelection('mark_threads_unread')"
+					/>
+				</template>
+				<!-- A disabled button fires no hover, so the tooltip hangs on a wrapper. -->
+				<Tooltip
+					:text="
+						canDeleteSelection
+							? __('Delete')
+							: __(
+									'Only conversations linked to no gig, task or directory entry can be deleted together'
+							  )
+					"
+				>
+					<span>
+						<Button
+							icon="lucide-trash-2"
+							variant="ghost"
+							:label="__('Delete')"
+							:disabled="!canDeleteSelection"
+							@click="deleteSelection"
+						/>
+					</span>
+				</Tooltip>
+				<Button
+					icon="lucide-x"
+					variant="ghost"
+					:label="__('Clear selection')"
+					@click="clearSelection"
+				/>
+			</header>
+			<header v-else class="flex h-12 shrink-0 items-center gap-2 px-4">
 				<h1 class="flex-1 text-2xl-semibold">{{ isInbox ? __("Inbox") : __("Outbox") }}</h1>
 				<template v-if="isInbox">
 					<Button
@@ -137,26 +310,45 @@ onKey("Escape", () => !hasDraft() && close());
 				>
 					<Button :label="__('Open the pipeline')" route="/" />
 				</EmptyState>
-				<p v-else-if="!rows.length" class="m-4 text-p-sm text-ink-gray-5">
+				<p v-else-if="!rows.length && isUnreadOnly" class="m-4 text-p-sm text-ink-gray-5">
 					{{ __("No unread emails.") }}
 				</p>
 				<ul v-else class="divide-y divide-outline-gray-1">
-					<li v-for="row in rows" :key="`${row.thread.doctype}:${row.thread.name}`">
-						<button
-							class="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-surface-gray-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-3"
-							:class="{ 'bg-surface-gray-2': isOpen(row) }"
-							:aria-current="isOpen(row) || undefined"
-							@click="open(row)"
-						>
+					<li
+						v-for="row in rows"
+						:key="threadKey(row.thread)"
+						class="group flex items-start hover:bg-surface-gray-2"
+						:class="{ 'bg-surface-gray-2': isOpen(row) || isSelected(row) }"
+					>
+						<label class="flex shrink-0 cursor-pointer items-start gap-3 py-3 pl-4">
 							<span
 								class="mt-3 size-2 shrink-0 rounded-full"
 								:class="isInbox && row.unread ? 'bg-surface-blue-7' : 'bg-transparent'"
 								:aria-label="isInbox && row.unread ? __('Unread') : undefined"
 							/>
-							<Avatar
-								:label="isInbox ? row.sender_full_name || row.sender : row.recipients"
-								size="md"
-							/>
+							<span class="grid size-8 place-items-center">
+								<Avatar
+									:class="selectedRows.length ? 'hidden' : 'group-hover:hidden'"
+									:label="isInbox ? row.sender_full_name || row.sender : row.recipients"
+									size="md"
+								/>
+								<input
+									type="checkbox"
+									:class="[
+										CHECKBOX_CLASS,
+										selectedRows.length ? '' : 'hidden group-hover:block',
+									]"
+									:checked="isSelected(row)"
+									:aria-label="__('Select {0}', [row.subject])"
+									@click="toggleSelection(row, $event)"
+								/>
+							</span>
+						</label>
+						<button
+							class="flex min-w-0 flex-1 items-start py-3 pl-3 pr-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-3"
+							:aria-current="isOpen(row) || undefined"
+							@click="open(row)"
+						>
 							<span class="min-w-0 flex-1">
 								<span class="flex items-baseline gap-2">
 									<span
@@ -239,10 +431,11 @@ onKey("Escape", () => !hasDraft() && close());
 				</header>
 				<div ref="pane" class="flex-1 overflow-y-auto px-5 pb-10 pt-5">
 					<EmailThread
-						:key="`${openThread.doctype}:${openThread.name}`"
+						:key="threadKey(openThread)"
 						:doctype="openThread.doctype"
 						:name="openThread.name"
 						@loaded="onThreadLoaded"
+						@deleted="onEmailDeleted"
 					/>
 				</div>
 			</template>
