@@ -97,6 +97,8 @@ function toggleSelection(row, event) {
 }
 
 const clearSelection = () => (selectedKeys.value = new Set());
+// A selection the search hides would come back with the next search and be acted on unseen.
+watch(query, clearSelection);
 
 function toggleEveryRow() {
 	selectedKeys.value = isEveryRowSelected.value
