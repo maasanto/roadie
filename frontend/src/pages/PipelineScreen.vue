@@ -40,6 +40,7 @@ import { useListQuery } from "../listQuery";
 import { useIsPhone } from "../media";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
+import { useOpenRecord } from "../openRecord";
 import { UNDO_WINDOW_MS } from "../undo";
 
 const route = useRoute();
@@ -153,8 +154,16 @@ const listColumns = computed(() =>
 		{ key: "gig_owner", label: __("Owner"), width: "8rem" },
 	].slice(0, isPhone.value ? 2 : undefined)
 );
+const {
+	name: openedName,
+	isOpen: isPanelOpen,
+	routeTo: gigRoute,
+	open: openGig,
+	create: createGig,
+	close: closeGig,
+} = useOpenRecord("gig");
 const listOptions = {
-	onRowClick: (gig) => openGig(gig.name),
+	getRowRoute: (gig) => gigRoute(gig.name),
 	rowHeight: 44,
 };
 const linkedDoctypes = { festival: "Festival", venue: "Venue" };
@@ -208,25 +217,6 @@ async function dropGig(column, columnElement) {
 		toast(__("Moved {0} to {1}", [gig.title, column.label]), undoable);
 	}
 }
-
-const isPanelOpen = ref(false);
-const openedName = ref(null);
-
-function openGig(name = null) {
-	openedName.value = name;
-	isPanelOpen.value = true;
-}
-
-// The search palette sends a gig name through the query, and it is cleared once the panel has it.
-watch(
-	() => route.query.gig,
-	(name) => {
-		if (!name || route.name !== "Pipeline") return;
-		openGig(name);
-		router.replace({ query: { ...route.query, gig: undefined } });
-	},
-	{ immediate: true }
-);
 </script>
 
 <template>
@@ -238,7 +228,7 @@ watch(
 				variant="solid"
 				icon-left="lucide-plus"
 				:label="__('New gig')"
-				@click="openGig()"
+				@click="createGig()"
 			/>
 		</div>
 		<div v-if="!hasNoGigs" class="mt-4 flex flex-wrap items-center gap-2">
@@ -302,7 +292,7 @@ watch(
 				)
 			"
 		>
-			<Button variant="solid" icon-left="lucide-plus" :label="__('New gig')" @click="openGig()" />
+			<Button variant="solid" icon-left="lucide-plus" :label="__('New gig')" @click="createGig()" />
 		</EmptyState>
 		<EmptyState
 			v-else-if="!gigs.data?.length"
@@ -429,7 +419,7 @@ watch(
 			v-if="isPanelOpen"
 			:name="openedName"
 			:controls="controls"
-			@close="isPanelOpen = false"
+			@close="closeGig()"
 			@saved="gigs.reload()"
 		/>
 	</div>
