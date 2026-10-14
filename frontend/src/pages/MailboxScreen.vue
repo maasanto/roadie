@@ -228,7 +228,7 @@ onKey("Escape", () => !hasDraft() && close());
 						@click="close"
 					/>
 					<h2 class="min-w-0 flex-1 truncate text-lg-semibold">{{ threadSubject }}</h2>
-					<!-- A task has no screen of its own to open, and an unlinked thread has no record. -->
+					<!-- A task would only open this same thread in its dialog, and an unlinked thread has no record. -->
 					<Button
 						v-if="!['Communication', 'Band Task'].includes(openThread.doctype)"
 						variant="subtle"

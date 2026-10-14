@@ -712,6 +712,10 @@ msgstr "Aucune tâche pour l'instant."
 msgid "No unassigned tasks"
 msgstr "Aucune tâche non assignée"
 
+#: frontend/src/components/EmailRecipients.vue:72
+msgid "Not a valid email address: {0}"
+msgstr "Adresse e-mail invalide : {0}"
+
 #. Label of the notes (Small Text) field in DocType 'Band'
 #. Label of the notes (Small Text) field in DocType 'Festival'
 #. Label of the notes (Small Text) field in DocType 'Gig'
@@ -1061,7 +1065,7 @@ msgstr "Les tâches qui vous sont assignées, les échéances et les mentions ap
 msgid "Tasks"
 msgstr "Tâches"
 
-#: frontend/src/pages/MyTasksScreen.vue:51
+#: frontend/src/pages/MyTasksScreen.vue:77
 msgid "Tasks to show"
 msgstr "Tâches à afficher"
 

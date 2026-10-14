@@ -42,9 +42,11 @@ class TestPushNotifications(IntegrationTestCase):
 			if call.args == (SEND_PUSH,)
 		]
 
-	def test_an_assignment_is_pushed_to_the_assignee_and_opens_their_tasks(self):
+	def test_an_assignment_is_pushed_to_the_assignee_and_opens_the_task(self):
 		frappe.set_user(MEMBER)
-		frappe.get_doc({"doctype": "Band Task", "title": "Send the rider", "assignee": OTHER_MEMBER}).insert()
+		task = frappe.get_doc(
+			{"doctype": "Band Task", "title": "Send the rider", "assignee": OTHER_MEMBER}
+		).insert()
 
 		[notification_log] = self.queued_pushes()
 		send_push(notification_log)
@@ -53,7 +55,7 @@ class TestPushNotifications(IntegrationTestCase):
 			OTHER_MEMBER,
 			title="John Doe assigned you a task: Send the rider",
 			body="",
-			link=get_url("/roadie/tasks"),
+			link=get_url(f"/roadie/tasks?task={task.name}"),
 			icon=get_url(ICON_URL),
 			strip_html=False,
 		)
@@ -94,6 +96,27 @@ class TestPushNotifications(IntegrationTestCase):
 		send_push(notification_log.name)
 
 		self.assertEqual(self.send.call_args.kwargs["link"], get_url("/roadie"))
+
+	def test_a_reminder_about_a_task_opens_the_task(self):
+		frappe.set_user(MEMBER)
+		task = frappe.get_doc(
+			{"doctype": "Band Task", "title": "Send the rider", "assignee": MEMBER}
+		).insert()
+		frappe.set_user("Administrator")
+		# Frappe's own notifications name the record but give no link the SPA can open.
+		notification_log = frappe.get_doc(
+			{
+				"doctype": "Notification Log",
+				"for_user": MEMBER,
+				"subject": "Due today: Send the rider",
+				"document_type": "Band Task",
+				"document_name": task.name,
+			}
+		).insert(ignore_permissions=True)
+
+		send_push(notification_log.name)
+
+		self.assertEqual(self.send.call_args.kwargs["link"], get_url(f"/roadie/tasks?task={task.name}"))
 
 	def test_nothing_is_queued_without_the_relay_url(self):
 		# A backup restored elsewhere keeps the settings enabled but not the site config's relay URL.

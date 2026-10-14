@@ -18,6 +18,10 @@ test("notificationRoute opens the record a notification is about", () => {
 		name: "Pipeline",
 		query: { gig: "gig-1" },
 	});
+	assert.deepEqual(
+		notificationRoute({ document_type: "Band Task", document_name: "task-1", route: "/tasks" }),
+		{ name: "MyTasks", query: { task: "task-1" } }
+	);
 });
 
 test("notificationRoute falls back to the server's route when the record has no screen", () => {

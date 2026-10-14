@@ -787,6 +787,10 @@ msgstr ""
 msgid "No {0} yet"
 msgstr ""
 
+#: frontend/src/components/EmailRecipients.vue:72
+msgid "Not a valid email address: {0}"
+msgstr ""
+
 #: frontend/src/listFilters.js:31
 msgid "Not equals"
 msgstr ""
@@ -1156,7 +1160,7 @@ msgstr ""
 msgid "Tasks"
 msgstr ""
 
-#: frontend/src/pages/MyTasksScreen.vue:51
+#: frontend/src/pages/MyTasksScreen.vue:77
 msgid "Tasks to show"
 msgstr ""
 
