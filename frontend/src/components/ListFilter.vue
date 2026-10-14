@@ -52,9 +52,11 @@ function valueControl(filter) {
 	return { type: kind === "number" ? "number" : "text", debounce: 300 };
 }
 
+// Filters are matched by field, which each has once: they are read back from the address after every change, so a
+// typed value landing after another filter's change no longer holds the object it was typed into.
 function update(filter, change) {
 	filters.value = filters.value.map((candidate) =>
-		candidate === filter ? { ...filter, ...change } : candidate
+		candidate.fieldname === filter.fieldname ? { ...candidate, ...change } : candidate
 	);
 }
 
@@ -67,7 +69,8 @@ function changeOperator(filter, operator) {
 	update(filter, { operator, value: crossesIs ? defaultValue(fieldOf(filter), operator) : filter.value });
 }
 
-const remove = (filter) => (filters.value = filters.value.filter((candidate) => candidate !== filter));
+const remove = (filter) =>
+	(filters.value = filters.value.filter((candidate) => candidate.fieldname !== filter.fieldname));
 </script>
 
 <template>
