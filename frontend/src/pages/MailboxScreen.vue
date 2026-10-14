@@ -6,6 +6,7 @@ import EmailComposer from "../components/EmailComposer.vue";
 import EmailThread from "../components/EmailThread.vue";
 import EmptyState from "../components/EmptyState.vue";
 import ListSkeleton from "../components/ListSkeleton.vue";
+import { confirmDiscardDraft } from "../draft";
 import { deliveryState, formatListDate, isUnread } from "../email";
 import { onKey, onShortcut } from "../keyboard";
 import { resultRoute } from "../search";
@@ -45,18 +46,24 @@ const threadSubject = ref("");
 const list = ref(null);
 const pane = ref(null);
 
+// The route guard asks before an unsent email is lost, so the screen only changes once the navigation went through.
+// A failed one is a kept draft, the thread already open, or a later j/k overtaking this one.
 async function open(row) {
+	if (await router.push({ name: route.name, params: row.thread })) return;
 	isComposing.value = false;
 	threadSubject.value = row.subject;
-	await router.push({ name: route.name, params: row.thread });
 	list.value?.querySelector("[aria-current]")?.scrollIntoView({ block: "nearest" });
 }
 
 const close = () => router.push({ name: route.name });
 
-function compose() {
-	close();
+async function compose() {
+	if (openThread.value && (await close())) return;
 	isComposing.value = true;
+}
+
+function stopComposing() {
+	if (confirmDiscardDraft()) isComposing.value = false;
 }
 
 function onNewEmailSent() {
@@ -73,11 +80,7 @@ function onThreadLoaded(thread) {
 	pane.value?.querySelector("[data-email]:last-child")?.scrollIntoView({ block: "start" });
 }
 
-// Moving to another thread would unmount an unsent new email or reply.
-const hasDraft = () => Boolean(document.querySelector("[data-draft]"));
-
 function step(offset) {
-	if (hasDraft()) return;
 	const index = rows.value.findIndex(isOpen);
 	const next = index === -1 ? rows.value[0] : rows.value[index + offset];
 	if (next) open(next);
@@ -86,7 +89,7 @@ function step(offset) {
 // No arrow keys: they scroll the reading pane. And no modifier, which would steal Ctrl+J and the like.
 onShortcut({ key: "j" }, () => step(1));
 onShortcut({ key: "k" }, () => step(-1));
-onKey("Escape", () => !hasDraft() && close());
+onKey("Escape", close);
 </script>
 
 <template>
@@ -210,7 +213,7 @@ onKey("Escape", () => !hasDraft() && close());
 						icon="lucide-arrow-left"
 						variant="ghost"
 						:label="__('Back')"
-						@click="isComposing = false"
+						@click="stopComposing"
 					/>
 					<h2 class="text-lg-semibold">{{ __("New email") }}</h2>
 				</header>
