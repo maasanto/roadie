@@ -1595,7 +1595,7 @@ msgstr "Insérer le lien rend le dossier public : toute personne qui a le lien p
 msgid "{0} holds a whole Drive: link a folder inside it instead"
 msgstr "{0} contient tout un Drive : liez plutôt un dossier qu'il contient"
 
-#: frontend/src/components/BulkEditBar.vue
+#: frontend/src/components/BulkEditBar.vue frontend/src/pages/MailboxScreen.vue
 msgid "{0} selected"
 msgstr "{0} sélectionné(s)"
 
@@ -1603,11 +1603,11 @@ msgstr "{0} sélectionné(s)"
 msgid "Edit"
 msgstr "Modifier"
 
-#: frontend/src/components/BulkEditBar.vue
+#: frontend/src/components/BulkEditBar.vue frontend/src/pages/MailboxScreen.vue
 msgid "Select all"
 msgstr "Tout sélectionner"
 
-#: frontend/src/components/BulkEditBar.vue
+#: frontend/src/components/BulkEditBar.vue frontend/src/pages/MailboxScreen.vue
 msgid "Clear selection"
 msgstr "Effacer la sélection"
 
@@ -1638,6 +1638,46 @@ msgstr "Vider « {0} » sur la sélection ({1})"
 #: frontend/src/components/BulkEditBar.vue
 msgid "{0} of {1} could not be updated."
 msgstr "Échec de la modification pour {0} sur {1}."
+
+#: frontend/src/components/EmailThread.vue frontend/src/pages/MailboxScreen.vue
+msgid "Delete"
+msgstr "Supprimer"
+
+#: frontend/src/components/EmailThread.vue
+msgid "Email deleted"
+msgstr "E-mail supprimé"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Conversation deleted"
+msgstr "Conversation supprimée"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "{0} conversations deleted"
+msgstr "{0} conversations supprimées"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Mark as read"
+msgstr "Marquer comme lu"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Mark as unread"
+msgstr "Marquer comme non lu"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Only conversations linked to no gig, task or directory entry can be deleted together"
+msgstr "Seules les conversations liées à aucun concert, aucune tâche ni aucune fiche de l'annuaire se suppriment ensemble"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Select {0}"
+msgstr "Sélectionner {0}"
+
+#: roadie/api.py
+msgid "Only conversations filed under no gig, task or directory entry can be deleted in bulk, not {0}"
+msgstr "Seules les conversations rattachées à aucun concert, aucune tâche ni aucune fiche de l'annuaire se suppriment en masse, pas {0}"
+
+#: roadie/api.py
+msgid "Only the emails Roadie lists can be deleted here, not {0}"
+msgstr "Seuls les e-mails que Roadie affiche se suppriment ici, pas {0}"
 
 #: frontend/src/components/GigTasks.vue
 msgid "Show {0} done"
