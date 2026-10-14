@@ -1565,3 +1565,27 @@ msgstr ""
 #: roadie/api.py
 msgid "Only the emails Roadie lists can be deleted here, not {0}"
 msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Link to…"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Search the gig or directory entry to file this thread under"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Filed under {0}"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Send or discard your email first."
+msgstr ""
+
+#: roadie/api.py
+msgid "Emails can only be filed under {0}, not {1}"
+msgstr ""
+
+#: roadie/api.py
+msgid "Only conversations filed under no gig, task or directory entry can be linked, not {0}"
+msgstr ""

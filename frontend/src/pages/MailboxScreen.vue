@@ -13,7 +13,9 @@ import EmailComposer from "../components/EmailComposer.vue";
 import EmailThread from "../components/EmailThread.vue";
 import EmptyState from "../components/EmptyState.vue";
 import ListSkeleton from "../components/ListSkeleton.vue";
-import { confirmDiscardDraft } from "../draft";
+import SearchPalette from "../components/SearchPalette.vue";
+import { directoryTypes } from "../directory";
+import { confirmDiscardDraft, hasEditedDraft } from "../draft";
 import { deliveryState, formatListDate, isUnread } from "../email";
 import { onKey, onShortcut } from "../keyboard";
 import { resultRoute } from "../search";
@@ -199,6 +201,29 @@ function step(offset) {
 	const index = rows.value.findIndex(isOpen);
 	const next = index === -1 ? rows.value[0] : rows.value[index + offset];
 	if (next) open(next);
+}
+
+const LINKABLE_DOCTYPES = ["Gig", ...directoryTypes.map((type) => type.doctype)];
+const recordPicker = ref(null);
+
+function pickRecord() {
+	if (hasEditedDraft()) return toast.error(__("Send or discard your email first."));
+	recordPicker.value.open();
+}
+
+async function fileThreadUnder(record) {
+	const communication = openThread.value.name;
+	try {
+		await call("roadie.api.link_thread", { communication, doctype: record.doctype, name: record.name });
+	} catch (error) {
+		showError(error);
+		return;
+	}
+	toast.success(__("Filed under {0}", [record.title]));
+	mailbox.reload();
+	// The member may have moved on while the thread was being filed.
+	if (openThread.value?.name === communication)
+		router.replace({ name: route.name, params: { doctype: record.doctype, name: record.name } });
 }
 
 // No arrow keys: they scroll the reading pane. And no modifier, which would steal Ctrl+J and the like.
@@ -424,9 +449,16 @@ onKey("Escape", close);
 						@click="close"
 					/>
 					<h2 class="min-w-0 flex-1 truncate text-lg-semibold">{{ threadSubject }}</h2>
-					<!-- A task would only open this same thread in its dialog, and an unlinked thread has no record. -->
 					<Button
-						v-if="!['Communication', 'Band Task'].includes(openThread.doctype)"
+						v-if="openThread.doctype === 'Communication'"
+						variant="subtle"
+						icon-left="lucide-link"
+						:label="__('Link to…')"
+						@click="pickRecord"
+					/>
+					<!-- A task would only open this same thread in its dialog. -->
+					<Button
+						v-else-if="openThread.doctype !== 'Band Task'"
 						variant="subtle"
 						icon-right="lucide-arrow-up-right"
 						:label="__('Open {0}', [__(openThread.doctype)])"
@@ -442,6 +474,12 @@ onKey("Escape", close);
 						@deleted="onEmailDeleted"
 					/>
 				</div>
+				<SearchPalette
+					ref="recordPicker"
+					:doctypes="LINKABLE_DOCTYPES"
+					:placeholder="__('Search the gig or directory entry to file this thread under')"
+					@select="fileThreadUnder"
+				/>
 			</template>
 			<div v-else class="flex flex-1 items-center justify-center p-6">
 				<EmptyState

@@ -15,6 +15,7 @@ from roadie.api import (
 	get_attachments,
 	get_emails,
 	get_mailbox,
+	link_thread,
 	mark_threads_read,
 	mark_threads_unread,
 )
@@ -283,6 +284,45 @@ class TestEmail(IntegrationTestCase):
 			[email.name for email in get_emails("Communication", received.name)],
 			[received.name, reply["name"]],
 		)
+
+	def test_linked_thread_and_its_later_replies_file_under_the_gig(self):
+		enquiry = incoming_email(
+			"Jane Doe <jane.promoter@example.com>", "Summer booking", f"enquiry-{frappe.generate_hash()}"
+		)
+		InboundMail(enquiry.as_string(), self.mailbox).process()
+		received = frappe.get_last_doc("Communication", filters={"subject": "Summer booking"})
+
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme summer festival"}).insert()
+		reply = make(
+			doctype="Communication",
+			name=received.name,
+			subject="Re: Summer booking",
+			content="<p>We would love to.</p>",
+			recipients=["jane.promoter@example.com"],
+			send_email=True,
+		)
+		link_thread(received.name, "Gig", gig.name)
+
+		frappe.set_user("Administrator")
+		answer = incoming_email(
+			"Jane Doe <jane.promoter@example.com>", "Re: Summer booking", f"answer-{frappe.generate_hash()}"
+		)
+		answer["In-Reply-To"] = f"<{frappe.db.get_value('Communication', reply['name'], 'message_id')}>"
+		InboundMail(answer.as_string(), self.mailbox).process()
+		answered = frappe.get_last_doc("Communication", filters={"in_reply_to": reply["name"]})
+
+		frappe.set_user(MEMBER)
+		self.assertEqual(
+			[email.name for email in get_emails("Gig", gig.name)],
+			[received.name, reply["name"], answered.name],
+		)
+		inbox = {row.name: row.thread for row in get_mailbox("Received")}
+		self.assertEqual(inbox[answered.name], {"doctype": "Gig", "name": gig.name})
+		self.assertNotIn(received.name, inbox)
+		other_gig = frappe.get_doc({"doctype": "Gig", "title": "Acme winter festival"}).insert()
+		with self.assertRaises(frappe.ValidationError):
+			link_thread(received.name, "Gig", other_gig.name)
 
 	def test_new_email_from_the_inbox_needs_no_record(self):
 		frappe.set_user(MEMBER)
