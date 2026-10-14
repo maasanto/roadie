@@ -1,7 +1,8 @@
 <script setup>
 import { computed } from "vue";
 import { Avatar, Badge, Dropdown } from "frappe-ui";
-import { daysUntil, formatDate, isDeadlineClose, memberOptions, pipelineColumns } from "../gig";
+import { GIG_STATUSES, daysUntil, formatDate, isDeadlineClose, memberOptions, pipelineColumns } from "../gig";
+import { translatedOptions } from "../translation";
 
 const props = defineProps({
 	gig: { type: Object, required: true },
@@ -10,7 +11,7 @@ const props = defineProps({
 	members: { type: Array, default: () => [] },
 	showsOpeningDate: { type: Boolean, default: false },
 });
-const emit = defineEmits(["assign"]);
+const emit = defineEmits(["assign", "move"]);
 
 const closedStatuses = pipelineColumns.at(-1).statuses;
 const hasOpenDeadline = computed(
@@ -23,14 +24,22 @@ const assignOptions = computed(() =>
 		onClick: () => emit("assign", option.value),
 	}))
 );
+
+// Statuses rather than columns, so a gig the band gave up on can be told apart from one the venue turned down.
+const moveOptions = computed(() =>
+	translatedOptions(GIG_STATUSES)
+		.filter((option) => option.value !== props.gig.status)
+		.map((option) => ({ ...option, onClick: () => emit("move", option.value) }))
+);
 </script>
 
 <template>
 	<div
 		role="button"
 		tabindex="0"
+		:data-gig="gig.name"
 		class="space-y-1.5 rounded-4 border border-outline-gray-1 bg-surface-elevation-1 p-3 shadow-sm hover:border-outline-gray-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-4"
-		@keydown.enter.prevent="$event.currentTarget.click()"
+		@keydown.enter.self.prevent="$event.currentTarget.click()"
 	>
 		<div class="flex items-start gap-2">
 			<span class="min-w-0 flex-1 text-base-medium text-ink-gray-8">{{ gig.title }}</span>
@@ -71,6 +80,14 @@ const assignOptions = computed(() =>
 				}}
 			</span>
 			<Badge v-if="closedStatuses.includes(gig.status)" :label="__(gig.status)" />
+			<!-- Beside Assign to, a second button would leave the title a third of a narrow column. -->
+			<span class="ms-auto" @click.stop>
+				<Dropdown
+					:options="moveOptions"
+					align="end"
+					:button="{ icon: 'lucide-arrow-right-left', variant: 'ghost', label: __('Move to') }"
+				/>
+			</span>
 		</div>
 	</div>
 </template>
