@@ -1666,3 +1666,7 @@ msgstr "À : {0}"
 #: frontend/src/email.js
 msgid "Cc: {0}"
 msgstr "Cc : {0}"
+
+#: frontend/src/components/EmailComposer.vue
+msgid "From this gig"
+msgstr "Depuis ce concert"

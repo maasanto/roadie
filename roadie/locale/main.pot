@@ -1511,3 +1511,6 @@ msgstr ""
 msgid "Cc: {0}"
 msgstr ""
 
+#: frontend/src/components/EmailComposer.vue
+msgid "From this gig"
+msgstr ""

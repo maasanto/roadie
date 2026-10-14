@@ -1,6 +1,6 @@
 <script setup>
 import { computed, reactive, ref } from "vue";
-import { Button, ErrorMessage, FileUploader, TextEditor, useCall, useList } from "frappe-ui";
+import { Button, Dropdown, ErrorMessage, FileUploader, TextEditor, useCall, useList } from "frappe-ui";
 import DriveLinkDialog from "./DriveLinkDialog.vue";
 import EmailRecipients from "./EmailRecipients.vue";
 
@@ -72,6 +72,24 @@ const contacts = useList({
 });
 const suggestions = computed(() =>
 	(contacts.data || []).map((contact) => ({ label: contact.full_name, value: contact.email_id }))
+);
+
+const gigFiles = useCall({
+	url: "/api/v2/method/roadie.api.get_attachments",
+	params: () => ({ gig: props.name }),
+	immediate: props.doctype === "Gig",
+});
+// A link File has no bytes to send. One already in the email stays listed, so picking the last file keeps the menu's button.
+const gigFileOptions = computed(() =>
+	(gigFiles.data || [])
+		.filter((file) => file.file_url.startsWith("/"))
+		.map((file) => ({
+			label: file.file_name,
+			value: file.name,
+			icon: "lucide-file-text",
+			disabled: attachments.value.some((entry) => entry.name === file.name),
+			onClick: () => attachments.value.push(file),
+		}))
 );
 
 const send = useCall({
@@ -163,8 +181,9 @@ function submit(event) {
 			</li>
 		</ul>
 		<ErrorMessage class="mt-2" :message="send.error" />
-		<div class="mt-3 flex items-center justify-between">
-			<div class="flex items-start gap-1">
+		<ErrorMessage class="mt-2" :message="gigFiles.error" />
+		<div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+			<div class="flex flex-wrap items-start gap-1">
 				<FileUploader
 					:upload-args="doctype ? { doctype, docname: name, private: true } : { private: true }"
 					@success="attachments.push($event)"
@@ -180,6 +199,11 @@ function submit(event) {
 						<ErrorMessage class="mt-1" :message="error" />
 					</template>
 				</FileUploader>
+				<Dropdown
+					v-if="gigFileOptions.length"
+					:options="gigFileOptions"
+					:button="{ iconLeft: 'lucide-files', variant: 'ghost', label: __('From this gig') }"
+				/>
 				<Button
 					v-if="canLinkDriveItems"
 					icon-left="lucide-hard-drive"
@@ -188,7 +212,7 @@ function submit(event) {
 					@click="isPickingDriveItem = true"
 				/>
 			</div>
-			<div class="flex gap-2">
+			<div class="ms-auto flex gap-2">
 				<Button :label="__('Discard')" variant="ghost" @click="emit('discard')" />
 				<Button
 					ref="sendButton"

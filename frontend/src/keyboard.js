@@ -17,8 +17,9 @@ function listen(key, ignoredIn, matchesModifiers, handler) {
 
 // Page-wide shortcut while the component is mounted. Keys typed into a field are ignored, except Escape,
 // and a frappe-ui Dialog on top keeps Escape for itself. Escape inside a `data-draft` form would lose the draft.
+// An open dropdown menu is portalled out of that form and holds the focus, so its Escape only closes the menu.
 export function onKey(key, handler) {
-	listen(key, key === "Escape" ? "[data-draft]" : FIELDS, () => true, handler);
+	listen(key, key === "Escape" ? '[data-draft], [role="menu"]' : FIELDS, () => true, handler);
 }
 
 // Same, for a shortcut that asks for a modifier, such as Ctrl/⌘+K. Ctrl and ⌘ count as the same modifier,
