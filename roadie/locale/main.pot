@@ -472,6 +472,10 @@ msgstr ""
 msgid "Hidden fields"
 msgstr ""
 
+#: frontend/src/components/GigTasks.vue:54
+msgid "Hide done"
+msgstr ""
+
 #: frontend/src/components/FormCustomiser.vue:60
 msgid "Hide {0}"
 msgstr ""
@@ -1072,6 +1076,10 @@ msgstr ""
 
 #: frontend/src/components/FormCustomiser.vue:123
 msgid "Show"
+msgstr ""
+
+#: frontend/src/components/GigTasks.vue:54
+msgid "Show {0} done"
 msgstr ""
 
 #: frontend/src/components/DriveLinkDialog.vue:17

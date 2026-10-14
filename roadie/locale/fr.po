@@ -1594,3 +1594,11 @@ msgstr "Vider « {0} » sur la sélection ({1})"
 #: frontend/src/components/BulkEditBar.vue
 msgid "{0} of {1} could not be updated."
 msgstr "Échec de la modification pour {0} sur {1}."
+
+#: frontend/src/components/GigTasks.vue
+msgid "Show {0} done"
+msgstr "Afficher les tâches faites ({0})"
+
+#: frontend/src/components/GigTasks.vue
+msgid "Hide done"
+msgstr "Masquer les tâches faites"
