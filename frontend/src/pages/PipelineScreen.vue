@@ -64,6 +64,12 @@ const meta = useMeta("Gig");
 const filterFields = computed(() =>
 	fieldsFromMeta(meta.data?.fields ?? [], controls.value).filter((field) => !field.hidden)
 );
+// The kanban's columns are the statuses, so a status quick filter there would empty all but one of them.
+const quickFilterFields = computed(() =>
+	view.value === "kanban"
+		? filterFields.value.filter((field) => field.fieldname !== "status")
+		: filterFields.value
+);
 // A link sorts by its generated id, a page of notes by its first word and a status by its English name rather
 // than its stage: none of them orders anything. The kanban is the view by stage.
 const sortFields = computed(() => [
@@ -80,7 +86,6 @@ const isFiltered = computed(() => Object.keys(activeFilters.value).length > 0);
 
 const isCustomisingQuickFilters = ref(false);
 const { loaded: quickFiltersLoaded } = useDirectoryQuickFilters("Gig");
-
 // ponytail: the whole pipeline in one unpaged fetch, page per column if a band ever tracks hundreds of gigs
 const gigs = useList({
 	// A ref, which the fetch reads as it changes: the board asks once the address can be read.
@@ -248,12 +253,13 @@ watch(
 		</div>
 		<div v-if="!hasNoGigs" class="mt-4 flex flex-wrap items-center gap-2">
 			<TabButtons v-model="view" :options="views" />
+			<!-- Keyed by view so that leaving the list ends a customisation, whose chips the kanban's fields would hide. -->
 			<QuickFilterBar
-				v-if="view === 'list'"
+				:key="view"
 				v-model="filters"
 				v-model:customising="isCustomisingQuickFilters"
 				doctype="Gig"
-				:fields="filterFields"
+				:fields="quickFilterFields"
 			/>
 			<div v-if="!isCustomisingQuickFilters" class="ms-auto flex flex-wrap items-center gap-2">
 				<Button
