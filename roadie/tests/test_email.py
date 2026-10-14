@@ -8,15 +8,18 @@ from frappe.email.receive import InboundMail
 from frappe.tests import IntegrationTestCase
 
 from roadie.api import (
+	EMAIL_DRAFT_FIELD,
+	delete_draft_attachment,
 	delete_email,
 	delete_threads,
+	get_attachments,
 	get_emails,
 	get_mailbox,
 	mark_threads_read,
 	mark_threads_unread,
 )
 from roadie.install import grant_communication_access
-from roadie.roadie.doctype.gig.test_gig import MEMBER, blank_pdf, make_member
+from roadie.roadie.doctype.gig.test_gig import MEMBER, OTHER_MEMBER, blank_pdf, make_member
 
 MAILBOX = "band@example.com"
 VENUE = "venue@example.com"
@@ -365,6 +368,56 @@ class TestEmail(IntegrationTestCase):
 		self.assertEqual(get_emails("Gig", gig.name), [])
 		with self.assertRaises(frappe.ValidationError):
 			delete_email(reminder.name)
+
+	def test_draft_only_deletes_its_own_unsent_uploads(self):
+		make_member(OTHER_MEMBER, "Jane")
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Festival 2028"}).insert()
+
+		def upload(file_name, content=None, attached_to_field=EMAIL_DRAFT_FIELD):
+			# Unique by default: make() commits, and Frappe dedupes files by hash across runs.
+			return frappe.get_doc(
+				{
+					"doctype": "File",
+					"file_name": file_name,
+					"content": content or f"{file_name} {frappe.generate_hash()}",
+					"is_private": 1,
+					"attached_to_doctype": "Gig",
+					"attached_to_name": gig.name,
+					"attached_to_field": attached_to_field,
+				}
+			).insert()
+
+		dropped = upload("dropped-from-draft.txt")
+		already_on_gig = upload("stage-plan.txt", attached_to_field=None)
+		rider = f"Acme rider {frappe.generate_hash()}"
+		sent_file = upload("rider.txt", rider)
+		make(
+			doctype="Gig",
+			name=gig.name,
+			subject="Rider",
+			content="<p>Our rider is attached.</p>",
+			recipients=[VENUE],
+			send_email=True,
+			attachments=[sent_file.name],
+		)
+		frappe.set_user(OTHER_MEMBER)
+		other_members_draft = upload("their-draft.txt")
+
+		frappe.set_user(MEMBER)
+		# The same bytes as the sent rider, so Frappe hands this draft upload the sent copy's URL.
+		rider_attached_again = upload("rider-again.txt", rider)
+		self.assertEqual(rider_attached_again.file_url, sent_file.file_url)
+		delete_draft_attachment(dropped.name)
+		delete_draft_attachment(rider_attached_again.name)
+		for kept in (already_on_gig, sent_file, other_members_draft):
+			with self.assertRaises(frappe.PermissionError):
+				delete_draft_attachment(kept.name)
+
+		self.assertCountEqual(
+			[file.name for file in get_attachments(gig.name)],
+			[already_on_gig.name, sent_file.name, other_members_draft.name],
+		)
 
 	def test_emails_are_only_listed_for_email_doctypes(self):
 		frappe.set_user(MEMBER)
