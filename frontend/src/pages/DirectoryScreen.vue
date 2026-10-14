@@ -27,7 +27,9 @@ import QuickFilterBar from "../components/QuickFilterBar.vue";
 import { useDirectoryColumns } from "../directoryColumns";
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
 import { RATING_STARS, directoryControls, directoryType, toFraction, toStars } from "../directory";
+import { confirmDiscardDraft } from "../draft";
 import { columnFormat, fetchFields, formatCell } from "../listColumns";
+import { useListCount } from "../listCount";
 import { orderBy, queryFilters } from "../listFilters";
 import { useListQuery } from "../listQuery";
 import { useMeta } from "../meta";
@@ -73,6 +75,7 @@ const entries = useList({
 watch([loaded, isReady, () => entries.url], () => loaded.value && isReady.value && entries.execute(), {
 	immediate: true,
 });
+const { count, limitNotice } = useListCount(entries, props.doctype, () => activeFilters.value);
 
 const isLoading = computed(() => !loaded.value || (!entries.data && !entries.error));
 // The previous rows stay in place when a refetch fails, so the error has to show over them, or the list would
@@ -137,6 +140,7 @@ const isDialogOpen = ref(false);
 const editingName = ref(null);
 
 function openEntry(name = null) {
+	if (isDialogOpen.value && name !== editingName.value && !confirmDiscardDraft()) return;
 	editingName.value = name;
 	isDialogOpen.value = true;
 }
@@ -160,7 +164,10 @@ watch(
 <template>
 	<div class="p-6">
 		<div class="flex flex-wrap items-center justify-between gap-3">
-			<h1 class="text-2xl-semibold">{{ type.plural }}</h1>
+			<h1 class="text-2xl-semibold">
+				{{ type.plural }}
+				<span v-if="!isLoading && !loadError && count" class="ms-1 text-ink-gray-5">{{ count }}</span>
+			</h1>
 			<Button variant="solid" icon-left="lucide-plus" :label="__('New')" @click="openEntry()" />
 		</div>
 		<div class="mt-4 flex flex-wrap items-center gap-2">
@@ -196,6 +203,7 @@ watch(
 				/>
 			</div>
 		</div>
+		<p v-if="limitNotice && !loadError" class="mt-4 text-p-sm text-ink-gray-6">{{ limitNotice }}</p>
 		<ErrorMessage v-if="loadError" class="mt-4" :message="loadError" />
 		<EmptyState
 			v-else-if="!isLoading && !rows.length && Object.keys(activeFilters).length"

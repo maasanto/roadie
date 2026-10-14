@@ -6,6 +6,7 @@ import EmptyState from "../components/EmptyState.vue";
 import GigPanel from "../components/GigPanel.vue";
 import ListSkeleton from "../components/ListSkeleton.vue";
 import TaskDialog from "../components/TaskDialog.vue";
+import { confirmDiscardDraft } from "../draft";
 import { formatDate } from "../gig";
 import { useGigControls } from "../gigControls";
 import { UNDO_WINDOW_MS } from "../undo";
@@ -140,6 +141,7 @@ function openBar(task) {
 	if (gantt.get_bar(task.id).action_completed) return;
 	const bar = barOf(task);
 	if (bar.gig) {
+		if (isPanelOpen.value && bar.gig !== openedGig.value && !confirmDiscardDraft()) return;
 		openedGig.value = bar.gig;
 		isPanelOpen.value = true;
 	} else {

@@ -6,6 +6,7 @@ import EmailThread from "./EmailThread.vue";
 import EntryForm from "./EntryForm.vue";
 import GigAttachments from "./GigAttachments.vue";
 import GigTasks from "./GigTasks.vue";
+import { confirmDiscardDraft } from "../draft";
 import { onKey } from "../keyboard";
 
 defineProps({
@@ -15,7 +16,12 @@ defineProps({
 const emit = defineEmits(["close", "saved"]);
 
 const entryForm = ref(null);
-onKey("Escape", () => emit("close"));
+
+function close() {
+	if (confirmDiscardDraft()) emit("close");
+}
+
+onKey("Escape", close);
 </script>
 
 <template>
@@ -26,7 +32,7 @@ onKey("Escape", () => emit("close"));
 			<h2 class="truncate text-lg-semibold">
 				{{ entryForm?.entryName ? entryForm.form.title || __("Gig") : __("New gig") }}
 			</h2>
-			<Button icon="lucide-x" variant="ghost" :label="__('Close')" @click="emit('close')" />
+			<Button icon="lucide-x" variant="ghost" :label="__('Close')" @click="close" />
 		</header>
 		<div class="flex-1 overflow-y-auto px-5 pb-10 pt-5">
 			<EntryForm
