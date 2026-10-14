@@ -1,9 +1,11 @@
 import { directoryType, splitList } from "./directory.js";
+import { formatDate } from "./gig.js";
 
 // How a column reads the value behind it: `number` groups digits, `label` translates a value the database
-// keeps in English, `list` joins a comma-separated one, and the list draws a `rating` as stars. Anything else
-// shows as stored.
-const FORMATS = ["text", "number", "label", "list", "rating"];
+// keeps in English, `list` joins a comma-separated one, `date` reads as it does on a gig card, `check` ticks
+// a set checkbox and leaves an unset one blank, and the list draws a `rating` as stars. Anything else shows
+// as stored.
+const FORMATS = ["text", "number", "label", "list", "date", "check", "rating"];
 
 // The column that names the row. It leads every list and cannot be moved or removed.
 export const isNameColumn = (column) => column.fieldname === "title";
@@ -83,16 +85,34 @@ export function moveColumn(columns, fieldname, offset) {
 }
 
 // A field picked from the DocType's meta becomes a column: digits group, a choice's stored value translates,
-// a multiselect joins, a rating draws stars.
-const FORMAT_BY_CONTROL = { number: "number", multiselect: "list", select: "label", rating: "rating" };
+// a multiselect joins, a date reads as a date, a checkbox as a tick, a rating draws stars.
+const FORMAT_BY_CONTROL = {
+	number: "number",
+	multiselect: "list",
+	select: "label",
+	date: "date",
+	checkbox: "check",
+	rating: "rating",
+};
+
+const fieldFormat = (field) => FORMAT_BY_CONTROL[field.type] ?? "text";
 
 export function columnFromField(field) {
 	return {
 		fieldname: field.fieldname,
 		label: field.label,
-		format: FORMAT_BY_CONTROL[field.type] ?? "text",
+		format: fieldFormat(field),
 	};
 }
+
+// The list reads a column by its field's type whenever the meta is at hand, so a column saved before its type
+// had a format, or hand-edited to another, still reads as its field. The stored format covers the meta's load.
+export function columnFormat(column, fields) {
+	const field = fields.find((entry) => entry.fieldname === column.fieldname);
+	return field ? fieldFormat(field) : column.format;
+}
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function formatCell(column, row) {
 	const value = row?.[column.fieldname];
@@ -103,5 +123,7 @@ export function formatCell(column, row) {
 	}
 	if (column.format === "label") return __(String(value));
 	if (column.format === "list") return splitList(value).join(", ");
+	if (column.format === "date") return ISO_DATE.test(value) ? formatDate(value) : String(value);
+	if (column.format === "check") return Number(value) ? "✓" : "";
 	return String(value);
 }

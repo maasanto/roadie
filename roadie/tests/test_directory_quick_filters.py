@@ -47,9 +47,16 @@ class TestDirectoryQuickFilters(IntegrationTestCase):
 		with self.assertRaises(frappe.ValidationError):
 			set_directory_quick_filters(DOCTYPE, '"city"')
 
-	def test_a_doctype_that_is_not_a_directory_list_is_refused(self):
+	def test_the_gig_list_keeps_its_own_quick_filters(self):
+		set_directory_quick_filters("Gig", '["title", "festival"]')
+		set_directory_quick_filters(DOCTYPE, '["city"]')
+
+		frappe.set_user(OTHER_MEMBER)
+		self.assertEqual(get_directory_quick_filters(), {"Gig": ["title", "festival"], DOCTYPE: ["city"]})
+
+	def test_a_doctype_whose_list_has_no_quick_filters_is_refused(self):
 		with self.assertRaises(frappe.ValidationError):
-			set_directory_quick_filters("Gig", "[]")
+			set_directory_quick_filters("Band Task", "[]")
 
 	def test_a_guest_reads_and_writes_nothing(self):
 		frappe.set_user("Guest")

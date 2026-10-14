@@ -4,6 +4,8 @@ from frappe.desk.doctype.notification_log.notification_log import enqueue_create
 from frappe.model.document import Document
 from frappe.utils import get_fullname, get_url, getdate
 
+from roadie.mentions import record_path
+
 
 class BandTask(Document):
 	def validate(self):
@@ -35,6 +37,6 @@ class BandTask(Document):
 				"document_name": self.name,
 				"from_user": actor,
 				"subject": _("{0} assigned you a task: {1}").format(get_fullname(actor), self.title),
-				"link": get_url("/roadie/tasks"),
+				"link": get_url(record_path(self.doctype, self.name)),
 			},
 		)
