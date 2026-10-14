@@ -8,7 +8,7 @@ const deletedKeys = ref(new Set());
 
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { Avatar, Badge, Button, ErrorMessage, Tooltip, call, toast, useCall } from "frappe-ui";
+import { Avatar, Badge, Button, ErrorMessage, FormControl, Tooltip, call, toast, useCall } from "frappe-ui";
 import EmailComposer from "../components/EmailComposer.vue";
 import EmailThread from "../components/EmailThread.vue";
 import EmptyState from "../components/EmptyState.vue";
@@ -25,11 +25,27 @@ const isInbox = computed(() => props.sentOrReceived === "Received");
 const route = useRoute();
 const router = useRouter();
 
+const EMAILS_PER_PAGE = 200;
+const query = ref("");
+const emailLimit = ref(EMAILS_PER_PAGE);
+watch(query, () => (emailLimit.value = EMAILS_PER_PAGE));
+// What the listed rows answer. It trails the search box and the limit while their request is on its way.
+const loaded = ref({ query: "", limit: EMAILS_PER_PAGE });
+
 const mailbox = useCall({
 	url: "/api/v2/method/roadie.api.get_mailbox",
-	params: () => ({ sent_or_received: props.sentOrReceived }),
+	params: () => ({ sent_or_received: props.sentOrReceived, query: query.value, limit: emailLimit.value }),
 	refetch: true,
+	onSuccess: () => (loaded.value = { query: query.value, limit: emailLimit.value }),
 });
+// A search or a Load more aborts the request in flight, and frappe-ui reports that abort as the mailbox's error.
+const loadError = computed(() =>
+	mailbox.loading || mailbox.error?.name === "AbortError" ? null : mailbox.error
+);
+// Every email read counts in exactly one thread, so threads adding up to the limit mean older emails are left.
+const hasOlderEmails = computed(
+	() => (mailbox.data || []).reduce((emails, row) => emails + row.count, 0) >= loaded.value.limit
+);
 
 const isUnreadOnly = ref(false);
 const isComposing = ref(false);
@@ -285,9 +301,26 @@ onKey("Escape", () => !hasDraft() && close());
 					/>
 				</template>
 			</header>
+			<div class="px-4 pb-3">
+				<FormControl
+					v-model="query"
+					type="search"
+					:debounce="300"
+					:placeholder="__('Search subject, sender or recipient')"
+					:aria-label="__('Search subject, sender or recipient')"
+				/>
+			</div>
 			<div ref="list" class="flex-1 overflow-y-auto border-t">
 				<ListSkeleton v-if="mailbox.loading && !mailbox.data" class="m-4" />
-				<ErrorMessage v-else-if="mailbox.error" class="m-4" :message="mailbox.error" />
+				<ErrorMessage v-else-if="loadError" class="m-4" :message="loadError" />
+				<EmptyState
+					v-else-if="loaded.query && !mailbox.data?.length"
+					class="m-4"
+					icon="lucide-search-x"
+					:title="__('No emails match “{0}”', [loaded.query])"
+				>
+					<Button icon-left="lucide-x" :label="__('Clear search')" @click="query = ''" />
+				</EmptyState>
 				<EmptyState
 					v-else-if="!mailbox.data?.length && isInbox"
 					class="m-4"
@@ -389,6 +422,13 @@ onKey("Escape", () => !hasDraft() && close());
 						</button>
 					</li>
 				</ul>
+				<div v-if="hasOlderEmails" class="flex justify-center p-4">
+					<Button
+						:label="__('Load more')"
+						:loading="mailbox.loading"
+						@click="emailLimit += EMAILS_PER_PAGE"
+					/>
+				</div>
 			</div>
 		</section>
 		<section
