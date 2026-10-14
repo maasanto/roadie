@@ -1,5 +1,6 @@
-import { computed, ref, watch } from "vue";
+import { computed, onScopeDispose, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { confirmDiscardDraft } from "./draft.js";
 
 // The record open in a screen's panel or dialog lives in the address under `key`, so a row can be a link opened
 // in a new tab, a reload keeps the record open and Back closes it. A record being created has no name yet, so it
@@ -16,7 +17,6 @@ export function useOpenRecord(key, { toQuery = (name) => name, fromQuery = (valu
 	let wasOpenedHere = false;
 	let isClosing = false;
 	watch(addressedName, (addressed, previous) => {
-		isClosing = false;
 		if (!addressed) return;
 		name.value = addressed;
 		isCreating.value = false;
@@ -44,6 +44,21 @@ export function useOpenRecord(key, { toQuery = (name) => name, fromQuery = (valu
 	}
 
 	const isOpen = computed(() => isCreating.value || Boolean(addressedName.value));
+	// Another record, or Back, unmounts the open one's email thread. Close has asked already, and leaving the screen
+	// is main.js's to ask about.
+	const stopGuard = router.beforeEach((to, from) => {
+		const toName = firstValue(to.query[key]);
+		const isSwitching = to.path === from.path && toName !== firstValue(from.query[key]);
+		const isClose = isClosing && !toName;
+		return !isSwitching || !isOpen.value || isClose || confirmDiscardDraft();
+	});
+	// A close that another navigation overtakes ends too, or Close would never work again.
+	const stopClosing = router.afterEach(() => (isClosing = false));
+	onScopeDispose(() => {
+		stopGuard();
+		stopClosing();
+	});
+
 	const open = (recordName) => router.push(routeTo(recordName));
 	return { name, isOpen, routeTo, open, create, close };
 }
@@ -51,11 +66,13 @@ export function useOpenRecord(key, { toQuery = (name) => name, fromQuery = (valu
 function useAddressedName(route, key, fromQuery) {
 	const screen = route.name;
 	return computed(() => {
-		// A key repeated by a hand-edited address reads as its first value.
-		const value = route.name === screen && [route.query[key]].flat()[0];
+		const value = route.name === screen && firstValue(route.query[key]);
 		return value ? fromQuery(value) : null;
 	});
 }
+
+// A key repeated by a hand-edited address reads as its first value.
+const firstValue = (queryValue) => [queryValue].flat()[0];
 
 // Going back to the list closes the record as Back does, where replacing the address would leave an entry behind
 // that opens it again.

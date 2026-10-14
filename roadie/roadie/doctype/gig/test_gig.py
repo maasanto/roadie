@@ -4,6 +4,7 @@ from io import BytesIO
 import frappe
 from frappe.api.v2 import document_list
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
+from frappe.desk.reportview import delete_items
 from frappe.tests import IntegrationTestCase
 from frappe.utils import set_request
 from frappe.website.path_resolver import resolve_redirect
@@ -158,3 +159,29 @@ class TestGig(IntegrationTestCase):
 			with self.assertRaises(frappe.Redirect):
 				resolve_redirect(old_path)
 			self.assertEqual(frappe.flags.redirect_location, new_path)
+
+
+# A class of its own: delete_items commits, which would keep whatever the other tests left for the class rollback.
+class TestDeleteGigsFromTheList(IntegrationTestCase):
+	def tearDown(self):
+		frappe.set_user("Administrator")
+
+	def test_member_deletes_a_dead_gig_and_keeps_one_with_tasks(self):
+		"""The list's Delete posts a batch to delete_items as below and keeps the names it returns selected."""
+		make_member(MEMBER, "John")
+		frappe.set_user(MEMBER)
+		dead = frappe.get_doc({"doctype": "Gig", "title": "Acme Winter 2026"}).insert()
+		busy = frappe.get_doc({"doctype": "Gig", "title": "Acme Summer 2027"}).insert()
+		frappe.get_doc({"doctype": "Band Task", "gig": busy.name, "title": "Send the rider"}).insert()
+		# delete_items rolls back on a refusal, which would otherwise undo this setup.
+		frappe.db.commit()  # nosemgrep
+		self.addCleanup(frappe.db.commit)  # nosemgrep
+		self.addCleanup(frappe.db.delete, "Gig", {"name": ("in", [dead.name, busy.name])})
+		self.addCleanup(frappe.db.delete, "Band Task", {"gig": busy.name})
+
+		self.addCleanup(setattr, frappe.local, "form_dict", frappe.local.form_dict)
+		frappe.local.form_dict = frappe._dict(doctype="Gig", items=json.dumps([dead.name, busy.name]))
+
+		self.assertEqual(delete_items(), [busy.name])
+		self.assertFalse(frappe.db.exists("Gig", dead.name))
+		self.assertTrue(frappe.db.exists("Gig", busy.name))

@@ -7,7 +7,11 @@ import { useDirectoryColumns } from "../directoryColumns";
 import { useMeta } from "../meta";
 import { fieldsFromMeta } from "../metaFields";
 
-const props = defineProps({ doctype: { type: String, required: true } });
+const props = defineProps({
+	doctype: { type: String, required: true },
+	// A gig's links only count as fields once its pickers describe them.
+	controls: { type: Object, default: null },
+});
 
 const { columns, loaded, saved, saving, save, reset } = useDirectoryColumns(props.doctype);
 const meta = useMeta(props.doctype);
@@ -20,7 +24,7 @@ const ownLabels = computed(
 // The fields this DocType can show but the list does not already. Only the ones a form can edit are offered,
 // so a table, an attachment or a layout break never lands in a column.
 const options = computed(() =>
-	fieldsFromMeta(metaFields.value, directoryControls[props.doctype] ?? {})
+	fieldsFromMeta(metaFields.value, props.controls ?? directoryControls[props.doctype] ?? {})
 		.filter((field) => !columns.value.some((column) => column.fieldname === field.fieldname))
 		.map((field) => ({
 			label: field.label,

@@ -24,7 +24,7 @@ const quickFields = computed(() => fieldsNamed(fieldnames.value));
 
 const draft = ref([]);
 watch(isCustomising, (customising) => customising && (draft.value = [...fieldnames.value]));
-// A bar that leaves the page, the pipeline's when its kanban shows, takes an unsaved customisation with it, or
+// A bar that leaves the page, the pipeline's when its view changes, takes an unsaved customisation with it, or
 // the page would keep its toolbar hidden and come back to an empty draft.
 onBeforeUnmount(() => (isCustomising.value = false));
 
@@ -60,8 +60,11 @@ async function saveDraft() {
 			<Button icon="lucide-x" :label="__('Cancel')" @click="isCustomising = false" />
 		</div>
 	</div>
-	<!-- A phone gives the filters a row of their own, two abreast, above the buttons. -->
-	<div v-else class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:min-w-0 sm:flex-1 sm:flex-wrap">
+	<!-- A phone gives the filters a row of their own, two abreast, above the buttons, unless there are none. -->
+	<div
+		v-else-if="quickFields.length"
+		class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:min-w-0 sm:flex-1 sm:flex-wrap"
+	>
 		<div v-for="field in quickFields" :key="field.fieldname" class="sm:w-40">
 			<QuickFilterField
 				:field="field"

@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createApp } from "vue";
+import { createApp, effectScope } from "vue";
 import { createMemoryHistory, createRouter } from "vue-router";
-import { useOpenRecord } from "./openRecord.js";
+
+globalThis.window = globalThis;
+await import("./translation.js");
+const { trackDraft } = await import("./draft.js");
+const { useOpenRecord } = await import("./openRecord.js");
 
 // A browser's history state names the entry before the current one; memory history leaves it empty.
 const history = createMemoryHistory();
@@ -23,7 +27,11 @@ const router = createRouter({
 	],
 });
 const app = createApp(screen).use(router);
-const openGig = () => app.runWithContext(() => useOpenRecord("gig"));
+// Each screen's scope ends with the test, as an unmount would, so its guard does not outlive it.
+let screenScope;
+test.beforeEach(() => (screenScope = effectScope()));
+test.afterEach(() => screenScope.stop());
+const openGig = () => screenScope.run(() => app.runWithContext(() => useOpenRecord("gig")));
 const query = () => router.currentRoute.value.query;
 const settle = () => new Promise((resolve) => setTimeout(resolve));
 
@@ -100,6 +108,66 @@ test("a gig reached from elsewhere closes in place, leaving the previous page in
 	await settle();
 	assert.equal(router.currentRoute.value.name, "Pipeline");
 	assert.deepEqual(query(), {});
+});
+
+test("an unsent email asks before another gig or Back replaces it, and Close asks only once", async (t) => {
+	let questions = 0;
+	let answer = false;
+	window.confirm = () => {
+		questions++;
+		return answer;
+	};
+	const forgetDraft = trackDraft(() => true);
+	t.after(() => {
+		forgetDraft();
+		delete window.confirm;
+	});
+
+	await router.push("/?view=list");
+	const gig = openGig();
+	gig.open("gig-1");
+	await settle();
+	questions = 0;
+
+	gig.open("gig-2");
+	await settle();
+	assert.equal(questions, 1);
+	assert.equal(query().gig, "gig-1", "a refusal keeps the gig and its email");
+	router.back();
+	await settle();
+	assert.equal(questions, 2);
+	assert.equal(query().gig, "gig-1");
+
+	// The panel's Close button has asked before it closes.
+	gig.close();
+	await settle();
+	assert.equal(questions, 2);
+	assert.deepEqual(query(), { view: "list" });
+
+	answer = true;
+	gig.create();
+	gig.open("gig-3");
+	await settle();
+	assert.equal(
+		questions,
+		3,
+		"a gig created in the panel stays out of the address, and its email counts too"
+	);
+	assert.equal(query().gig, "gig-3");
+});
+
+test("a close overtaken by reopening the gig still lets the next Close close", async () => {
+	await router.push("/?view=list");
+	await router.push("/?view=list&gig=gig-1");
+	const gig = openGig();
+	gig.close();
+	gig.open("gig-1");
+	await settle();
+	assert.equal(query().gig, "gig-1");
+
+	gig.close();
+	await settle();
+	assert.deepEqual(query(), { view: "list" });
 });
 
 test("a new gig opens without touching the address, and closing it leaves the address alone", async () => {
