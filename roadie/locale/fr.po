@@ -2008,8 +2008,9 @@ msgid "{0} has no date yet, so there is nothing to answer"
 msgstr "{0} n'a pas encore de date : il n'y a rien à répondre"
 
 #: frontend/src/components/BandMembers.vue
-msgid "Confirms availability"
-msgstr "Confirme sa disponibilité"
+#: roadie/fixtures/custom_field.json
+msgid "Must confirm availability?"
+msgstr "Doit confirmer sa disponibilité ?"
 
 #: frontend/src/components/BandMembers.vue
 msgid "Asked whether they can play each gig"
@@ -2022,10 +2023,6 @@ msgstr "Demandez au groupe s'il peut jouer à cette date."
 #: frontend/src/components/GigCard.vue
 msgid "{0} of {1} can play"
 msgstr "{0} sur {1} peuvent jouer"
-
-#: roadie/fixtures/custom_field.json
-msgid "Confirms gig availability"
-msgstr "Confirme sa disponibilité pour les concerts"
 
 #: roadie/roadie/doctype/gig/gig.py
 msgid "No band member is set to confirm their availability, so there is nobody to ask"

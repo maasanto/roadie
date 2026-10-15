@@ -1857,7 +1857,8 @@ msgid "{0} can't play {1} on {2}"
 msgstr ""
 
 #: frontend/src/components/BandMembers.vue
-msgid "Confirms availability"
+#: roadie/fixtures/custom_field.json
+msgid "Must confirm availability?"
 msgstr ""
 
 #: frontend/src/components/BandMembers.vue
@@ -1870,10 +1871,6 @@ msgstr ""
 
 #: frontend/src/components/GigCard.vue
 msgid "{0} of {1} can play"
-msgstr ""
-
-#: roadie/fixtures/custom_field.json
-msgid "Confirms gig availability"
 msgstr ""
 
 #: roadie/roadie/doctype/gig/gig.py
