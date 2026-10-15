@@ -392,7 +392,7 @@ onKey("Escape", close);
 						)
 					"
 				>
-					<Button :label="__('Open the pipeline')" route="/" />
+					<Button :label="__('Open the gigs')" route="/" />
 				</EmptyState>
 				<p v-else-if="!rows.length && isUnreadOnly" class="m-4 text-p-sm text-ink-gray-5">
 					{{ __("No unread emails.") }}
