@@ -64,6 +64,15 @@ class TestInvitations(IntegrationTestCase):
 		# Frappe creates invitees as System Users; a member must still never reach Desk.
 		self.assertEqual(frappe.db.get_value("User", INVITEE, "user_type"), "Website User")
 
+	def test_member_invites_a_manager(self):
+		frappe.set_user(MEMBER)
+		invite(INVITEE, roles=("Band Member", "Band Manager"))
+
+		frappe.set_user("Guest")
+		_accept_invitation(emailed_invitation_key(INVITEE), True)
+
+		self.assertTrue({"Band Member", "Band Manager"} <= set(frappe.get_roles(INVITEE)))
+
 	def test_an_invitee_always_lands_on_roadie(self):
 		frappe.set_user(MEMBER)
 		invite(INVITEE, redirect_to_path="https://phishing.example.com/login")
