@@ -10,7 +10,6 @@ import {
 	memberOptions,
 	pipelineColumns,
 } from "../gig";
-import { availabilityState } from "../availability";
 import { translatedOptions } from "../translation";
 
 const props = defineProps({
@@ -46,14 +45,12 @@ const activityBadges = computed(() => {
 	].filter((badge) => badge.count);
 });
 
-const availability = computed(() =>
-	(props.activity.availability || []).map((row) => {
-		const member = props.members.find((listed) => listed.name === row.member);
-		const state = availabilityState(row.answer);
-		const name = member?.full_name || row.member;
-		return { ...row, name, image: member?.user_image, dot: state.dot, title: `${name}: ${state.label}` };
-	})
-);
+// How many of the members asked can play; the icon turns green once every one of them can.
+const availability = computed(() => {
+	const rows = props.activity.availability || [];
+	const available = rows.filter((row) => row.answer === "Yes").length;
+	return { available, asked: rows.length, isConfirmed: rows.length > 0 && available === rows.length };
+});
 
 const assignOptions = computed(() =>
 	memberOptions(props.members).map((option) => ({
@@ -98,20 +95,23 @@ const moveOptions = computed(() =>
 		<p v-if="linkedTitles.length" class="truncate text-sm text-ink-gray-6">
 			{{ linkedTitles.join(" · ") }}
 		</p>
-		<ul v-if="availability.length" class="flex flex-wrap gap-1.5" :aria-label="__('Availability')">
-			<li v-for="row in availability" :key="row.member" class="relative" :title="row.title">
-				<Avatar :label="row.name" :image="row.image" size="sm" />
-				<span
-					class="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-white"
-					:class="row.dot"
-					aria-hidden="true"
-				/>
-				<span class="sr-only">{{ row.title }}</span>
-			</li>
-		</ul>
 		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-gray-5">
 			<span v-if="gig.gig_date" class="flex items-center gap-1">
 				<span class="lucide-calendar size-3.5" aria-hidden="true" />{{ formatDate(gig.gig_date) }}
+			</span>
+			<span
+				v-if="availability.asked"
+				class="flex items-center gap-1"
+				:title="__('{0} of {1} can play', [availability.available, availability.asked])"
+			>
+				<span
+					class="lucide-user-check size-3.5"
+					:class="availability.isConfirmed ? 'text-ink-green-6' : ''"
+					aria-hidden="true"
+				/>{{ availability.available }}/{{ availability.asked
+				}}<span class="sr-only">{{
+					__("{0} of {1} can play", [availability.available, availability.asked])
+				}}</span>
 			</span>
 			<span v-if="feeLabel && gig.fee" class="flex items-center gap-1">
 				<span class="lucide-banknote size-3.5" aria-hidden="true" />{{ feeLabel }}
