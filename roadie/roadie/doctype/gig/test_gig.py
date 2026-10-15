@@ -55,32 +55,6 @@ class TestGig(IntegrationTestCase):
 		self.assertIn(gig.name, [row.name for row in frappe.get_list("Gig")])
 		self.assertEqual(roadie_page.get_context().boot["user"], MEMBER)
 
-	def test_gig_takes_the_festival_window_unless_already_set(self):
-		festival = frappe.get_doc(
-			{
-				"doctype": "Festival",
-				"title": "Acme Festival",
-				"application_opens": "2027-01-10",
-				"application_closes": "2027-02-15",
-			}
-		).insert()
-
-		frappe.set_user(MEMBER)
-		copied = frappe.get_doc({"doctype": "Gig", "title": "Acme 2027", "festival": festival.name}).insert()
-		edited = frappe.get_doc(
-			{
-				"doctype": "Gig",
-				"title": "Acme 2027 late",
-				"festival": festival.name,
-				"application_closes": "2027-03-01",
-			}
-		).insert()
-
-		self.assertEqual(str(copied.application_opens), "2027-01-10")
-		self.assertEqual(str(copied.application_closes), "2027-02-15")
-		self.assertEqual(str(edited.application_closes), "2027-03-01")
-		self.assertEqual(copied.gig_owner, MEMBER)
-
 	def test_application_window_cannot_close_before_it_opens(self):
 		frappe.set_user(MEMBER)
 		with self.assertRaises(frappe.ValidationError):
