@@ -19,6 +19,7 @@ const props = defineProps({
 	members: { type: Array, default: () => [] },
 	showsOpeningDate: { type: Boolean, default: false },
 	feeLabel: { type: String, default: null },
+	activity: { type: Object, default: () => ({}) },
 });
 const emit = defineEmits(["assign", "move"]);
 
@@ -26,6 +27,23 @@ const closedStatuses = pipelineColumns.at(-1).statuses;
 const hasOpenDeadline = computed(
 	() => props.gig.application_closes && daysUntil(props.gig.application_closes) >= 0
 );
+
+// The label carries what the red alone would only show.
+const activityBadges = computed(() => {
+	const { unread_emails, open_tasks, next_due, comments, attachments } = props.activity;
+	const isOverdue = next_due && daysUntil(next_due) < 0;
+	return [
+		{ icon: "lucide-mail", count: unread_emails, label: __("Unread emails") },
+		{
+			icon: "lucide-list-checks",
+			count: open_tasks,
+			label: isOverdue ? __("Open tasks, some overdue") : __("Open tasks"),
+			class: isOverdue ? "text-ink-red-7" : "",
+		},
+		{ icon: "lucide-message-square", count: comments, label: __("Comments") },
+		{ icon: "lucide-paperclip", count: attachments, label: __("Attachments") },
+	].filter((badge) => badge.count);
+});
 
 const assignOptions = computed(() =>
 	memberOptions(props.members).map((option) => ({
@@ -91,6 +109,16 @@ const moveOptions = computed(() =>
 				<span class="lucide-alarm-clock size-3.5" aria-hidden="true" />{{
 					__("Apply by {0}", [formatDate(gig.application_closes)])
 				}}
+			</span>
+			<span
+				v-for="badge in activityBadges"
+				:key="badge.icon"
+				class="flex items-center gap-1"
+				:class="badge.class"
+				:title="badge.label"
+			>
+				<span class="size-3.5" :class="badge.icon" aria-hidden="true" />{{ badge.count
+				}}<span class="sr-only">{{ badge.label }}</span>
 			</span>
 			<Badge v-if="closedStatuses.includes(gig.status)" :label="__(gig.status)" />
 			<!-- Beside Assign to, a second button would leave the title a third of a narrow column. -->

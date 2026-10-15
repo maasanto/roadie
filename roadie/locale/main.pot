@@ -1661,3 +1661,15 @@ msgstr ""
 #: roadie/api.py
 msgid "Only conversations filed under no gig, task or directory entry can be linked, not {0}"
 msgstr ""
+
+#: frontend/src/components/GigCard.vue
+msgid "Unread emails"
+msgstr ""
+
+#: frontend/src/components/GigCard.vue
+msgid "Open tasks, some overdue"
+msgstr ""
+
+#: frontend/src/components/GigCard.vue
+msgid "Open tasks"
+msgstr ""
