@@ -62,3 +62,23 @@ test("a cleared list stays cleared, on the screen and when it is opened again", 
 	await router.push("/festivals");
 	assert.deepEqual(query(), {});
 });
+
+test("Back leaves a list filtered while a record was open over it, which a link still opens filtered", async () => {
+	await router.push("/");
+	await router.push("/festivals");
+	await router.push({ name: "Festivals", query: { entry: "Festival:acme" } });
+	const { filters } = festivalsList();
+	filters.value = [{ fieldname: "city", operator: "like", value: "Lyon" }];
+	await settle();
+	await router.replace({ name: "Festivals", query: { filters: query().filters } });
+
+	router.back();
+	await settle();
+	assert.deepEqual(query(), {});
+	router.back();
+	await settle();
+	assert.equal(router.currentRoute.value.name, "Pipeline");
+
+	await router.push("/festivals");
+	assert.deepEqual(query(), { filters: '[["city","like","Lyon"]]' });
+});
