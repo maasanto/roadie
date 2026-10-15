@@ -200,7 +200,7 @@ watch([chart, shownBars], ([element, bars]) => {
 				__('Nothing dated yet. Give a gig a date or an application window, or a task a due date.')
 			"
 		>
-			<Button :label="__('Open the pipeline')" route="/" />
+			<Button :label="__('Open the gigs')" route="/" />
 		</EmptyState>
 		<template v-else>
 			<div ref="chart" class="mt-4 hidden overflow-hidden rounded-6 border md:block" />

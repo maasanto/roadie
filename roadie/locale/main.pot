@@ -912,7 +912,7 @@ msgstr ""
 #: frontend/src/pages/MyTasksScreen.vue:43
 #: frontend/src/pages/PlanningScreen.vue:195
 #: roadie/fixtures/notification.json:14
-msgid "Open the pipeline"
+msgid "Open the gigs"
 msgstr ""
 
 #: frontend/src/components/DriveLinkDialog.vue:113

@@ -88,7 +88,7 @@ function openTask(task) {
 				:title="TASK_SCOPES[scope].emptyTitle"
 				:description="TASK_SCOPES[scope].emptyDescription"
 			>
-				<Button :label="__('Open the pipeline')" route="/" />
+				<Button :label="__('Open the gigs')" route="/" />
 			</EmptyState>
 			<section v-if="openTasks.length" class="mt-6">
 				<h2 class="pb-2 text-sm-medium text-ink-gray-7">

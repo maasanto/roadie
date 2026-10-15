@@ -11,7 +11,7 @@
   "enabled": 1,
   "event": "Days Before",
   "is_standard": 0,
-  "message": "<p>{{ _('The application for {0} closes on {1}, in {2} days, and the gig is still at {3}.').format('<b>' ~ doc.title ~ '</b>', frappe.utils.format_date(doc.application_closes), alert.days_in_advance, _(doc.status)) }}</p>\n<p><a href=\"{{ frappe.utils.get_url('/roadie') }}\">{{ _('Open the pipeline') }}</a></p>",
+  "message": "<p>{{ _('The application for {0} closes on {1}, in {2} days, and the gig is still at {3}.').format('<b>' ~ doc.title ~ '</b>', frappe.utils.format_date(doc.application_closes), alert.days_in_advance, _(doc.status)) }}</p>\n<p><a href=\"{{ frappe.utils.get_url('/roadie') }}\">{{ _('Open the gigs') }}</a></p>",
   "message_type": "HTML",
   "module": "Roadie",
   "name": "Gig Application Closes in 7 Days",

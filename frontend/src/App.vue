@@ -65,7 +65,7 @@ const directoryScreens = directoryTypes.map((type) => ({
 }));
 
 const screens = [
-	{ name: "Pipeline", label: __("Pipeline"), shortLabel: __("Pipeline"), icon: "lucide-kanban", to: "/" },
+	{ name: "Pipeline", label: __("Gigs"), shortLabel: __("Gigs"), icon: "lucide-kanban", to: "/" },
 	{
 		name: "Planning",
 		label: __("Planning"),
