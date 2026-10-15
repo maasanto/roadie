@@ -173,6 +173,7 @@ async function submit(event) {
 	await send.submit({
 		doctype: props.doctype,
 		name: props.name,
+		sender: window.email_sender,
 		recipients: email.to,
 		cc: email.cc,
 		bcc: email.bcc,

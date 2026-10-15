@@ -42,8 +42,17 @@ def get_context():
 			"can_link_drive_items": can_link_drive_items,
 			"push_relay_server_url": frappe.conf.push_relay_server_url if is_push_configured() else None,
 			"email_signature": get_email_signature(),
+			"email_sender": get_email_sender(),
 		}
 	)
+
+
+# Frappe sends as the member and sets Reply-To to them, so replies would skip the band's mailbox.
+def get_email_sender():
+	band_email = frappe.db.get_value(
+		"Email Account", {"enable_outgoing": 1, "default_outgoing": 1}, "email_id"
+	)
+	return band_email and frappe.utils.get_formatted_email(frappe.session.user, mail=band_email)
 
 
 # Desk's precedence, from Communication.set_signature_in_email_content: an account signs only when told to, and
