@@ -1920,8 +1920,12 @@ msgid "No answer yet"
 msgstr "Pas encore de réponse"
 
 #: frontend/src/availability.js
-msgid "{0} can't play {1}. Book it anyway?"
-msgstr "{0} ne peut pas jouer {1}. Le confirmer quand même ?"
+msgid "{0} can't play {1}."
+msgstr "{0} ne peut pas jouer {1}."
+
+#: frontend/src/availability.js
+msgid "Book anyway?"
+msgstr "Confirmer quand même ?"
 
 #: frontend/src/activity.js
 msgid "asked the band whether they can play"

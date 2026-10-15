@@ -1769,7 +1769,11 @@ msgid "No answer yet"
 msgstr ""
 
 #: frontend/src/availability.js
-msgid "{0} can't play {1}. Book it anyway?"
+msgid "{0} can't play {1}."
+msgstr ""
+
+#: frontend/src/availability.js
+msgid "Book anyway?"
 msgstr ""
 
 #: frontend/src/activity.js
