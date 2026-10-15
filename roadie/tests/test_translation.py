@@ -5,7 +5,7 @@ import frappe
 from babel.messages.pofile import read_po
 from frappe.tests import IntegrationTestCase
 
-from roadie.api import DIRECTORY_DOCTYPES
+from roadie.api import CUSTOMISABLE_DOCTYPES
 from roadie.roadie.doctype.gig.test_gig import MEMBER, make_member
 from roadie.www import roadie as roadie_page
 
@@ -38,7 +38,7 @@ class TestTranslation(IntegrationTestCase):
 		"""The SPA forms take their labels and choices from the DocTypes, not from `__()` literals."""
 		form_strings = {
 			text
-			for doctype in ("Gig", *DIRECTORY_DOCTYPES)
+			for doctype in CUSTOMISABLE_DOCTYPES
 			# The DocType itself, not its meta: a label the band renamed is theirs, not ours to translate.
 			for field in frappe.get_doc("DocType", doctype).fields
 			for text in (field.label, *(field.options.split("\n") if field.fieldtype == "Select" else ()))
