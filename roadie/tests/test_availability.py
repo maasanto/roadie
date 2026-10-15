@@ -5,18 +5,20 @@ from frappe.tests import IntegrationTestCase
 from frappe.utils import add_days, today
 
 from roadie.api import (
+	AVAILABILITY_FIELD,
 	answer_availability,
 	get_activity,
 	get_gig_activity,
 	get_members,
 	get_pending_availability,
 	request_availability,
-	set_band_manager,
+	set_confirms_availability,
 )
 from roadie.roadie.doctype.gig.test_gig import MEMBER, OTHER_MEMBER, make_member
 from roadie.tests.test_notifications import notifications_for
 
-MANAGER = "max@example.com"
+# A member who books the gigs rather than plays them, so is not asked about a date.
+BOOKER = "max@example.com"
 NEWCOMER = "nina@example.com"
 
 
@@ -24,17 +26,21 @@ def answers(gig_name):
 	return {row.member: row.answer for row in frappe.get_doc("Gig", gig_name).availability}
 
 
+def confirms_availability(member):
+	return next(listed for listed in get_members() if listed.name == member).confirms_availability
+
+
 class TestAvailability(IntegrationTestCase):
 	def setUp(self):
 		make_member(MEMBER, "John")
 		make_member(OTHER_MEMBER, "Jane")
-		make_member(MANAGER, "Max")
-		frappe.get_doc("User", MANAGER).add_roles("Band Manager")
-		# A test class shares one transaction, so a member made manager by an earlier test would stay one.
-		frappe.get_doc("User", OTHER_MEMBER).remove_roles("Band Manager")
-		frappe.db.delete("Notification Log", {"for_user": ["in", (MEMBER, OTHER_MEMBER, MANAGER, NEWCOMER)]})
+		make_member(BOOKER, "Max")
+		# A test class shares one transaction, so a member unticked by an earlier test would stay unticked.
+		frappe.db.set_value("User", OTHER_MEMBER, AVAILABILITY_FIELD, 1)
+		frappe.db.set_value("User", BOOKER, AVAILABILITY_FIELD, 0)
+		frappe.db.delete("Notification Log", {"for_user": ["in", (MEMBER, OTHER_MEMBER, BOOKER, NEWCOMER)]})
 
-		frappe.set_user(MANAGER)
+		frappe.set_user(BOOKER)
 		self.gig = frappe.get_doc(
 			{"doctype": "Gig", "title": "Acme Festival 2027", "gig_date": add_days(today(), 30)}
 		).insert()
@@ -42,15 +48,23 @@ class TestAvailability(IntegrationTestCase):
 	def tearDown(self):
 		frappe.set_user("Administrator")
 
-	def test_the_manager_asks_every_member_but_managers(self):
+	def test_a_new_member_confirms_availability_until_unticked(self):
+		frappe.set_user("Administrator")
+		make_member(NEWCOMER, "Nina")
+
+		frappe.set_user(MEMBER)
+		self.assertTrue(confirms_availability(NEWCOMER))
+		self.assertFalse(confirms_availability(BOOKER))
+
+	def test_the_booker_asks_every_member_who_confirms_availability(self):
 		request_availability(self.gig.name)
 
 		asked = answers(self.gig.name)
 		self.assertEqual((asked.get(MEMBER), asked.get(OTHER_MEMBER)), ("", ""))
-		self.assertNotIn(MANAGER, asked)
+		self.assertNotIn(BOOKER, asked)
 		[notification] = notifications_for(MEMBER, self.gig.name)
 		self.assertIn("can you play Acme Festival 2027", notification.subject)
-		self.assertFalse(notifications_for(MANAGER, self.gig.name))
+		self.assertFalse(notifications_for(BOOKER, self.gig.name))
 
 	def test_a_gig_without_a_date_cannot_be_asked_about_or_answered(self):
 		request_availability(self.gig.name)
@@ -69,7 +83,7 @@ class TestAvailability(IntegrationTestCase):
 		answer_availability(self.gig.name, "No")
 
 		self.assertNotIn(self.gig.name, [gig.name for gig in get_pending_availability()])
-		[notification] = notifications_for(MANAGER, self.gig.name)
+		[notification] = notifications_for(BOOKER, self.gig.name)
 		self.assertEqual(
 			notification.subject,
 			f"John Doe can't play Acme Festival 2027 on {frappe.utils.formatdate(self.gig.gig_date)}",
@@ -102,7 +116,7 @@ class TestAvailability(IntegrationTestCase):
 
 	def test_someone_never_asked_cannot_answer(self):
 		request_availability(self.gig.name)
-		frappe.set_user(MANAGER)
+		frappe.set_user(BOOKER)
 		with self.assertRaises(frappe.ValidationError):
 			answer_availability(self.gig.name, "Yes")
 
@@ -114,7 +128,7 @@ class TestAvailability(IntegrationTestCase):
 		make_member(NEWCOMER, "Nina")
 		frappe.db.delete("Notification Log", {"for_user": ["in", (MEMBER, OTHER_MEMBER)]})
 
-		frappe.set_user(MANAGER)
+		frappe.set_user(BOOKER)
 		request_availability(self.gig.name)
 
 		self.assertEqual(answers(self.gig.name)[MEMBER], "Yes")
@@ -134,11 +148,11 @@ class TestAvailability(IntegrationTestCase):
 	def test_a_new_date_asks_the_band_as_it_is_now(self):
 		request_availability(self.gig.name)
 		frappe.set_user("Administrator")
-		frappe.get_doc("User", OTHER_MEMBER).add_roles("Band Manager")
+		frappe.db.set_value("User", OTHER_MEMBER, AVAILABILITY_FIELD, 0)
 		make_member(NEWCOMER, "Nina")
 		frappe.db.delete("Notification Log", {"for_user": OTHER_MEMBER})
 
-		frappe.set_user(MANAGER)
+		frappe.set_user(BOOKER)
 		gig = frappe.get_doc("Gig", self.gig.name)
 		gig.gig_date = add_days(today(), 31)
 		gig.save()
@@ -148,12 +162,13 @@ class TestAvailability(IntegrationTestCase):
 		self.assertIn(NEWCOMER, asked)
 		self.assertFalse(notifications_for(OTHER_MEMBER, self.gig.name))
 
-	def test_a_member_made_manager_is_no_longer_waited_on(self):
+	def test_a_member_unticked_is_no_longer_waited_on(self):
 		request_availability(self.gig.name)
 
 		frappe.set_user(MEMBER)
-		set_band_manager(OTHER_MEMBER, True)
+		set_confirms_availability(OTHER_MEMBER, False)
 
+		self.assertFalse(confirms_availability(OTHER_MEMBER))
 		self.assertNotIn(OTHER_MEMBER, answers(self.gig.name))
 		frappe.set_user(OTHER_MEMBER)
 		self.assertNotIn(self.gig.name, [gig.name for gig in get_pending_availability()])
@@ -164,7 +179,7 @@ class TestAvailability(IntegrationTestCase):
 		answer_availability(self.gig.name, "Yes")
 		frappe.db.delete("Notification Log", {"for_user": MEMBER})
 
-		frappe.set_user(MANAGER)
+		frappe.set_user(BOOKER)
 		gig = frappe.get_doc("Gig", self.gig.name)
 		gig.gig_date = add_days(today(), 31)
 		gig.save()
@@ -179,11 +194,3 @@ class TestAvailability(IntegrationTestCase):
 
 		frappe.set_user(MEMBER)
 		self.assertNotIn(self.gig.name, [gig.name for gig in get_pending_availability()])
-
-	def test_a_member_makes_someone_a_manager_and_back(self):
-		frappe.set_user(MEMBER)
-		set_band_manager(OTHER_MEMBER, True)
-		self.assertTrue(next(m for m in get_members() if m.name == OTHER_MEMBER).is_manager)
-
-		set_band_manager(OTHER_MEMBER, False)
-		self.assertFalse(next(m for m in get_members() if m.name == OTHER_MEMBER).is_manager)
