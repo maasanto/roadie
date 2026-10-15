@@ -22,8 +22,9 @@ writes everything. The commands below use the `dokos` CLI; through MCP, `get-lis
 
 Records are named by a random hash, so always look a record up by `title` first and use its `name`.
 
-- **Gig** — a booking being chased: `title`, `status`, `gig_owner` (User), `gig_date`, `festival`, `venue`, `promoter`, `application_opens`, `application_closes`, `fee`, `notes`.
-- **Festival** — `title`, `city`, `website`, `instagram`, `usual_month`, `application_url`, `application_opens`, `application_closes`, `notes`.
+- **Gig** — a booking being chased: `title`, `status`, `gig_owner` (User), `gig_date`, `festival`, `festival_edition`, `venue`, `promoter`, `application_opens`, `application_closes`, `fee`, `notes`.
+- **Festival** — `title`, `city`, `website`, `instagram`, `usual_month`, `notes`.
+- **Festival Edition** — one year of a festival: `festival`, `year`, `start_date`, `end_date`, `website` (only when it differs from the festival's), `application_url`, `application_opens`, `application_closes`, `notes`.
 - **Venue** — `title`, `city`, `website`, `instagram`, `capacity`, `address`, `notes`.
 - **Promoter** — `title`, `city`, `website`, `instagram`, `notes`.
 - **Band** — `title`, `city`, `website`, `instagram`, `genre` (a comma-separated list of genres), `notes`.
@@ -32,8 +33,9 @@ Records are named by a random hash, so always look a record up by `title` first 
 
 Gig statuses, in pipeline order: `Idea`, `Contacted`, `Applied`, `Negotiating`, `Booked`, `Played`, `Declined`, `Dropped`.
 
-The last two are dead ends, shown together in the pipeline's last column. A gig created with a `festival` and no
-window copies the festival's `application_opens` and `application_closes`.
+The last two are dead ends, shown together in the pipeline's last column. A gig created with a `festival_edition`
+and no window copies the edition's `application_opens` and `application_closes`, and its `festival` when that is
+empty. The edition has to belong to the gig's festival.
 
 People are standard Contacts, attached to a Festival, Venue, Promoter or Band through a Dynamic
 Link. Internal discussion is a Comment, never emailed. Email is a Communication linked to its
@@ -53,11 +55,13 @@ Applications closing in the next N days, for gigs not applied to yet (the dates 
 dokos get-list Gig --fields '["name","title","status","application_closes","gig_owner"]' --filters '[["status","in",["Idea","Contacted"]],["application_closes","between",["2026-10-10","2026-10-24"]]]' --order-by "application_closes asc" --quiet
 ```
 
-Create a gig from a festival. Find the festival, then insert the gig with its `name`:
+Create a gig from a festival edition. Find the festival and its edition for the year, then insert the gig with the
+edition's `name`:
 
 ```bash
-dokos get-list Festival --fields '["name","title","city","application_url"]' --filters '[["title","like","%Acme%"]]' --quiet
-dokos insert '{"doctype":"Gig","title":"Acme Festival 2027","festival":"<festival name>","status":"Idea","gig_owner":"john@example.com"}' --quiet
+dokos get-list Festival --fields '["name","title","city"]' --filters '[["title","like","%Acme%"]]' --quiet
+dokos get-list "Festival Edition" --fields '["name","year","application_url","application_closes"]' --filters '[["festival","=","<festival name>"],["year","=",2027]]' --quiet
+dokos insert '{"doctype":"Gig","title":"Acme Festival 2027","festival_edition":"<edition name>","status":"Idea","gig_owner":"john@example.com"}' --quiet
 ```
 
 Add a task and assign it to a member. List the members first; only they can be assigned:
@@ -95,4 +99,4 @@ dokos call roadie.api.get_emails --get --args '{"doctype":"Gig","name":"<gig nam
 - Confirm with the user before sending any email and before deleting anything. Show the exact recipients, subject and text.
 - Never invent a contact, email address or member. If the record has no contact, say so and ask.
 - Comments are internal to the band; never put a contact's address in one expecting it to be emailed.
-- Leave `application_opens` and `application_closes` empty on a new festival gig so the festival's window is copied.
+- Leave `application_opens` and `application_closes` empty on a new festival gig so the edition's window is copied.
