@@ -1,10 +1,12 @@
 <script setup>
 import { computed, reactive, ref } from "vue";
 import { Button, ErrorMessage, FormControl, useCall, useList } from "frappe-ui";
+import TaskDialog from "./TaskDialog.vue";
 import TaskRow from "./TaskRow.vue";
-import { TASK_FIELDS, byDueDate, setDone } from "../task";
+import { TASK_FIELDS, byDueDate, isShownTask, setDone } from "../task";
 
 const props = defineProps({ gig: { type: String, required: true } });
+const emit = defineEmits(["saved"]);
 
 const tasks = useList({
 	doctype: "Band Task",
@@ -13,9 +15,22 @@ const tasks = useList({
 	orderBy: "creation asc",
 	limit: 500,
 });
-const openTasks = computed(() => (tasks.data || []).filter((task) => !task.done).sort(byDueDate));
-const doneTasks = computed(() => (tasks.data || []).filter((task) => task.done).sort(byDueDate));
+// The gig's own screen redraws too: Planning draws a gig's tasks as bars.
+function onTaskSaved() {
+	tasks.reload();
+	emit("saved");
+}
+const shownTasks = computed(() => (tasks.data || []).filter(isShownTask));
+const openTasks = computed(() => shownTasks.value.filter((task) => !task.done).sort(byDueDate));
+const doneTasks = computed(() => shownTasks.value.filter((task) => task.done).sort(byDueDate));
 const isShowingDone = ref(false);
+
+const isTaskOpen = ref(false);
+const openedTask = ref(null);
+function openTask(task) {
+	openedTask.value = task.name;
+	isTaskOpen.value = true;
+}
 
 const members = useCall({ url: "/api/v2/method/roadie.api.get_members" });
 const memberOptions = computed(() =>
@@ -36,7 +51,7 @@ async function addTask() {
 <template>
 	<section>
 		<h2 class="text-lg-semibold">{{ __("Tasks") }}</h2>
-		<template v-if="tasks.data?.length">
+		<template v-if="shownTasks.length">
 			<ul v-if="openTasks.length" class="mt-3 divide-y divide-outline-gray-1 rounded-6 border">
 				<TaskRow
 					v-for="task in openTasks"
@@ -44,6 +59,7 @@ async function addTask() {
 					:task="task"
 					:assignee="memberOf(task)"
 					@update:done="setDone(tasks, task, $event)"
+					@open="openTask(task)"
 				/>
 			</ul>
 			<Button
@@ -65,6 +81,7 @@ async function addTask() {
 					:task="task"
 					:assignee="memberOf(task)"
 					@update:done="setDone(tasks, task, $event)"
+					@open="openTask(task)"
 				/>
 			</ul>
 		</template>
@@ -99,5 +116,12 @@ async function addTask() {
 			</template>
 			<ErrorMessage class="col-span-2" :message="tasks.insert.error" />
 		</form>
+		<TaskDialog
+			v-if="openedTask"
+			v-model:open="isTaskOpen"
+			:name="openedTask"
+			:members="members.data"
+			@saved="onTaskSaved"
+		/>
 	</section>
 </template>

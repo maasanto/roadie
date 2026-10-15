@@ -160,12 +160,14 @@ defineExpose({ form, entryName });
 			</template>
 			<ErrorMessage class="col-span-2" :message="saveCall.error" />
 			<div class="col-span-2 flex justify-between">
-				<Button
-					icon-left="lucide-settings-2"
-					variant="ghost"
-					:label="__('Customise form')"
-					@click="isCustomising = true"
-				/>
+				<slot name="actions">
+					<Button
+						icon-left="lucide-settings-2"
+						variant="ghost"
+						:label="__('Customise form')"
+						@click="isCustomising = true"
+					/>
+				</slot>
 				<Button
 					type="submit"
 					variant="solid"
