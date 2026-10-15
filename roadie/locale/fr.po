@@ -1840,6 +1840,13 @@ msgstr "Candidater"
 #: frontend/src/components/FestivalEditions.vue
 msgid "No editions yet."
 msgstr "Aucune édition pour l'instant."
+#: frontend/src/components/TaskDialog.vue
+msgid "Delete task"
+msgstr "Supprimer la tâche"
+
+#: frontend/src/task.js
+msgid "Task deleted"
+msgstr "Tâche supprimée"
 #: frontend/src/components/GigCard.vue
 msgid "Unread emails"
 msgstr "E-mails non lus"

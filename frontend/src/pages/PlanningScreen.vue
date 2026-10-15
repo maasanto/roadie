@@ -9,10 +9,13 @@ import TaskDialog from "../components/TaskDialog.vue";
 import { confirmDiscardDraft } from "../draft";
 import { formatDate } from "../gig";
 import { useGigControls } from "../gigControls";
+import { isShownTask } from "../task";
 import { UNDO_WINDOW_MS } from "../undo";
 
 const planning = useCall({ url: "/api/v2/method/roadie.api.get_planning" });
 const { members, controls } = useGigControls();
+const isTaskBar = (bar) => ["task", "done"].includes(bar.kind);
+const shownBars = computed(() => (planning.data || []).filter((bar) => !isTaskBar(bar) || isShownTask(bar)));
 
 const legend = [
 	{ kind: "window", label: __("Application window") },
@@ -41,7 +44,7 @@ function translateGanttControls() {
 
 const lanes = computed(() => {
 	const lanes = [];
-	for (const bar of planning.data || []) {
+	for (const bar of shownBars.value) {
 		const lane = lanes.at(-1);
 		if (lane?.title === bar.lane) lane.bars.push(bar);
 		else lanes.push({ title: bar.lane, bars: [bar] });
@@ -63,7 +66,6 @@ const toGanttTasks = (bars) =>
 	}));
 const barOf = (task) => planning.data.find((bar) => bar.id === task.id);
 const toIsoDate = (date) => date.toLocaleDateString("en-CA");
-const isTaskBar = (bar) => ["task", "done"].includes(bar.kind);
 const recordTitle = (bar) => (isTaskBar(bar) ? bar.label : bar.lane);
 const nameOf = (user) => members.data?.find((member) => member.name === user)?.full_name || user;
 
@@ -82,7 +84,7 @@ function showPopup({ task, get_title, get_subtitle, get_details }) {
 let gantt = null;
 // gantt.refresh() would scroll back to today, away from the bar that was just moved.
 function redrawBars() {
-	gantt.setup_tasks(toGanttTasks(planning.data));
+	gantt.setup_tasks(toGanttTasks(shownBars.value));
 	gantt.change_view_mode(undefined, true);
 }
 
@@ -151,8 +153,12 @@ function openBar(task) {
 }
 
 const chart = ref(null);
-watch([chart, () => planning.data], ([element, bars]) => {
-	if (!element || !bars?.length) return;
+let ganttElement = null;
+// A saved, deleted or restored task redraws the chart in place, where the member scrolled it.
+watch([chart, shownBars], ([element, bars]) => {
+	if (!element || !bars.length) return;
+	if (element === ganttElement) return redrawBars();
+	ganttElement = element;
 	element.replaceChildren();
 	gantt = new Gantt(element, toGanttTasks(bars), {
 		readonly_progress: true,
@@ -186,7 +192,7 @@ watch([chart, () => planning.data], ([element, bars]) => {
 		<ListSkeleton v-if="planning.loading && !planning.data" class="mt-4" :rows="6" />
 		<ErrorMessage v-else-if="planning.error" class="mt-4" :message="planning.error" />
 		<EmptyState
-			v-else-if="!planning.data?.length"
+			v-else-if="!shownBars.length"
 			class="mt-4"
 			icon="lucide-calendar-range"
 			:title="__('Nothing on the calendar yet')"
@@ -231,7 +237,8 @@ watch([chart, () => planning.data], ([element, bars]) => {
 			v-if="openedTask"
 			v-model:open="isTaskOpen"
 			:name="openedTask.name"
-			:title="openedTask.label"
+			:members="members.data"
+			@saved="planning.reload()"
 		/>
 	</div>
 </template>

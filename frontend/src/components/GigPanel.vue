@@ -59,7 +59,7 @@ async function markSeen(gig, thread) {
 				@saved="emit('saved')"
 			>
 				<template #default="{ entryName }">
-					<GigTasks :gig="entryName" />
+					<GigTasks :gig="entryName" @saved="emit('saved')" />
 					<GigAttachments :gig="entryName" />
 					<CommentThread doctype="Gig" :name="entryName" />
 					<EmailThread doctype="Gig" :name="entryName" @loaded="markSeen(entryName, $event)" />

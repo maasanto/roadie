@@ -1690,6 +1690,12 @@ msgstr ""
 
 #: frontend/src/components/FestivalEditions.vue
 msgid "No editions yet."
+#: frontend/src/components/TaskDialog.vue
+msgid "Delete task"
+msgstr ""
+
+#: frontend/src/task.js
+msgid "Task deleted"
 #: frontend/src/components/GigCard.vue
 msgid "Unread emails"
 msgstr ""
