@@ -12,8 +12,9 @@ import {
 	SidebarLabel,
 	useCall,
 } from "frappe-ui";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, provide, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import AvailabilityStrip from "./components/AvailabilityStrip.vue";
 import NotificationPanel from "./components/NotificationPanel.vue";
 import SearchPalette from "./components/SearchPalette.vue";
 import { directoryTypes } from "./directory";
@@ -28,6 +29,17 @@ const router = useRouter();
 const showNotifications = ref(false);
 const notifications = useCall({ url: "/api/v2/method/roadie.api.get_notifications" });
 const unread = computed(() => unreadCount(notifications.data || []));
+
+// Read on the first screen and on every move to another, so a request that arrived meanwhile shows. A filter, a sort
+// or an opened record only changes the query, and the gig panel reads it again itself after an answer.
+const pendingAvailability = useCall({
+	url: "/api/v2/method/roadie.api.get_pending_availability",
+	immediate: false,
+});
+router.afterEach((to, from) => {
+	if (to.path !== from.path || !from.matched.length) pendingAvailability.reload();
+});
+provide("pendingAvailability", pendingAvailability);
 
 // An open Dialog treats any pointerdown or focus elsewhere as "outside" and closes, so Undo on a toast would close it too.
 onMounted(() => {
@@ -207,10 +219,13 @@ function openResult(item) {
 					:button="{ icon: 'lucide-menu', variant: 'ghost', label: __('Menu') }"
 				/>
 			</header>
-			<main class="min-w-0 flex-1 overflow-auto">
-				<!-- Keyed so the four directory screens, which share one component, remount on a type change. -->
-				<router-view :key="route.name" />
-			</main>
+			<div class="flex min-h-0 min-w-0 flex-1 flex-col">
+				<AvailabilityStrip :pending="pendingAvailability" />
+				<main class="min-h-0 flex-1 overflow-auto">
+					<!-- Keyed so the four directory screens, which share one component, remount on a type change. -->
+					<router-view :key="route.name" />
+				</main>
+			</div>
 			<nav class="flex border-t bg-surface-base md:hidden" :aria-label="__('Screens')">
 				<router-link
 					v-for="screen in [...screens, ...mailboxScreens]"

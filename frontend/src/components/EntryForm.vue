@@ -11,6 +11,8 @@ const props = defineProps({
 	doctype: { type: String, required: true },
 	name: { type: String, default: null },
 	controls: { type: Object, default: () => ({}) },
+	// Given the values about to be saved; returning false leaves the form as it is.
+	confirmSave: { type: Function, default: null },
 });
 const emit = defineEmits(["saved"]);
 
@@ -124,7 +126,9 @@ const saveCall = computed(() => (entryName.value ? updateEntry : createEntry));
 
 async function save() {
 	const call = saveCall.value;
-	await call.submit(storedFields(entryName.value ? changedFields() : filledFields()));
+	const values = entryName.value ? changedFields() : filledFields();
+	if (props.confirmSave && !props.confirmSave(values)) return;
+	await call.submit(storedFields(values));
 	if (call.error) return;
 	entryName.value = call.data.name;
 	fillForm(call.data);
