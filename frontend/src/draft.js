@@ -15,6 +15,16 @@ export function confirmDiscardDraft(isEdited = hasEditedDraft) {
 	return !isEdited() || window.confirm(__("Discard the unsent email?"));
 }
 
+// Matches EMAIL_DRAFT_FIELD in roadie/api.py, which only lets a draft delete the uploads stamped with it.
+export const DRAFT_UPLOAD_ARGS = { fieldname: "roadie_email_draft", private: true };
+
+// A draft also carries existing File records, such as a forwarded email's, which sending copies: they aren't the
+// draft's to delete, and the server would refuse.
+export const isDraftUpload = (file) => file.attached_to_field === DRAFT_UPLOAD_ARGS.fieldname;
+
+// A file picked from the record is the record's, even an earlier draft's upload left there: it is never the draft's.
+export const pickedFile = ({ name, file_name }) => ({ name, file_name });
+
 // For a dialog's v-model:open: closing it unmounts the email thread inside, so it stays open when the draft is kept.
 export const keepOpenForDraft = (isOpen) =>
 	computed({

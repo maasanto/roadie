@@ -4,6 +4,7 @@ from urllib.parse import urlsplit
 import frappe
 from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
+from frappe.email import relink
 from markupsafe import Markup
 
 from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns, clean_quick_filters
@@ -27,6 +28,8 @@ EMAIL_DRAFT_FIELD = "roadie_email_draft"
 MAILBOX_ROLES = ("Band Member", "System Manager")
 # Suite's own role: it opens Drive, and Suite's Mail, Calendar and Meet with it.
 DRIVE_ROLE = "Suite User"
+# A task's emails show in its dialog only, so a thread filed there would drop out of every record's history.
+LINKABLE_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 EMAIL_SUMMARY_FIELDS = [
 	"name",
 	"subject",
@@ -39,6 +42,7 @@ EMAIL_SUMMARY_FIELDS = [
 	"communication_date",
 	"seen",
 ]
+MAILBOX_SEARCH_FIELDS = ("subject", "sender", "sender_full_name", "recipients", "cc")
 
 
 SEARCH_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
@@ -49,13 +53,9 @@ SEARCH_QUERY_MAX_LENGTH = 100
 @frappe.whitelist()
 def search(query: str) -> list[dict]:
 	"""Grouped, permission-checked matches for the command palette, a handful per type at most."""
-	query = (query or "").strip()
+	query = _clean_query(query)
 	if not query:
 		return []
-	if len(query) > SEARCH_QUERY_MAX_LENGTH:
-		frappe.throw(
-			_("Search is limited to {0} characters, not {1}").format(SEARCH_QUERY_MAX_LENGTH, len(query))
-		)
 
 	needle = f"%{query}%"
 	groups = []
@@ -78,6 +78,15 @@ def search(query: str) -> list[dict]:
 		if matches:
 			groups.append({"doctype": doctype, "results": matches})
 	return groups
+
+
+def _clean_query(query):
+	query = (query or "").strip()
+	if len(query) > SEARCH_QUERY_MAX_LENGTH:
+		frappe.throw(
+			_("Search is limited to {0} characters, not {1}").format(SEARCH_QUERY_MAX_LENGTH, len(query))
+		)
+	return query
 
 
 @frappe.whitelist()
@@ -218,14 +227,19 @@ def get_comments(doctype: str, name: str) -> list[dict]:
 
 
 @frappe.whitelist()
-def get_mailbox(sent_or_received: str) -> list[dict]:
+def get_mailbox(sent_or_received: str, query: str | None = None, limit: int = 200) -> list[dict]:
 	"""The shared account's threads, newest first: each one's latest email in this direction, with how many
-	emails and unread emails it holds in that direction."""
+	emails and unread emails it holds in that direction. Only the latest `limit` emails are read, and with a query
+	only those whose subject, sender or recipients contain it."""
 	frappe.only_for(MAILBOX_ROLES)
 	if sent_or_received not in ("Sent", "Received"):
 		frappe.throw(_("Mailbox is either Sent or Received, not {0}").format(sent_or_received))
+	# Frappe reads a limit of 0 as no limit at all.
+	if limit < 1:
+		frappe.throw(_("The mailbox lists at least one email, not {0}").format(limit))
 
-	# ponytail: last 200 emails of every account, page and filter by Email Account if the band adds a second mailbox
+	query = _clean_query(query)
+	# ponytail: every account's emails, filter by Email Account if the band adds a second mailbox
 	emails = frappe.get_all(
 		"Communication",
 		filters={
@@ -233,9 +247,10 @@ def get_mailbox(sent_or_received: str) -> list[dict]:
 			"communication_type": "Communication",
 			"sent_or_received": sent_or_received,
 		},
+		or_filters={field: ["like", f"%{query}%"] for field in MAILBOX_SEARCH_FIELDS} if query else None,
 		fields=[*EMAIL_SUMMARY_FIELDS, "reference_doctype", "reference_name"],
 		order_by="communication_date desc",
-		limit=200,
+		limit=limit,
 	)
 	links = _directory_links([email.name for email in emails])
 	threads = {}
@@ -406,6 +421,35 @@ def _delete_email(name):
 	# Members have no delete right on Communication: these endpoints are the only way in, and they check access.
 	# force skips the link check that in_reply_to and reference_name would trip.
 	frappe.delete_doc("Communication", name, ignore_permissions=True, force=True)
+
+
+@frappe.whitelist(methods=["POST"])
+def link_thread(communication: str, doctype: str, name: str) -> None:
+	"""Files a conversation filed under nothing under a gig or directory record. A reply takes its record from the
+	Email Queue entry it answers, or else from the email itself, so both move for later replies to follow."""
+	if doctype not in LINKABLE_DOCTYPES:
+		frappe.throw(
+			_("Emails can only be filed under {0}, not {1}").format(", ".join(LINKABLE_DOCTYPES), doctype)
+		)
+	# The right Frappe asks for to send an email from the record itself.
+	frappe.get_doc(doctype, name).check_permission("email")
+	emails = [email.name for email in _mailbox_thread({"doctype": "Communication", "name": communication})]
+	# A reply or a filed email would move without the rest of its conversation.
+	if communication not in emails:
+		frappe.throw(
+			_("Only conversations filed under no gig, task or directory entry can be linked, not {0}").format(
+				communication
+			)
+		)
+
+	for email in emails:
+		relink(email, doctype, name)
+	frappe.db.set_value(
+		"Email Queue",
+		{"communication": ["in", emails]},
+		{"reference_doctype": doctype, "reference_name": name},
+		update_modified=False,
+	)
 
 
 @frappe.whitelist()

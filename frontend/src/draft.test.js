@@ -3,7 +3,9 @@ import { test } from "node:test";
 
 globalThis.window = globalThis;
 await import("./translation.js");
-const { confirmDiscardDraft, keepOpenForDraft, trackDraft } = await import("./draft.js");
+const { DRAFT_UPLOAD_ARGS, confirmDiscardDraft, isDraftUpload, keepOpenForDraft, pickedFile, trackDraft } =
+	await import("./draft.js");
+const { forwardDraft } = await import("./email.js");
 const { ref } = await import("vue");
 
 let answer;
@@ -49,6 +51,37 @@ test("a sent or unmounted composer no longer asks", () => {
 	composer({ isEdited: true }).forget();
 	assert.equal(confirmDiscardDraft(), true);
 	assert.equal(questions, 0);
+});
+
+test("discarding a forward or removing its chips deletes only the files the writer uploaded", () => {
+	const rider = { name: "file-1", file_name: "rider.pdf", file_url: "/private/files/rider.pdf" };
+	const { attachments: forwarded } = forwardDraft({
+		name: "comm-1",
+		sender: "alice@example.com",
+		subject: "Rider",
+		content: "<p>See you there</p>",
+		communication_date: "2027-07-14 10:00:00",
+		attachments: [rider],
+	});
+	// What upload_file answers the composer's FileUploader with.
+	const setlist = {
+		name: "file-2",
+		file_name: "setlist.pdf",
+		attached_to_field: DRAFT_UPLOAD_ARGS.fieldname,
+	};
+	assert.deepEqual([...forwarded, setlist].filter(isDraftUpload), [setlist]);
+});
+
+test("a file picked from the gig is never deleted, even an earlier draft's upload left on it", () => {
+	const staleUpload = {
+		name: "file-3",
+		file_name: "stage-plan.pdf",
+		file_url: "/private/files/stage-plan.pdf",
+		attached_to_field: DRAFT_UPLOAD_ARGS.fieldname,
+	};
+	const picked = pickedFile(staleUpload);
+	assert.deepEqual(picked, { name: "file-3", file_name: "stage-plan.pdf" });
+	assert.equal(isDraftUpload(picked), false);
 });
 
 test("a dialog holding a kept draft stays open, and opens freely", (t) => {

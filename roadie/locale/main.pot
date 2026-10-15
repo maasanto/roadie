@@ -237,6 +237,10 @@ msgstr ""
 msgid "Clear all filters"
 msgstr ""
 
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Clear search"
+msgstr ""
+
 #: frontend/src/components/GigPanel.vue:29
 #: frontend/src/components/NotificationPanel.vue:49
 #: frontend/src/pages/MailboxScreen.vue:126
@@ -604,6 +608,10 @@ msgstr ""
 msgid "Linking Drive items needs Frappe Suite and the Suite User role"
 msgstr ""
 
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Load more"
+msgstr ""
+
 #: frontend/src/components/EntryForm.vue:127
 #: frontend/src/components/ListSkeleton.vue:8
 #: frontend/src/pages/PipelineScreen.vue:136
@@ -748,6 +756,10 @@ msgstr ""
 
 #: frontend/src/components/EntryContacts.vue:89
 msgid "No contacts yet."
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "No emails match “{0}”"
 msgstr ""
 
 #: frontend/src/pages/MailboxScreen.vue:49
@@ -1085,6 +1097,10 @@ msgstr ""
 msgid "Search results"
 msgstr ""
 
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Search subject, sender or recipient"
+msgstr ""
+
 #: frontend/src/components/EmailComposer.vue:173
 msgid "Send"
 msgstr ""
@@ -1190,6 +1206,10 @@ msgstr ""
 
 #: roadie/fixtures/notification.json:14
 msgid "The application for {0} closes on {1}, in {2} days, and the gig is still at {3}."
+msgstr ""
+
+#: roadie/api.py
+msgid "The mailbox lists at least one email, not {0}"
 msgstr ""
 
 #. Description of the 'Directory Columns' (Code) field in DocType 'Roadie
@@ -1502,6 +1522,38 @@ msgstr ""
 msgid "{0} of {1} could not be updated."
 msgstr ""
 
+#: frontend/src/components/EmailThread.vue
+msgid "Forward"
+msgstr ""
+
+#: frontend/src/email.js
+msgid "Forwarded message"
+msgstr ""
+
+#: frontend/src/email.js
+msgid "From: {0}"
+msgstr ""
+
+#: frontend/src/email.js
+msgid "Date: {0}"
+msgstr ""
+
+#: frontend/src/email.js
+msgid "Subject: {0}"
+msgstr ""
+
+#: frontend/src/email.js
+msgid "To: {0}"
+msgstr ""
+
+#: frontend/src/email.js
+msgid "Cc: {0}"
+msgstr ""
+
+#: frontend/src/components/EmailComposer.vue
+msgid "From this gig"
+msgstr ""
+
 #: frontend/src/components/BulkEditBar.vue
 msgid "Delete {0} selected?"
 msgstr ""
@@ -1584,4 +1636,28 @@ msgstr ""
 
 #: roadie/api.py
 msgid "{0}'s role profile or user type decides their roles: an administrator has to add Suite User there"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Link to…"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Search the gig or directory entry to file this thread under"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Filed under {0}"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Send or discard your email first."
+msgstr ""
+
+#: roadie/api.py
+msgid "Emails can only be filed under {0}, not {1}"
+msgstr ""
+
+#: roadie/api.py
+msgid "Only conversations filed under no gig, task or directory entry can be linked, not {0}"
 msgstr ""

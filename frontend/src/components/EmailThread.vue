@@ -16,6 +16,7 @@ import {
 	asHtml,
 	deliveryState,
 	formatDateTime,
+	forwardDraft,
 	isFailedDelivery,
 	openByDefault,
 	replyDraft,
@@ -193,6 +194,12 @@ function onSent() {
 							variant="ghost"
 							:label="__('Reply all')"
 							@click="compose(replyDraft(email, 'reply-all'))"
+						/>
+						<Button
+							icon-left="lucide-forward"
+							variant="ghost"
+							:label="__('Forward')"
+							@click="compose(forwardDraft(email))"
 						/>
 						<Button
 							class="ml-auto"

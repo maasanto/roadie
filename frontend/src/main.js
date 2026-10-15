@@ -42,7 +42,7 @@ const router = createRouter({
 keepListQueries(router);
 
 // Another screen, or another mailbox thread, unmounts the composer. A query change is the screen's own business:
-// the pipeline asks before ?gig= switches its panel.
+// useOpenRecord asks before ?gig= or ?entry= switches the open record.
 router.beforeEach((to, from) => to.path === from.path || confirmDiscardDraft());
 window.addEventListener("beforeunload", (event) => {
 	if (!hasEditedDraft()) return;

@@ -1,9 +1,19 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
-import { Button, ErrorMessage, FileUploader, TextEditor, call, toast, useCall, useList } from "frappe-ui";
+import {
+	Button,
+	Dropdown,
+	ErrorMessage,
+	FileUploader,
+	TextEditor,
+	call,
+	toast,
+	useCall,
+	useList,
+} from "frappe-ui";
 import DriveLinkDialog from "./DriveLinkDialog.vue";
 import EmailRecipients from "./EmailRecipients.vue";
-import { confirmDiscardDraft, trackDraft } from "../draft";
+import { DRAFT_UPLOAD_ARGS, confirmDiscardDraft, isDraftUpload, pickedFile, trackDraft } from "../draft";
 
 const props = defineProps({
 	// Left out for a new email from the Inbox: Frappe then threads it on the recipient's contact, or on itself.
@@ -27,6 +37,8 @@ const EDITOR_BUTTONS = [
 	"Redo",
 ];
 
+// A draft's attachments are existing File records ({ name, file_name }): sending copies them, nothing is re-uploaded.
+const { attachments: draftAttachments = [], ...draftFields } = props.draft;
 const email = reactive({
 	to: [],
 	cc: [],
@@ -34,12 +46,12 @@ const email = reactive({
 	subject: "",
 	content: "",
 	inReplyTo: null,
-	...props.draft,
+	...draftFields,
 });
 const invalidRecipientFields = reactive({ to: false, cc: false, bcc: false });
 const hasInvalidRecipient = computed(() => Object.values(invalidRecipientFields).some(Boolean));
 const sendButton = ref(null);
-const attachments = ref([]);
+const attachments = ref([...draftAttachments]);
 const isShowingCopies = ref(email.cc.length > 0);
 const canLinkDriveItems = window.can_link_drive_items;
 const isPickingDriveItem = ref(false);
@@ -99,8 +111,23 @@ const suggestions = computed(() =>
 	(contacts.data || []).map((contact) => ({ label: contact.full_name, value: contact.email_id }))
 );
 
-// Matches EMAIL_DRAFT_FIELD in roadie/api.py, which only lets a draft delete the uploads stamped with it.
-const UPLOAD_ARGS = { fieldname: "roadie_email_draft", private: true };
+const gigFiles = useCall({
+	url: "/api/v2/method/roadie.api.get_attachments",
+	params: () => ({ gig: props.name }),
+	immediate: props.doctype === "Gig",
+});
+// A link File has no bytes to send. One already in the email stays listed, so picking the last file keeps the menu's button.
+const gigFileOptions = computed(() =>
+	(gigFiles.data || [])
+		.filter((file) => file.file_url.startsWith("/"))
+		.map((file) => ({
+			label: file.file_name,
+			value: file.name,
+			icon: "lucide-file-text",
+			disabled: attachments.value.some((entry) => entry.name === file.name),
+			onClick: () => attachments.value.push(pickedFile(file)),
+		}))
+);
 
 const send = useCall({
 	url: "/api/v2/method/frappe.core.doctype.communication.email.make",
@@ -114,6 +141,7 @@ const send = useCall({
 
 // An upload is attached to the record as soon as it lands, so one the email never sends must be deleted.
 async function deleteUpload(file) {
+	if (!isDraftUpload(file)) return true;
 	try {
 		await call("roadie.api.delete_draft_attachment", { file: file.name });
 		return true;
@@ -217,10 +245,13 @@ function submit(event) {
 			</li>
 		</ul>
 		<ErrorMessage class="mt-2" :message="send.error" />
-		<div class="mt-3 flex items-center justify-between">
-			<div class="flex items-start gap-1">
+		<ErrorMessage class="mt-2" :message="gigFiles.error" />
+		<div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+			<div class="flex flex-wrap items-start gap-1">
 				<FileUploader
-					:upload-args="doctype ? { ...UPLOAD_ARGS, doctype, docname: name } : UPLOAD_ARGS"
+					:upload-args="
+						doctype ? { ...DRAFT_UPLOAD_ARGS, doctype, docname: name } : DRAFT_UPLOAD_ARGS
+					"
 					@success="attachments.push($event)"
 				>
 					<template #default="{ openFileSelector, uploading, progress, error }">
@@ -234,6 +265,11 @@ function submit(event) {
 						<ErrorMessage class="mt-1" :message="error" />
 					</template>
 				</FileUploader>
+				<Dropdown
+					v-if="gigFileOptions.length"
+					:options="gigFileOptions"
+					:button="{ iconLeft: 'lucide-files', variant: 'ghost', label: __('From this gig') }"
+				/>
 				<Button
 					v-if="canLinkDriveItems"
 					icon-left="lucide-hard-drive"
@@ -242,7 +278,7 @@ function submit(event) {
 					@click="isPickingDriveItem = true"
 				/>
 			</div>
-			<div class="flex gap-2">
+			<div class="ms-auto flex gap-2">
 				<Button :label="__('Discard')" variant="ghost" @click="discard" />
 				<Button
 					ref="sendButton"

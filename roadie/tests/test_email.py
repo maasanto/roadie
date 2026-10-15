@@ -15,6 +15,7 @@ from roadie.api import (
 	get_attachments,
 	get_emails,
 	get_mailbox,
+	link_thread,
 	mark_threads_read,
 	mark_threads_unread,
 )
@@ -116,6 +117,41 @@ class TestEmail(IntegrationTestCase):
 		self.assertEqual([file.file_name for file in thread[1].attachments], ["tech-sheet.pdf"])
 		received_file = frappe.get_doc("File", thread[1].attachments[0].name)
 		self.assertTrue(received_file.is_downloadable())
+
+	def test_member_forwards_a_received_attachment(self):
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Le Petit Club residency"}).insert()
+		sent = make(
+			doctype="Gig",
+			name=gig.name,
+			subject="Stage plan",
+			content="<p>Could you send your stage plan?</p>",
+			recipients=[VENUE],
+			send_email=True,
+		)
+		frappe.set_user("Administrator")
+		reply = incoming_email(f"Le Petit Club <{VENUE}>", "Re: Stage plan", f"stage-plan-{sent['name']}")
+		reply["In-Reply-To"] = f"<{frappe.db.get_value('Communication', sent['name'], 'message_id')}>"
+		# Its own content: Frappe dedupes files by hash, and make() commits, so a shared blank PDF leaks into other tests.
+		reply.add_attachment(f"Stage plan {sent['name']}", filename="stage-plan.txt")
+		InboundMail(reply.as_string(), self.mailbox).process()
+
+		frappe.set_user(MEMBER)
+		original_file = get_emails("Gig", gig.name)[1].attachments[0]
+		make(
+			doctype="Gig",
+			name=gig.name,
+			subject="Fwd: Re: Stage plan",
+			content="<p>For the sound engineer</p>",
+			recipients=["agent@example.com"],
+			send_email=True,
+			attachments=[original_file.name],
+		)
+
+		forward = get_emails("Gig", gig.name)[2]
+		self.assertEqual(forward.subject, "Fwd: Re: Stage plan")
+		self.assertEqual([file.file_url for file in forward.attachments], [original_file.file_url])
+		self.assertTrue(frappe.get_doc("File", forward.attachments[0].name).is_downloadable())
 
 	def test_email_to_a_venue_contact_threads_on_the_venue_and_splits_by_mailbox(self):
 		frappe.set_user(MEMBER)
@@ -283,6 +319,73 @@ class TestEmail(IntegrationTestCase):
 			[email.name for email in get_emails("Communication", received.name)],
 			[received.name, reply["name"]],
 		)
+
+	def test_search_and_a_higher_limit_reach_mail_older_than_the_latest(self):
+		# Unique per run: InboundMail commits, so earlier runs' emails are still on the site.
+		sender, subject = frappe.generate_hash(), frappe.generate_hash()
+		enquiry = incoming_email(f"Sunny Fest <{sender}@sunnyfest.example.com>", f"Line-up {subject}", sender)
+		InboundMail(enquiry.as_string(), self.mailbox).process()
+		march = frappe.get_last_doc("Communication", filters={"subject": f"Line-up {subject}"})
+		frappe.db.set_value("Communication", march.name, "communication_date", "2000-03-12 09:00:00")
+		newer = incoming_email("Jane Roe <jane.roe@example.com>", "Photos", subject)
+		InboundMail(newer.as_string(), self.mailbox).process()
+		every_email = frappe.db.count(
+			"Communication",
+			{
+				"communication_medium": "Email",
+				"communication_type": "Communication",
+				"sent_or_received": "Received",
+			},
+		)
+
+		def listed(**kwargs):
+			return {row.name for row in get_mailbox("Received", **kwargs)}
+
+		frappe.set_user(MEMBER)
+		self.assertNotIn(march.name, listed(limit=1))
+		self.assertIn(march.name, listed(limit=every_email))
+		self.assertEqual(listed(query=f" {sender}@SUNNYFEST ", limit=1), {march.name})
+		self.assertEqual(listed(query=f"line-up {subject}"), {march.name})
+		self.assertEqual(listed(query=f"nothing like {subject}"), set())
+
+	def test_linked_thread_and_its_later_replies_file_under_the_gig(self):
+		enquiry = incoming_email(
+			"Jane Doe <jane.promoter@example.com>", "Summer booking", f"enquiry-{frappe.generate_hash()}"
+		)
+		InboundMail(enquiry.as_string(), self.mailbox).process()
+		received = frappe.get_last_doc("Communication", filters={"subject": "Summer booking"})
+
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme summer festival"}).insert()
+		reply = make(
+			doctype="Communication",
+			name=received.name,
+			subject="Re: Summer booking",
+			content="<p>We would love to.</p>",
+			recipients=["jane.promoter@example.com"],
+			send_email=True,
+		)
+		link_thread(received.name, "Gig", gig.name)
+
+		frappe.set_user("Administrator")
+		answer = incoming_email(
+			"Jane Doe <jane.promoter@example.com>", "Re: Summer booking", f"answer-{frappe.generate_hash()}"
+		)
+		answer["In-Reply-To"] = f"<{frappe.db.get_value('Communication', reply['name'], 'message_id')}>"
+		InboundMail(answer.as_string(), self.mailbox).process()
+		answered = frappe.get_last_doc("Communication", filters={"in_reply_to": reply["name"]})
+
+		frappe.set_user(MEMBER)
+		self.assertEqual(
+			[email.name for email in get_emails("Gig", gig.name)],
+			[received.name, reply["name"], answered.name],
+		)
+		inbox = {row.name: row.thread for row in get_mailbox("Received")}
+		self.assertEqual(inbox[answered.name], {"doctype": "Gig", "name": gig.name})
+		self.assertNotIn(received.name, inbox)
+		other_gig = frappe.get_doc({"doctype": "Gig", "title": "Acme winter festival"}).insert()
+		with self.assertRaises(frappe.ValidationError):
+			link_thread(received.name, "Gig", other_gig.name)
 
 	def test_new_email_from_the_inbox_needs_no_record(self):
 		frappe.set_user(MEMBER)
