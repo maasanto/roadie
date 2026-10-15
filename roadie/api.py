@@ -6,6 +6,7 @@ import frappe
 from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 from frappe.email import relink
+from frappe.utils import get_fullname
 from markupsafe import Markup
 
 from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns, clean_quick_filters
@@ -22,6 +23,11 @@ NEW_FIELD_TYPES = ("Data", "Small Text", "Float", "Date", "Check", "Select")
 FORM_FIELD_TYPES = (*NEW_FIELD_TYPES, "Text", "Long Text", "Int", "Currency", "Rating", "Link")
 EMAIL_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
 COMMENT_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
+# EntryForm gives every card it opens an Activity tab, the task's and the edition's included.
+ACTIVITY_DOCTYPES = (*CUSTOMISABLE_DOCTYPES, "Band Task")
+ACTIVITY_COMMENT_TYPES = {"Comment": "commented", "Attachment": "attached", "Attachment Removed": "detached"}
+# Version keeps these as Frappe displays them, line breaks turned into <br>.
+TEXT_FIELDTYPES = ("Small Text", "Text", "Long Text", "Text Editor")
 # Frappe roots a thread linked to no record on its first Communication, so that Communication is a thread too.
 THREAD_DOCTYPES = (*EMAIL_DOCTYPES, "Communication")
 # The composer stamps its uploads with this, so a draft can only ever delete a file it uploaded itself.
@@ -225,6 +231,121 @@ def get_comments(doctype: str, name: str) -> list[dict]:
 		fields=["name", "content", "comment_email", "comment_by", "creation"],
 		order_by="creation asc",
 	)
+
+
+@frappe.whitelist()
+def get_activity(doctype: str, name: str) -> list[dict]:
+	"""Who did what on a record, oldest first, as Frappe CRM's activity tab tells it: its creation, every field
+	change Frappe versioned, comments, files and emails. Members can't list Version, Comment or Communication
+	themselves, so the record grants access."""
+	if doctype not in ACTIVITY_DOCTYPES:
+		frappe.throw(
+			_("Activity can only be listed for {0}, not {1}").format(", ".join(ACTIVITY_DOCTYPES), doctype)
+		)
+	doc = frappe.get_doc(doctype, name)
+	doc.check_permission("read")
+
+	activity = [
+		{"type": "created", "by": get_fullname(doc.owner), "at": doc.creation},
+		*_field_changes(doc),
+		*_comment_activity(doctype, name),
+		*_email_activity(doctype, name),
+	]
+	return sorted(activity, key=lambda entry: entry["at"])
+
+
+def _field_changes(doc):
+	meta = frappe.get_meta(doc.doctype)
+	versions = frappe.get_all(
+		"Version",
+		filters={"ref_doctype": doc.doctype, "docname": doc.name},
+		fields=["owner", "creation", "data"],
+		order_by="creation asc",
+	)
+	changes = []
+	for version in versions:
+		for fieldname, old, new in frappe.parse_json(version.data).get("changed", []):
+			field = meta.get_field(fieldname)
+			# Members only hold permlevel 0, as their forms do. A blank turned into another blank, an unset fee
+			# saved as 0, changed nothing a member can see.
+			if not field or field.permlevel or not (old or new):
+				continue
+			changes.append(
+				{
+					"type": "changed",
+					"by": get_fullname(version.owner),
+					"at": version.creation,
+					"label": field.label or fieldname,
+					"fieldtype": field.fieldtype,
+					"from": _shown_value(field, old),
+					"to": _shown_value(field, new),
+				}
+			)
+	return changes
+
+
+def _shown_value(field, value):
+	"""Version keeps each value as Frappe displays it, and a link as its title when its type shows titles in links.
+	Another link, a gig or a member, keeps its name: a hash or an email."""
+	if not value:
+		return value
+	if field.fieldtype in TEXT_FIELDTYPES:
+		return _html_to_text(value)
+	if field.fieldtype != "Link":
+		return value
+	link_meta = frappe.get_meta(field.options)
+	if link_meta.show_title_field_in_link or not link_meta.title_field:
+		return value
+	return frappe.db.get_value(field.options, value, link_meta.title_field, cache=True) or value
+
+
+def _comment_activity(doctype, name):
+	comments = frappe.get_all(
+		"Comment",
+		filters={
+			"comment_type": ["in", list(ACTIVITY_COMMENT_TYPES)],
+			"reference_doctype": doctype,
+			"reference_name": name,
+			# The composer files its uploads on the record and drops the unsent ones: the email tells that story.
+			# Its HTML names the upload's field, in whichever quotes Frappe's sanitiser picked.
+			"content": ["not like", f"%data-fieldname=_{EMAIL_DRAFT_FIELD}_%"],
+		},
+		fields=["comment_type", "owner", "creation", "content"],
+		order_by="creation asc",
+	)
+	return [
+		{
+			"type": ACTIVITY_COMMENT_TYPES[comment.comment_type],
+			"by": get_fullname(comment.owner),
+			"at": comment.creation,
+			"text": _html_to_text(comment.content),
+		}
+		for comment in comments
+	]
+
+
+def _email_activity(doctype, name):
+	emails = _thread_emails(
+		doctype,
+		name,
+		fields=["owner", "sender", "sender_full_name", "sent_or_received", "communication_date", "subject"],
+	)
+	activity = []
+	for email in emails:
+		# Mail pulled from the inbox or the Sent folder belongs to whoever pulled it, so only an email a member
+		# wrote in Roadie is theirs; the rest is the sender's doing.
+		is_written_here = email.sent_or_received == "Sent" and email.owner not in frappe.STANDARD_USERS
+		activity.append(
+			{
+				"type": "emailed",
+				"by": get_fullname(email.owner)
+				if is_written_here
+				else email.sender_full_name or email.sender,
+				"at": email.communication_date,
+				"text": email.subject,
+			}
+		)
+	return activity
 
 
 @frappe.whitelist()
