@@ -1902,3 +1902,7 @@ msgstr "a envoyé un e-mail"
 #: roadie/api.py
 msgid "Activity can only be listed for {0}, not {1}"
 msgstr "L'activité ne peut être listée que pour {0}, pas pour {1}"
+
+#: frontend/src/components/EmailComposer.vue
+msgid "Your email “{0}” was not sent: {1}"
+msgstr "Votre e-mail « {0} » n'a pas été envoyé : {1}"

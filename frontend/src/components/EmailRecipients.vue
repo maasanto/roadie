@@ -1,9 +1,10 @@
 <script setup>
-import { ref, useId } from "vue";
+import { useId } from "vue";
 import { splitRecipients } from "../email";
 
 const emails = defineModel({ type: Array, required: true });
 const isInvalid = defineModel("invalid", { type: Boolean, default: false });
+const query = defineModel("query", { type: String, default: "" });
 defineProps({
 	label: { type: String, required: true },
 	suggestions: { type: Array, default: () => [] },
@@ -12,7 +13,6 @@ defineProps({
 const inputId = useId();
 const errorId = useId();
 const listId = useId();
-const query = ref("");
 
 function addTyped() {
 	const { valid, invalid } = splitRecipients(query.value);
