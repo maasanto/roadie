@@ -1,4 +1,6 @@
+from email import message_from_string
 from email.message import EmailMessage
+from email.utils import parseaddr
 from unittest.mock import patch
 
 import frappe
@@ -430,6 +432,32 @@ class TestEmail(IntegrationTestCase):
 		self.assertEqual(signature(), "<p>Acme Band</p>")
 		frappe.db.set_value("User", MEMBER, "email_signature", "<p>John, drums</p>")
 		self.assertEqual(signature(), "<p>John, drums</p>")
+
+	def test_inbox_email_and_its_follow_up_take_replies_to_the_band_mailbox(self):
+		for account in frappe.get_all("Email Account", {"default_outgoing": 1}, pluck="name"):
+			frappe.db.set_value("Email Account", account, "default_outgoing", 0)
+			self.addCleanup(frappe.db.set_value, "Email Account", account, "default_outgoing", 1)
+		self.mailbox.db_set({"enable_outgoing": 1, "default_outgoing": 1, "add_reply_to_header": 1})
+		frappe.set_user(MEMBER)
+		sender = roadie_page.get_context().boot["email_sender"]
+
+		first = make(
+			sender=sender, subject="Booking enquiry", content="<p>Hi</p>", recipients=[VENUE], send_email=True
+		)
+		follow_up = make(
+			sender=sender,
+			subject="Re: Booking enquiry",
+			content="<p>Any news?</p>",
+			recipients=[VENUE],
+			in_reply_to=first["name"],
+			send_email=True,
+		)
+
+		for sent in (first, follow_up):
+			queued = frappe.get_last_doc("Email Queue", filters={"communication": sent["name"]})
+			headers = message_from_string(queued.message)
+			self.assertEqual(parseaddr(headers["From"])[1], MAILBOX)
+			self.assertEqual(parseaddr(headers["Reply-To"])[1], MAILBOX)
 
 	def test_sent_folder_fills_the_outbox_but_skips_what_frappe_sent(self):
 		frappe.set_user(MEMBER)
