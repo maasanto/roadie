@@ -29,7 +29,10 @@ const availability = ref(null);
 
 const confirmSave = (values) =>
 	values.status !== "Booked" ||
-	confirmBooking(entryForm.value.form.title, availability.value?.rows, availability.value?.members.data);
+	confirmBooking(
+		[{ title: entryForm.value.form.title, rows: availability.value?.rows }],
+		availability.value?.members.data
+	);
 
 // A new date sends the band's answers back to pending, the member's own included.
 function onSaved() {

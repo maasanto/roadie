@@ -279,12 +279,17 @@ function toastMove(gig, status, previousStatus) {
 	else toast(__("Moved {0} to {1}", [gig.title, __(status)]), undoable);
 }
 
+const confirmBookingGigs = (names) =>
+	confirmBooking(
+		names.map((name) => ({
+			title: gigs.data?.find((gig) => gig.name === name)?.title,
+			rows: activity.data?.[name]?.availability,
+		})),
+		members.data
+	);
+
 async function moveGig(gig, status) {
-	if (
-		status === "Booked" &&
-		!confirmBooking(gig.title, activity.data?.[gig.name]?.availability, members.data)
-	)
-		return;
+	if (status === "Booked" && !confirmBookingGigs([gig.name])) return;
 	const previousStatus = gig.status;
 	const isSaved = await setStatus(gig, status);
 	if (isSaved) toastMove(gig, status, previousStatus);
@@ -401,6 +406,7 @@ async function moveGig(gig, status) {
 				<BulkEditBar
 					doctype="Gig"
 					:fields="filterFields"
+					:confirm-save="(change, names) => change.status !== 'Booked' || confirmBookingGigs(names)"
 					@updated="gigs.reload()"
 					@deleted="(names) => names.includes(gigPanel?.entryName) && closeGig()"
 				/>

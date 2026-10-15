@@ -12,10 +12,13 @@ const unavailableNames = (rows, members) =>
 		.filter((row) => row.answer === "No")
 		.map((row) => members.find((member) => member.name === row.member)?.full_name || row.member);
 
-// A warning, not a block: a stand-in may cover for whoever can't play. The members are null until they load.
-export function confirmBooking(title, rows, members) {
-	const names = unavailableNames(rows || [], members || []);
-	return (
-		!names.length || window.confirm(__("{0} can't play {1}. Book it anyway?", [names.join(", "), title]))
-	);
+// A warning, not a block: a stand-in may cover for whoever can't play. Takes every gig being booked at once, each
+// as { title, rows }. The members are null until they load.
+export function confirmBooking(gigs, members) {
+	const refusals = gigs
+		.map(({ title, rows }) => [title, unavailableNames(rows || [], members || [])])
+		.filter(([, names]) => names.length);
+	if (!refusals.length) return true;
+	const lines = refusals.map(([title, names]) => __("{0} can't play {1}.", [names.join(", "), title]));
+	return window.confirm([...lines, __("Book anyway?")].join("\n"));
 }
