@@ -22,6 +22,8 @@ const ICONS = {
 	attached: "lucide-paperclip",
 	detached: "lucide-trash-2",
 	emailed: "lucide-mail",
+	availability_requested: "lucide-calendar-check",
+	answered: "lucide-calendar-check",
 };
 </script>
 

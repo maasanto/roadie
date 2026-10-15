@@ -35,6 +35,8 @@ const DESCRIPTIONS = {
 	attached: () => __("attached a file"),
 	detached: () => __("removed a file"),
 	emailed: () => __("sent an email"),
+	availability_requested: () => __("asked the band whether they can play"),
+	answered: ({ answer }) => (answer === "Yes" ? __("can play") : __("can't play")),
 };
 
 export const describeActivity = (entry) => DESCRIPTIONS[entry.type](entry);
