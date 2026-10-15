@@ -29,27 +29,43 @@ const ICONS = {
 	<ListSkeleton v-if="activity.loading && !activity.data" />
 	<ErrorMessage v-else-if="activity.error" :message="activity.error" />
 	<ol v-else>
-		<li v-for="(entry, index) in activity.data" :key="index" class="relative flex gap-3 pb-5">
-			<span
-				v-if="index < activity.data.length - 1"
-				class="absolute bottom-0 left-3.5 top-7 w-px bg-outline-gray-2"
-				aria-hidden="true"
-			/>
-			<span
-				class="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-gray-2 text-ink-gray-6"
+		<!-- Frappe CRM's timeline: each icon sits on one rail that runs down to the last entry. -->
+		<li
+			v-for="(entry, index) in activity.data"
+			:key="index"
+			class="grid grid-cols-[30px_minmax(0,1fr)] gap-2 sm:gap-4"
+		>
+			<div
+				class="relative z-0 flex justify-center before:absolute before:left-1/2 before:top-0 before:-z-[1] before:border-l before:border-outline-gray-2"
+				:class="index < activity.data.length - 1 ? 'before:h-full' : 'before:h-4'"
 				aria-hidden="true"
 			>
-				<span class="size-3.5" :class="ICONS[entry.type]" />
-			</span>
-			<div class="min-w-0 flex-1 pt-1">
-				<p class="line-clamp-3 text-p-base text-ink-gray-6">
-					<span class="font-medium text-ink-gray-9">{{ entry.by }}</span>
-					{{ describeActivity(entry) }}
-					<time class="whitespace-nowrap text-ink-gray-5" :title="formatDateTime(entry.at)">
-						· {{ relativeDate(entry.at) }}
+				<span class="flex size-7 items-center justify-center bg-surface-base">
+					<span
+						class="size-4"
+						:class="[
+							ICONS[entry.type],
+							entry.type === 'changed' ? 'text-ink-gray-4' : 'text-ink-gray-8',
+						]"
+					/>
+				</span>
+			</div>
+			<div class="mb-4 min-w-0 py-1.5">
+				<div class="flex items-start gap-2 text-base">
+					<p class="line-clamp-3 min-w-0 flex-1 text-ink-gray-5">
+						<span class="font-medium text-ink-gray-8">{{ entry.by }}</span>
+						{{ describeActivity(entry) }}
+					</p>
+					<time
+						class="shrink-0 whitespace-nowrap text-sm text-ink-gray-5"
+						:title="formatDateTime(entry.at)"
+					>
+						{{ relativeDate(entry.at) }}
 					</time>
+				</div>
+				<p v-if="entry.text" class="mt-1.5 line-clamp-2 text-p-sm text-ink-gray-7">
+					{{ entry.text }}
 				</p>
-				<p v-if="entry.text" class="mt-1 line-clamp-2 text-p-sm text-ink-gray-7">{{ entry.text }}</p>
 			</div>
 		</li>
 	</ol>
