@@ -13,6 +13,7 @@ import {
 	Skeleton,
 	TabButtons,
 	toast,
+	useCall,
 	useList,
 } from "frappe-ui";
 import BulkEditBar from "../components/BulkEditBar.vue";
@@ -176,6 +177,18 @@ const {
 	create: createGig,
 	close: closeGig,
 } = useOpenRecord("gig");
+const activity = useCall({ url: "/api/v2/method/roadie.api.get_gig_activity" });
+// A task, comment or file added in the panel doesn't reach the board, so the counts are read again once the member
+// leaves a gig, by Close, Back or another card.
+watch([isPanelOpen, openedName], (_, [wasOpen]) => {
+	if (wasOpen) activity.reload();
+});
+
+function refresh() {
+	gigs.reload();
+	activity.reload();
+}
+
 const listOptions = {
 	getRowRoute: (gig) => gigRoute(gig.name),
 	rowHeight: 44,
@@ -298,7 +311,7 @@ async function moveGig(gig, status) {
 					icon="lucide-refresh-ccw"
 					:label="__('Refresh')"
 					:loading="gigs.loading"
-					@click="gigs.reload()"
+					@click="refresh"
 				/>
 				<ListFilter v-model="filters" :fields="filterFields" />
 				<ListSort v-model="sort" :fields="sortFields" />
@@ -359,6 +372,7 @@ async function moveGig(gig, status) {
 		</EmptyState>
 		<template v-else>
 			<ErrorMessage class="mt-4" :message="gigs.setValue.error" />
+			<ErrorMessage v-if="view === 'kanban'" class="mt-4" :message="activity.error" />
 			<p v-if="limitNotice" class="mt-4 text-p-sm text-ink-gray-6">{{ limitNotice }}</p>
 			<ListView
 				v-if="view === 'list'"
@@ -445,6 +459,7 @@ async function moveGig(gig, status) {
 							:members="members.data || []"
 							:shows-opening-date="showsOpeningDate"
 							:fee-label="feeLabel"
+							:activity="activity.data?.[gig.name]"
 							class="cursor-grab"
 							draggable="true"
 							@dragstart="draggedGig = gig"
@@ -472,6 +487,7 @@ async function moveGig(gig, status) {
 							:members="members.data || []"
 							:shows-opening-date="showsOpeningDate"
 							:fee-label="feeLabel"
+							:activity="activity.data?.[gig.name]"
 							@click="openGig(gig.name)"
 							@assign="assignOwner(gig, $event)"
 							@move="moveGig(gig, $event)"
@@ -484,6 +500,7 @@ async function moveGig(gig, status) {
 			v-if="isPanelOpen"
 			:name="openedName"
 			:controls="controls"
+			:on-mail-seen="() => activity.reload()"
 			@close="closeGig()"
 			@saved="gigs.reload()"
 		/>

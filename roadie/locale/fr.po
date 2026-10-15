@@ -1840,3 +1840,14 @@ msgstr "Candidater"
 #: frontend/src/components/FestivalEditions.vue
 msgid "No editions yet."
 msgstr "Aucune édition pour l'instant."
+#: frontend/src/components/GigCard.vue
+msgid "Unread emails"
+msgstr "E-mails non lus"
+
+#: frontend/src/components/GigCard.vue
+msgid "Open tasks, some overdue"
+msgstr "Tâches en cours, dont certaines en retard"
+
+#: frontend/src/components/GigCard.vue
+msgid "Open tasks"
+msgstr "Tâches en cours"

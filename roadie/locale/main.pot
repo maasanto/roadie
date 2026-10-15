@@ -1690,4 +1690,14 @@ msgstr ""
 
 #: frontend/src/components/FestivalEditions.vue
 msgid "No editions yet."
+#: frontend/src/components/GigCard.vue
+msgid "Unread emails"
+msgstr ""
+
+#: frontend/src/components/GigCard.vue
+msgid "Open tasks, some overdue"
+msgstr ""
+
+#: frontend/src/components/GigCard.vue
+msgid "Open tasks"
 msgstr ""

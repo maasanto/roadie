@@ -1,4 +1,5 @@
 import re
+from collections import Counter
 from urllib.parse import urlsplit
 
 import frappe
@@ -224,6 +225,73 @@ def get_comments(doctype: str, name: str) -> list[dict]:
 		fields=["name", "content", "comment_email", "comment_by", "creation"],
 		order_by="creation asc",
 	)
+
+
+@frappe.whitelist()
+def get_gig_activity() -> dict[str, dict]:
+	"""What the board's cards show of every gig the member can read: unread emails, open tasks and the earliest
+	one's due date, comments and attachments. Members can't list Comment or File themselves, so the gig grants
+	access, as it does in its panel. A gig with none of these is left out."""
+	# ponytail: every readable gig, not only the board's filtered ones; take the board's names if a band keeps thousands
+	gigs = frappe.get_list("Gig", pluck="name", limit=0)
+	if not gigs:
+		return {}
+
+	counts = [
+		_unread_emails(gigs),
+		frappe.get_all(
+			"Band Task",
+			filters={"gig": ["in", gigs], "done": 0},
+			fields=["gig", {"COUNT": "*", "as": "open_tasks"}, {"MIN": "due_date", "as": "next_due"}],
+			group_by="gig",
+		),
+		frappe.get_all(
+			"Comment",
+			filters={"comment_type": "Comment", "reference_doctype": "Gig", "reference_name": ["in", gigs]},
+			fields=["reference_name as gig", {"COUNT": "*", "as": "comments"}],
+			group_by="reference_name",
+		),
+		frappe.get_all(
+			"File",
+			filters={"attached_to_doctype": "Gig", "attached_to_name": ["in", gigs]},
+			fields=["attached_to_name as gig", {"COUNT": "*", "as": "attachments"}],
+			group_by="attached_to_name",
+		),
+	]
+	activity = {}
+	for rows in counts:
+		for row in rows:
+			activity.setdefault(row.pop("gig"), {}).update(row)
+	return activity
+
+
+def _unread_emails(gigs):
+	"""Counted from the emails the gig's thread shows, which opening it marks seen."""
+	unread = {
+		"communication_medium": "Email",
+		"communication_type": "Communication",
+		"sent_or_received": "Received",
+		"seen": 0,
+	}
+	referencing = frappe.get_all(
+		"Communication",
+		filters={**unread, "reference_doctype": "Gig", "reference_name": ["in", gigs]},
+		fields=["name", "reference_name as gig"],
+	)
+	linked = frappe.get_all(
+		"Communication",
+		filters=[
+			*([field, "=", value] for field, value in unread.items()),
+			["Communication Link", "link_doctype", "=", "Gig"],
+			["Communication Link", "link_name", "in", gigs],
+		],
+		fields=["name", "`tabCommunication Link`.link_name as gig"],
+	)
+	# An email can both be written from a gig and reach it through a contact.
+	emails = {(email.gig, email.name) for email in [*referencing, *linked]}
+	return [
+		frappe._dict(gig=gig, unread_emails=count) for gig, count in Counter(gig for gig, _ in emails).items()
+	]
 
 
 @frappe.whitelist()
