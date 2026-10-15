@@ -22,7 +22,8 @@ writes everything. The commands below use the `dokos` CLI; through MCP, `get-lis
 
 Records are named by a random hash, so always look a record up by `title` first and use its `name`.
 
-- **Gig** — a booking being chased: `title`, `status`, `gig_owner` (User), `gig_date`, `festival`, `festival_edition`, `venue`, `promoter`, `application_opens`, `application_closes`, `fee`, `notes`.
+- **Gig** — a booking being chased: `title`, `status`, `gig_owner` (User), `gig_date`, `festival`, `festival_edition`, `venue`, `promoter`, `application_opens`, `application_closes`, `fee`, `notes`, and `availability`, the band's answers on whether they can play it.
+- **Gig Availability** — one member's answer on a gig: `member` (User) and `answer` (Yes, No, or empty while they haven't answered).
 - **Festival** — `title`, `city`, `website`, `instagram`, `usual_month`, `notes`.
 - **Festival Edition** — one year of a festival: `festival`, `year`, `start_date`, `end_date`, `website` (only when it differs from the festival's), `application_url`, `application_opens`, `application_closes`, `notes`.
 - **Venue** — `title`, `city`, `website`, `instagram`, `capacity`, `address`, `notes`.
@@ -76,6 +77,16 @@ Someone's open tasks, and ticking one done:
 ```bash
 dokos get-list "Band Task" --fields '["name","title","due_date","gig"]' --filters '[["assignee","=","jane@example.com"],["done","=",0]]' --order-by "due_date asc" --quiet
 dokos set-value "Band Task" "<task name>" done 1 --quiet
+```
+
+Ask the band whether they can play a gig, which needs its `gig_date`. Calling it again reminds whoever hasn't
+answered. Only members whose "Must confirm availability?" box is ticked in Settings are asked, and a new `gig_date`
+sends every answer back to empty.
+Each member answers for themselves:
+
+```bash
+dokos call roadie.api.request_availability --args '{"gig":"<gig name>"}' --quiet
+dokos call roadie.api.answer_availability --args '{"gig":"<gig name>","answer":"Yes"}' --quiet
 ```
 
 Post a comment that mentions a member. The mention span notifies them; plain `@Jane` does not:

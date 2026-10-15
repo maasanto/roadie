@@ -1755,3 +1755,124 @@ msgstr ""
 #: frontend/src/components/EmailComposer.vue
 msgid "Your email “{0}” was not sent: {1}"
 msgstr ""
+
+#: frontend/src/availability.js
+msgid "Available"
+msgstr ""
+
+#: frontend/src/availability.js
+msgid "Not available"
+msgstr ""
+
+#: frontend/src/availability.js
+msgid "No answer yet"
+msgstr ""
+
+#: frontend/src/availability.js
+msgid "{0} can't play {1}."
+msgstr ""
+
+#: frontend/src/availability.js
+msgid "Book anyway?"
+msgstr ""
+
+#: frontend/src/activity.js
+msgid "asked the band whether they can play"
+msgstr ""
+
+#: frontend/src/activity.js
+msgid "can play"
+msgstr ""
+
+#: frontend/src/activity.js
+msgid "can't play"
+msgstr ""
+
+#: frontend/src/components/GigAvailability.vue
+msgid "Availability"
+msgstr ""
+
+#: frontend/src/components/GigAvailability.vue
+msgid "Remind"
+msgstr ""
+
+#: frontend/src/components/GigAvailability.vue
+msgid "Request availability"
+msgstr ""
+
+#: frontend/src/components/GigAvailability.vue
+msgid "Reminder sent"
+msgstr ""
+
+#: frontend/src/components/GigAvailability.vue
+msgid "The band has been asked"
+msgstr ""
+
+#: frontend/src/components/GigAvailability.vue
+msgid "Set the gig date to ask the band whether they can play it."
+msgstr ""
+
+#: frontend/src/components/GigAvailability.vue
+msgid "Can you play?"
+msgstr ""
+
+#: frontend/src/components/AvailabilityStrip.vue
+msgid "Can you play {0} on {1}?"
+msgstr ""
+
+#: roadie/roadie/doctype/gig/gig.json
+msgid "Availability requested by"
+msgstr ""
+
+#: roadie/roadie/doctype/gig/gig.py
+msgid "{0} moved to {1}: can you still play it?"
+msgstr ""
+
+#: roadie/roadie/doctype/gig/gig.py
+msgid "Set the gig date before asking the band whether they can play it"
+msgstr ""
+
+#: roadie/roadie/doctype/gig/gig.py
+msgid "{0} asks: can you play {1} on {2}?"
+msgstr ""
+
+#: roadie/roadie/doctype/gig/gig.py
+msgid "Answer Yes or No, not {0}"
+msgstr ""
+
+#: roadie/roadie/doctype/gig/gig.py
+msgid "{0} has no date yet, so there is nothing to answer"
+msgstr ""
+
+#: roadie/roadie/doctype/gig/gig.py
+msgid "Nobody asked you whether you can play {0}"
+msgstr ""
+
+#: roadie/roadie/doctype/gig/gig.py
+msgid "{0} can play {1} on {2}"
+msgstr ""
+
+#: roadie/roadie/doctype/gig/gig.py
+msgid "{0} can't play {1} on {2}"
+msgstr ""
+
+#: frontend/src/components/BandMembers.vue
+#: roadie/fixtures/custom_field.json
+msgid "Must confirm availability?"
+msgstr ""
+
+#: frontend/src/components/BandMembers.vue
+msgid "Asked whether they can play each gig"
+msgstr ""
+
+#: frontend/src/components/GigAvailability.vue
+msgid "Ask the band whether they can play this date."
+msgstr ""
+
+#: frontend/src/components/GigCard.vue
+msgid "{0} of {1} can play"
+msgstr ""
+
+#: roadie/roadie/doctype/gig/gig.py
+msgid "No band member is set to confirm their availability, so there is nobody to ask"
+msgstr ""

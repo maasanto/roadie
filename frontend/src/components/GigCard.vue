@@ -45,6 +45,13 @@ const activityBadges = computed(() => {
 	].filter((badge) => badge.count);
 });
 
+// How many of the members asked can play; the icon turns green once every one of them can.
+const availability = computed(() => {
+	const rows = props.activity.availability || [];
+	const available = rows.filter((row) => row.answer === "Yes").length;
+	return { available, asked: rows.length, isConfirmed: rows.length > 0 && available === rows.length };
+});
+
 const assignOptions = computed(() =>
 	memberOptions(props.members).map((option) => ({
 		...option,
@@ -91,6 +98,20 @@ const moveOptions = computed(() =>
 		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-gray-5">
 			<span v-if="gig.gig_date" class="flex items-center gap-1">
 				<span class="lucide-calendar size-3.5" aria-hidden="true" />{{ formatDate(gig.gig_date) }}
+			</span>
+			<span
+				v-if="availability.asked"
+				class="flex items-center gap-1"
+				:title="__('{0} of {1} can play', [availability.available, availability.asked])"
+			>
+				<span
+					class="lucide-user-check size-3.5"
+					:class="availability.isConfirmed ? 'text-ink-green-6' : ''"
+					aria-hidden="true"
+				/>{{ availability.available }}/{{ availability.asked
+				}}<span class="sr-only">{{
+					__("{0} of {1} can play", [availability.available, availability.asked])
+				}}</span>
 			</span>
 			<span v-if="feeLabel && gig.fee" class="flex items-center gap-1">
 				<span class="lucide-banknote size-3.5" aria-hidden="true" />{{ feeLabel }}

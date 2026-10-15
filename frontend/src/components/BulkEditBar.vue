@@ -13,6 +13,8 @@ import { toStoredValue } from "../metaFields";
 const props = defineProps({
 	doctype: { type: String, required: true },
 	fields: { type: Array, required: true },
+	// Given the change and the names it is about to reach; returning false leaves the dialog open.
+	confirmSave: { type: Function, default: null },
 });
 const emit = defineEmits(["updated", "deleted"]);
 
@@ -71,6 +73,7 @@ async function save() {
 	const stored = toStoredValue(field.value, value.value);
 	// An emptied field is cleared, where an empty string would be refused by a date.
 	const change = { [fieldname.value]: isBlank(stored) ? null : stored };
+	if (props.confirmSave && !props.confirmSave(change, names.value)) return;
 	isSaving.value = true;
 	const failed = await runInBatches(names.value, UPDATE_BATCH_SIZE, (docnames) =>
 		call("frappe.desk.doctype.bulk_update.bulk_update.submit_cancel_or_update_docs", {

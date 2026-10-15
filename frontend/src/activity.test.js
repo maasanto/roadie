@@ -17,6 +17,11 @@ test("a field and a choice read in the member's language", () => {
 	);
 });
 
+test("an availability answer reads as whether the member can play", () => {
+	assert.equal(describeActivity({ type: "answered", answer: "Yes" }), "can play");
+	assert.equal(describeActivity({ type: "answered", answer: "No" }), "can't play");
+});
+
 test("a value set or cleared reads as such rather than as a change from or to nothing", () => {
 	assert.equal(describeActivity(change("Data", "", "Lyon", "City")), "set City to Lyon");
 	assert.equal(describeActivity(change("Data", "Lyon", null, "City")), "cleared City");

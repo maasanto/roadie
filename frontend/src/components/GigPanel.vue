@@ -5,7 +5,9 @@ import CommentThread from "./CommentThread.vue";
 import EmailThread from "./EmailThread.vue";
 import EntryForm from "./EntryForm.vue";
 import GigAttachments from "./GigAttachments.vue";
+import GigAvailability from "./GigAvailability.vue";
 import GigTasks from "./GigTasks.vue";
+import { confirmBooking } from "../availability";
 import { confirmDiscardDraft } from "../draft";
 import { isUnread } from "../email";
 import { onKey } from "../keyboard";
@@ -22,6 +24,21 @@ const emit = defineEmits(["close", "saved"]);
 const entryForm = ref(null);
 // A gig created here never reaches the address, so the panel is what knows which gig it shows.
 defineExpose({ entryName: computed(() => entryForm.value?.entryName) });
+
+const availability = ref(null);
+
+const confirmSave = (values) =>
+	values.status !== "Booked" ||
+	confirmBooking(
+		[{ title: entryForm.value.form.title, rows: availability.value?.rows }],
+		availability.value?.members.data
+	);
+
+// A new date sends the band's answers back to pending, the member's own included.
+function onSaved() {
+	availability.value?.reload();
+	emit("saved");
+}
 
 function close() {
 	if (confirmDiscardDraft()) emit("close");
@@ -58,9 +75,11 @@ async function markSeen(gig, thread) {
 				doctype="Gig"
 				:name="name"
 				:controls="controls"
-				@saved="emit('saved')"
+				:confirm-save="confirmSave"
+				@saved="onSaved"
 			>
 				<template #default="{ entryName }">
+					<GigAvailability ref="availability" :gig="entryName" />
 					<GigTasks :gig="entryName" @saved="emit('saved')" />
 					<GigAttachments :gig="entryName" />
 					<CommentThread doctype="Gig" :name="entryName" />

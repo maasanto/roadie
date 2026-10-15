@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, inject, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
 	Avatar,
@@ -25,6 +25,7 @@ import ListFilter from "../components/ListFilter.vue";
 import ListSkeleton from "../components/ListSkeleton.vue";
 import ListSort from "../components/ListSort.vue";
 import QuickFilterBar from "../components/QuickFilterBar.vue";
+import { confirmBooking } from "../availability";
 import { burstConfetti } from "../celebrate";
 import {
 	daysUntil,
@@ -185,6 +186,13 @@ watch([isPanelOpen, openedName], (_, [wasOpen]) => {
 	if (wasOpen) activity.reload();
 });
 
+// An answer given in the strip above the board, or a request that reached it, changes a card's availability.
+const pendingAvailability = inject("pendingAvailability", null);
+watch(
+	() => pendingAvailability?.data?.map((gig) => gig.name).join(),
+	(_, previous) => previous !== undefined && activity.reload()
+);
+
 function refresh() {
 	gigs.reload();
 	activity.reload();
@@ -271,7 +279,17 @@ function toastMove(gig, status, previousStatus) {
 	else toast(__("Moved {0} to {1}", [gig.title, __(status)]), undoable);
 }
 
+const confirmBookingGigs = (names) =>
+	confirmBooking(
+		names.map((name) => ({
+			title: gigs.data?.find((gig) => gig.name === name)?.title,
+			rows: activity.data?.[name]?.availability,
+		})),
+		members.data
+	);
+
 async function moveGig(gig, status) {
+	if (status === "Booked" && !confirmBookingGigs([gig.name])) return;
 	const previousStatus = gig.status;
 	const isSaved = await setStatus(gig, status);
 	if (isSaved) toastMove(gig, status, previousStatus);
@@ -388,6 +406,7 @@ async function moveGig(gig, status) {
 				<BulkEditBar
 					doctype="Gig"
 					:fields="filterFields"
+					:confirm-save="(change, names) => change.status !== 'Booked' || confirmBookingGigs(names)"
 					@updated="gigs.reload()"
 					@deleted="(names) => names.includes(gigPanel?.entryName) && closeGig()"
 				/>

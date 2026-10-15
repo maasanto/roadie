@@ -26,6 +26,22 @@ const grantDrive = useCall({
 });
 const grantingMember = ref("");
 
+const setConfirms = useCall({
+	url: "/api/v2/method/roadie.api.set_confirms_availability",
+	method: "POST",
+	immediate: false,
+});
+const savingConfirms = ref("");
+
+async function toggleConfirms(member, confirms) {
+	// frappe-ui's checkbox emits every change twice, and any second submit would abort the first.
+	if (savingConfirms.value) return;
+	savingConfirms.value = member.name;
+	await setConfirms.submit({ member: member.name, confirms });
+	savingConfirms.value = "";
+	if (!setConfirms.error) member.confirms_availability = confirms;
+}
+
 const email = ref("");
 const notInvited = ref("");
 
@@ -87,7 +103,16 @@ async function cancel(invitation) {
 			<li v-for="member in members.data" :key="member.name" class="flex items-center gap-3 px-3 py-2">
 				<Avatar :image="member.user_image" :label="member.full_name" size="sm" />
 				<span class="min-w-0 flex-1 truncate text-base">{{ member.full_name }}</span>
-				<span class="truncate text-sm text-ink-gray-5">{{ member.name }}</span>
+				<!-- A phone keeps the width for the name beside the availability checkbox. -->
+				<span class="hidden truncate text-sm text-ink-gray-5 sm:inline">{{ member.name }}</span>
+				<FormControl
+					type="checkbox"
+					:label="__('Must confirm availability?')"
+					:title="__('Asked whether they can play each gig')"
+					:model-value="member.confirms_availability"
+					:disabled="Boolean(savingConfirms)"
+					@update:model-value="toggleConfirms(member, $event)"
+				/>
 				<Button
 					v-if="member.has_drive_access === false"
 					icon-left="lucide-hard-drive"
@@ -114,7 +139,13 @@ async function cancel(invitation) {
 		</ul>
 		<ErrorMessage
 			class="mt-2"
-			:message="members.error || invitations.error || cancelInvitation.error || grantDrive.error"
+			:message="
+				members.error ||
+				invitations.error ||
+				cancelInvitation.error ||
+				grantDrive.error ||
+				setConfirms.error
+			"
 		/>
 		<form class="mt-3 flex items-end gap-2" @submit.prevent="sendInvitation">
 			<FormControl

@@ -1,0 +1,17 @@
+[
+ {
+  "default": "1",
+  "description": "Asked whether they can play each gig the band is offered",
+  "docstatus": 0,
+  "doctype": "Custom Field",
+  "dt": "User",
+  "fieldname": "roadie_confirms_availability",
+  "fieldtype": "Check",
+  "insert_after": "enabled",
+  "is_system_generated": 0,
+  "label": "Must confirm availability?",
+  "modified": "2026-10-15 21:00:00.000000",
+  "module": "Roadie",
+  "name": "User-roadie_confirms_availability"
+ }
+]

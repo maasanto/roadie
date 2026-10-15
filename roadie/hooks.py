@@ -51,4 +51,6 @@ doc_events = {
 fixtures = [
 	{"dt": "Role", "filters": [["name", "=", "Band Member"]]},
 	{"dt": "Notification", "filters": [["module", "=", "Roadie"]]},
+	# By name: the fields a band adds to its own forms are Custom Fields too, and are theirs, not the app's.
+	{"dt": "Custom Field", "filters": [["name", "=", "User-roadie_confirms_availability"]]},
 ]

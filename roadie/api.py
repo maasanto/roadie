@@ -6,7 +6,7 @@ import frappe
 from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 from frappe.email import relink
-from frappe.utils import get_fullname
+from frappe.utils import get_fullname, today
 from markupsafe import Markup
 
 from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns, clean_quick_filters
@@ -35,6 +35,8 @@ EMAIL_DRAFT_FIELD = "roadie_email_draft"
 MAILBOX_ROLES = ("Band Member", "System Manager")
 # Suite's own role: it opens Drive, and Suite's Mail, Calendar and Meet with it.
 DRIVE_ROLE = "Suite User"
+# A User checkbox, on unless the member only books the gigs rather than plays them.
+AVAILABILITY_FIELD = "roadie_confirms_availability"
 # A task's emails show in its dialog only, so a thread filed there would drop out of every record's history.
 LINKABLE_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 EMAIL_SUMMARY_FIELDS = [
@@ -264,11 +266,13 @@ def _field_changes(doc):
 	)
 	changes = []
 	for version in versions:
-		for fieldname, old, new in frappe.parse_json(version.data).get("changed", []):
+		data = frappe.parse_json(version.data)
+		changes.extend(_availability_changes(version, data))
+		for fieldname, old, new in data.get("changed", []):
 			field = meta.get_field(fieldname)
 			# Members only hold permlevel 0, as their forms do. A blank turned into another blank, an unset fee
 			# saved as 0, changed nothing a member can see.
-			if not field or field.permlevel or not (old or new):
+			if not field or field.permlevel or not (old or new) or fieldname == "availability_requested_by":
 				continue
 			changes.append(
 				{
@@ -282,6 +286,20 @@ def _field_changes(doc):
 				}
 			)
 	return changes
+
+
+def _availability_changes(version, data):
+	"""The first request for a gig's availability, and each answer. A reset after a new date shows as that date's
+	change, and a reminder changes nothing on record."""
+	entry = {"by": get_fullname(version.owner), "at": version.creation}
+	if any(fieldname == "availability_requested_by" for fieldname, _old, _new in data.get("changed", [])):
+		yield {**entry, "type": "availability_requested"}
+	for table, _idx, _row, row_changes in data.get("row_changed", []):
+		if table != "availability":
+			continue
+		for fieldname, _old, new in row_changes:
+			if fieldname == "answer" and new:
+				yield {**entry, "type": "answered", "answer": new}
 
 
 def _shown_value(field, value):
@@ -383,6 +401,13 @@ def get_gig_activity() -> dict[str, dict]:
 	for rows in counts:
 		for row in rows:
 			activity.setdefault(row.pop("gig"), {}).update(row)
+	for row in frappe.get_all(
+		"Gig Availability",
+		filters={"parenttype": "Gig", "parent": ["in", gigs]},
+		fields=["parent", "member", "answer"],
+		order_by="idx asc",
+	):
+		activity.setdefault(row.pop("parent"), {}).setdefault("availability", []).append(row)
 	return activity
 
 
@@ -730,17 +755,22 @@ def reschedule(kind: str, name: str, start: str | None = None, end: str | None =
 	record.save()
 
 
+def band_members() -> list[dict]:
+	"""Every enabled member, and whether a gig's availability request asks them."""
+	return frappe.get_all(
+		"User",
+		filters=[["Has Role", "role", "=", "Band Member"], ["enabled", "=", 1]],
+		fields=["name", "full_name", "user_image", f"{AVAILABILITY_FIELD} as confirms_availability"],
+		order_by="full_name asc",
+		distinct=True,
+	)
+
+
 @frappe.whitelist()
 def get_members() -> list[dict]:
 	frappe.only_for(("Band Member", "System Manager"))
 
-	members = frappe.get_all(
-		"User",
-		filters=[["Has Role", "role", "=", "Band Member"], ["enabled", "=", 1]],
-		fields=["name", "full_name", "user_image"],
-		order_by="full_name asc",
-		distinct=True,
-	)
+	members = band_members()
 	if is_drive_installed():
 		drive_users = set(
 			frappe.get_all(
@@ -916,6 +946,49 @@ def grant_drive_access(member: str) -> None:
 				"{0}'s role profile or user type decides their roles: an administrator has to add Suite User there"
 			).format(member)
 		)
+
+
+@frappe.whitelist(methods=["POST"])
+def set_confirms_availability(member: str, confirms: bool) -> None:
+	"""Any member says who is asked whether they can play a gig, as anyone may invite the next member."""
+	frappe.only_for(("Band Member", "System Manager"))
+	if member not in {listed.name for listed in band_members()}:
+		frappe.throw(_("{0} is not a band member").format(member), frappe.PermissionError)
+	# Members have no right over User records, and this one checkbox is all it touches.
+	frappe.db.set_value("User", member, AVAILABILITY_FIELD, int(confirms))
+	if not confirms:
+		# The gigs still waiting on them stop counting them.
+		frappe.db.delete("Gig Availability", {"member": member, "answer": ("is", "not set")})
+
+
+@frappe.whitelist(methods=["POST"])
+def request_availability(gig: str) -> None:
+	doc = frappe.get_doc("Gig", gig)
+	doc.check_permission("write")
+	doc.request_availability()
+
+
+@frappe.whitelist(methods=["POST"])
+def answer_availability(gig: str, answer: str) -> None:
+	doc = frappe.get_doc("Gig", gig)
+	doc.check_permission("write")
+	doc.answer_availability(answer)
+
+
+@frappe.whitelist()
+def get_pending_availability() -> list[dict]:
+	"""The gigs still waiting on the caller's answer, soonest first, leaving out those already over or given up."""
+	return frappe.get_list(
+		"Gig",
+		filters=[
+			["Gig Availability", "member", "=", frappe.session.user],
+			["Gig Availability", "answer", "is", "not set"],
+			["gig_date", ">=", today()],
+			["status", "not in", ("Played", "Declined", "Dropped")],
+		],
+		fields=["name", "title", "gig_date"],
+		order_by="gig_date asc",
+	)
 
 
 def is_in_drive(entity) -> bool:
