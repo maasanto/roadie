@@ -174,7 +174,9 @@ class TestFestivalEdition(IntegrationTestCase):
 		other = frappe.get_doc({"doctype": "Festival", "title": "Acme Nights"}).insert()
 		self.make_edition(self.festival.name)
 		held = self.make_edition(other.name)
-		frappe.get_doc({"doctype": "Gig", "title": "Acme Nights 2027", "festival_edition": held.name}).insert()
+		frappe.get_doc(
+			{"doctype": "Gig", "title": "Acme Nights 2027", "festival_edition": held.name}
+		).insert()
 
 		frappe.set_user(MEMBER)
 		frappe.delete_doc("Festival", self.festival.name)
