@@ -6,7 +6,22 @@ globalThis.window = globalThis;
 window.lang = "en";
 window.translations = {};
 await import("./translation.js");
-const { confirmBooking } = await import("./availability.js");
+const { availabilitySummary, confirmBooking } = await import("./availability.js");
+
+test("a gig card's count turns red as soon as one member can't play, green once everyone can", () => {
+	const answers = (...values) => values.map((answer) => ({ answer }));
+
+	assert.deepEqual(availabilitySummary(answers("Yes", "")), {
+		available: 1,
+		declined: 0,
+		asked: 2,
+		tone: "",
+	});
+	assert.equal(availabilitySummary(answers("Yes", "No", "")).tone, "text-ink-red-7");
+	assert.equal(availabilitySummary(answers("Yes", "No", "")).declined, 1);
+	assert.equal(availabilitySummary(answers("Yes", "Yes")).tone, "text-ink-green-6");
+	assert.equal(availabilitySummary(undefined).asked, 0);
+});
 
 const members = [
 	{ name: "john@example.com", full_name: "John Doe" },

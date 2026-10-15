@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { Avatar, Badge, Dropdown } from "frappe-ui";
+import { availabilitySummary } from "../availability";
 import {
 	GIG_STATUSES,
 	daysUntil,
@@ -45,11 +46,12 @@ const activityBadges = computed(() => {
 	].filter((badge) => badge.count);
 });
 
-// How many of the members asked can play; the icon turns green once every one of them can.
 const availability = computed(() => {
-	const rows = props.activity.availability || [];
-	const available = rows.filter((row) => row.answer === "Yes").length;
-	return { available, asked: rows.length, isConfirmed: rows.length > 0 && available === rows.length };
+	const summary = availabilitySummary(props.activity.availability);
+	const label = summary.declined
+		? __("{0} of {1} can play, {2} can't", [summary.available, summary.asked, summary.declined])
+		: __("{0} of {1} can play", [summary.available, summary.asked]);
+	return { ...summary, label };
 });
 
 const assignOptions = computed(() =>
@@ -99,19 +101,10 @@ const moveOptions = computed(() =>
 			<span v-if="gig.gig_date" class="flex items-center gap-1">
 				<span class="lucide-calendar size-3.5" aria-hidden="true" />{{ formatDate(gig.gig_date) }}
 			</span>
-			<span
-				v-if="availability.asked"
-				class="flex items-center gap-1"
-				:title="__('{0} of {1} can play', [availability.available, availability.asked])"
-			>
-				<span
-					class="lucide-user-check size-3.5"
-					:class="availability.isConfirmed ? 'text-ink-green-6' : ''"
-					aria-hidden="true"
-				/>{{ availability.available }}/{{ availability.asked
-				}}<span class="sr-only">{{
-					__("{0} of {1} can play", [availability.available, availability.asked])
-				}}</span>
+			<span v-if="availability.asked" class="flex items-center gap-1" :title="availability.label">
+				<span class="lucide-user-check size-3.5" :class="availability.tone" aria-hidden="true" />{{
+					availability.available
+				}}/{{ availability.asked }}<span class="sr-only">{{ availability.label }}</span>
 			</span>
 			<span v-if="feeLabel && gig.fee" class="flex items-center gap-1">
 				<span class="lucide-banknote size-3.5" aria-hidden="true" />{{ feeLabel }}
