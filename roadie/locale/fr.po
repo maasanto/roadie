@@ -1735,6 +1735,26 @@ msgstr "Afficher les tâches faites ({0})"
 msgid "Hide done"
 msgstr "Masquer les tâches faites"
 
+#: frontend/src/components/BandMembers.vue
+msgid "Give Drive access"
+msgstr "Donner accès au Drive"
+
+#: frontend/src/components/BandMembers.vue
+msgid "{0} can now open Drive"
+msgstr "{0} peut maintenant ouvrir le Drive"
+
+#: roadie/api.py
+msgid "Drive access needs Frappe Suite, which this site does not have"
+msgstr "L'accès au Drive nécessite Frappe Suite, que ce site n'a pas"
+
+#: roadie/api.py
+msgid "{0} is not a band member"
+msgstr "{0} n'est pas membre du groupe"
+
+#: roadie/api.py
+msgid "{0}'s role profile or user type decides their roles: an administrator has to add Suite User there"
+msgstr "Les rôles de {0} viennent de son profil de rôle ou de son type d'utilisateur : un administrateur doit y ajouter Suite User"
+
 #: frontend/src/components/EmailThread.vue
 msgid "Forward"
 msgstr "Transférer"
@@ -1798,3 +1818,14 @@ msgstr "Supprimer la tâche"
 #: frontend/src/task.js
 msgid "Task deleted"
 msgstr "Tâche supprimée"
+#: frontend/src/components/GigCard.vue
+msgid "Unread emails"
+msgstr "E-mails non lus"
+
+#: frontend/src/components/GigCard.vue
+msgid "Open tasks, some overdue"
+msgstr "Tâches en cours, dont certaines en retard"
+
+#: frontend/src/components/GigCard.vue
+msgid "Open tasks"
+msgstr "Tâches en cours"

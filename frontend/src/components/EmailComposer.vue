@@ -14,6 +14,7 @@ import {
 import DriveLinkDialog from "./DriveLinkDialog.vue";
 import EmailRecipients from "./EmailRecipients.vue";
 import { DRAFT_UPLOAD_ARGS, confirmDiscardDraft, isDraftUpload, pickedFile, trackDraft } from "../draft";
+import { withSignature } from "../email";
 
 const props = defineProps({
 	// Left out for a new email from the Inbox: Frappe then threads it on the recipient's contact, or on itself.
@@ -44,9 +45,9 @@ const email = reactive({
 	cc: [],
 	bcc: [],
 	subject: "",
-	content: "",
 	inReplyTo: null,
 	...draftFields,
+	content: withSignature(draftFields.content || "", window.email_signature),
 });
 const invalidRecipientFields = reactive({ to: false, cc: false, bcc: false });
 const hasInvalidRecipient = computed(() => Object.values(invalidRecipientFields).some(Boolean));

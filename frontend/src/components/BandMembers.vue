@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { Avatar, Badge, Button, ErrorMessage, FormControl, toast, useCall } from "frappe-ui";
+import { user } from "../user";
 
 // Frappe's own User Invitation flow; roadie's `user_invitation` hook decides who may invite and with which role.
 const INVITATION_API = "/api/v2/method/frappe.core.api.user_invitation";
@@ -17,6 +18,13 @@ const cancelInvitation = useCall({
 	method: "POST",
 	immediate: false,
 });
+
+const grantDrive = useCall({
+	url: "/api/v2/method/roadie.api.grant_drive_access",
+	method: "POST",
+	immediate: false,
+});
+const grantingMember = ref("");
 
 const email = ref("");
 const notInvited = ref("");
@@ -50,6 +58,20 @@ async function sendInvitation() {
 	}
 }
 
+async function grantDriveAccess(member) {
+	grantingMember.value = member.name;
+	await grantDrive.submit({ member: member.name });
+	grantingMember.value = "";
+	if (grantDrive.error) return;
+	// The page boot decides whether the sidebar links to Drive, so a member granting themselves needs a fresh one.
+	if (member.name === user.name) {
+		window.location.reload();
+		return;
+	}
+	toast.success(__("{0} can now open Drive", [member.full_name]));
+	members.reload();
+}
+
 async function cancel(invitation) {
 	await cancelInvitation.submit({ name: invitation.name, app_name: APP_NAME });
 	// Reloaded either way: a failed cancel usually means the invitation was accepted meanwhile.
@@ -66,6 +88,13 @@ async function cancel(invitation) {
 				<Avatar :image="member.user_image" :label="member.full_name" size="sm" />
 				<span class="min-w-0 flex-1 truncate text-base">{{ member.full_name }}</span>
 				<span class="truncate text-sm text-ink-gray-5">{{ member.name }}</span>
+				<Button
+					v-if="member.has_drive_access === false"
+					icon-left="lucide-hard-drive"
+					:label="__('Give Drive access')"
+					:loading="grantingMember === member.name"
+					@click="grantDriveAccess(member)"
+				/>
 			</li>
 			<li
 				v-for="invitation in invitations.data"
@@ -83,7 +112,10 @@ async function cancel(invitation) {
 				/>
 			</li>
 		</ul>
-		<ErrorMessage class="mt-2" :message="members.error || invitations.error || cancelInvitation.error" />
+		<ErrorMessage
+			class="mt-2"
+			:message="members.error || invitations.error || cancelInvitation.error || grantDrive.error"
+		/>
 		<form class="mt-3 flex items-end gap-2" @submit.prevent="sendInvitation">
 			<FormControl
 				v-model="email"

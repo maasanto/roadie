@@ -74,6 +74,12 @@ export function asHtml(content) {
 // The folded-quote markers in QUOTE_SELECTOR expect exactly this shape: an intro paragraph, then the blockquote.
 const quote = (email, intro) => `<p></p><p>${intro}</p><blockquote>${asHtml(email.content)}</blockquote>`;
 
+// Below an empty paragraph for the cursor and above any quote, which must stay last for QUOTE_SELECTOR to fold
+// it. The quote's own leading empty paragraph then spaces the signature from it.
+export function withSignature(content, signature) {
+	return signature ? `<p></p>${asHtml(signature)}${content}` : content;
+}
+
 // Received headers keep display names: "Bob <bob@example.com>".
 const bareAddress = (recipient) => (recipient.match(/<([^>]+)>/)?.[1] ?? recipient).trim();
 

@@ -21,6 +21,7 @@ from roadie.api import (
 )
 from roadie.install import grant_communication_access
 from roadie.roadie.doctype.gig.test_gig import MEMBER, OTHER_MEMBER, blank_pdf, make_member
+from roadie.www import roadie as roadie_page
 
 MAILBOX = "band@example.com"
 VENUE = "venue@example.com"
@@ -405,6 +406,30 @@ class TestEmail(IntegrationTestCase):
 		self.assertEqual(outbox[sent["name"]].thread, {"doctype": "Communication", "name": sent["name"]})
 		thread = get_emails("Communication", sent["name"])
 		self.assertEqual([file.file_name for file in thread[0].attachments], ["flyer.txt"])
+
+	def test_composer_signs_with_the_members_signature_else_the_band_mailboxs(self):
+		for account in frappe.get_all("Email Account", {"default_outgoing": 1}, pluck="name"):
+			frappe.db.set_value("Email Account", account, "default_outgoing", 0)
+			self.addCleanup(frappe.db.set_value, "Email Account", account, "default_outgoing", 1)
+		self.mailbox.db_set(
+			{"enable_outgoing": 1, "default_outgoing": 1, "add_signature": 0, "signature": "<p>Acme Band</p>"}
+		)
+		self.addCleanup(self.mailbox.db_set, {"add_signature": 0, "signature": None})
+		# Desk saves a cleared signature as an empty editor, not as nothing.
+		frappe.db.set_value(
+			"User", MEMBER, "email_signature", '<div class="ql-editor read-mode"><p><br></p></div>'
+		)
+		self.addCleanup(frappe.db.set_value, "User", MEMBER, "email_signature", None)
+		frappe.set_user(MEMBER)
+
+		def signature():
+			return roadie_page.get_context().boot["email_signature"]
+
+		self.assertIsNone(signature())
+		self.mailbox.db_set("add_signature", 1)
+		self.assertEqual(signature(), "<p>Acme Band</p>")
+		frappe.db.set_value("User", MEMBER, "email_signature", "<p>John, drums</p>")
+		self.assertEqual(signature(), "<p>John, drums</p>")
 
 	def test_sent_folder_fills_the_outbox_but_skips_what_frappe_sent(self):
 		frappe.set_user(MEMBER)
