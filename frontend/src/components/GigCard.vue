@@ -10,6 +10,7 @@ import {
 	memberOptions,
 	pipelineColumns,
 } from "../gig";
+import { availabilityState } from "../availability";
 import { translatedOptions } from "../translation";
 
 const props = defineProps({
@@ -44,6 +45,15 @@ const activityBadges = computed(() => {
 		{ icon: "lucide-paperclip", count: attachments, label: __("Attachments") },
 	].filter((badge) => badge.count);
 });
+
+const availability = computed(() =>
+	(props.activity.availability || []).map((row) => {
+		const member = props.members.find((listed) => listed.name === row.member);
+		const state = availabilityState(row.answer);
+		const name = member?.full_name || row.member;
+		return { ...row, name, image: member?.user_image, dot: state.dot, title: `${name}: ${state.label}` };
+	})
+);
 
 const assignOptions = computed(() =>
 	memberOptions(props.members).map((option) => ({
@@ -88,6 +98,17 @@ const moveOptions = computed(() =>
 		<p v-if="linkedTitles.length" class="truncate text-sm text-ink-gray-6">
 			{{ linkedTitles.join(" · ") }}
 		</p>
+		<ul v-if="availability.length" class="flex flex-wrap gap-1.5" :aria-label="__('Availability')">
+			<li v-for="row in availability" :key="row.member" class="relative" :title="row.title">
+				<Avatar :label="row.name" :image="row.image" size="sm" />
+				<span
+					class="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-white"
+					:class="row.dot"
+					aria-hidden="true"
+				/>
+				<span class="sr-only">{{ row.title }}</span>
+			</li>
+		</ul>
 		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-gray-5">
 			<span v-if="gig.gig_date" class="flex items-center gap-1">
 				<span class="lucide-calendar size-3.5" aria-hidden="true" />{{ formatDate(gig.gig_date) }}
