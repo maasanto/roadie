@@ -7,6 +7,17 @@ export const AVAILABILITY_STATES = {
 
 export const availabilityState = (answer) => AVAILABILITY_STATES[answer || ""];
 
+// What a gig card shows of the answers: how many of the members asked can play, red as soon as one can't, green once
+// every one of them can.
+export function availabilitySummary(rows = []) {
+	const available = rows.filter((row) => row.answer === "Yes").length;
+	const declined = rows.filter((row) => row.answer === "No").length;
+	const summary = { available, declined, asked: rows.length, tone: "" };
+	if (declined) return { ...summary, tone: "text-ink-red-7" };
+	if (rows.length && available === rows.length) return { ...summary, tone: "text-ink-green-6" };
+	return summary;
+}
+
 const unavailableNames = (rows, members) =>
 	rows
 		.filter((row) => row.answer === "No")

@@ -1873,6 +1873,10 @@ msgstr ""
 msgid "{0} of {1} can play"
 msgstr ""
 
+#: frontend/src/components/GigCard.vue
+msgid "{0} of {1} can play, {2} can't"
+msgstr ""
+
 #: roadie/roadie/doctype/gig/gig.py
 msgid "No band member is set to confirm their availability, so there is nobody to ask"
 msgstr ""

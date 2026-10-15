@@ -2024,6 +2024,10 @@ msgstr "Demandez au groupe s'il peut jouer à cette date."
 msgid "{0} of {1} can play"
 msgstr "{0} sur {1} peuvent jouer"
 
+#: frontend/src/components/GigCard.vue
+msgid "{0} of {1} can play, {2} can't"
+msgstr "{0} sur {1} peuvent jouer, {2} ne peuvent pas"
+
 #: roadie/roadie/doctype/gig/gig.py
 msgid "No band member is set to confirm their availability, so there is nobody to ask"
 msgstr "Aucun membre du groupe ne confirme sa disponibilité : il n'y a personne à solliciter"
