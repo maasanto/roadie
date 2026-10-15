@@ -103,10 +103,11 @@ async function cancel(invitation) {
 			<li v-for="member in members.data" :key="member.name" class="flex items-center gap-3 px-3 py-2">
 				<Avatar :image="member.user_image" :label="member.full_name" size="sm" />
 				<span class="min-w-0 flex-1 truncate text-base">{{ member.full_name }}</span>
-				<span class="truncate text-sm text-ink-gray-5">{{ member.name }}</span>
+				<!-- A phone keeps the width for the name beside the availability checkbox. -->
+				<span class="hidden truncate text-sm text-ink-gray-5 sm:inline">{{ member.name }}</span>
 				<FormControl
 					type="checkbox"
-					:label="__('Confirms availability')"
+					:label="__('Must confirm availability?')"
 					:title="__('Asked whether they can play each gig')"
 					:model-value="member.confirms_availability"
 					:disabled="Boolean(savingConfirms)"
