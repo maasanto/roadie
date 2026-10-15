@@ -1,5 +1,5 @@
 <script>
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 // Module scope: a delete still waiting on its toast must outlive this screen, which remounts on every switch
 // between Inbox and Outbox. A thread stays hidden once deleted, its key never comes back.
@@ -49,6 +49,26 @@ const loadError = computed(() =>
 const hasOlderEmails = computed(
 	() => (mailbox.data || []).reduce((emails, row) => emails + row.count, 0) >= loaded.value.limit
 );
+
+// Nothing tells the screen that mail arrived, so it asks again whenever the member may be looking at it.
+const MAILBOX_REFRESH_INTERVAL_MS = 60 * 1000;
+
+function refreshMailbox() {
+	// Offline, the failed request would swap the rows for an error.
+	if (document.visibilityState === "visible" && navigator.onLine) mailbox.reload();
+}
+
+let refreshTimer = null;
+onMounted(() => {
+	document.addEventListener("visibilitychange", refreshMailbox);
+	window.addEventListener("online", refreshMailbox);
+	refreshTimer = setInterval(refreshMailbox, MAILBOX_REFRESH_INTERVAL_MS);
+});
+onUnmounted(() => {
+	document.removeEventListener("visibilitychange", refreshMailbox);
+	window.removeEventListener("online", refreshMailbox);
+	clearInterval(refreshTimer);
+});
 
 const isUnreadOnly = ref(false);
 const isComposing = ref(false);
@@ -456,7 +476,7 @@ onKey("Escape", close);
 				<div v-if="hasOlderEmails" class="flex justify-center p-4">
 					<Button
 						:label="__('Load more')"
-						:loading="mailbox.loading"
+						:loading="mailbox.loading && emailLimit > loaded.limit"
 						@click="emailLimit += EMAILS_PER_PAGE"
 					/>
 				</div>
