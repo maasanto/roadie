@@ -26,28 +26,23 @@ const grantDrive = useCall({
 });
 const grantingMember = ref("");
 
-const setManager = useCall({
-	url: "/api/v2/method/roadie.api.set_band_manager",
+const setConfirms = useCall({
+	url: "/api/v2/method/roadie.api.set_confirms_availability",
 	method: "POST",
 	immediate: false,
 });
+const savingConfirms = ref("");
 
-const managerHint = __("Managers aren't asked whether they can play a gig");
-const inviteManagerLabel = __("Invite as a manager, who isn't asked whether they can play a gig");
-
-const savingManager = ref("");
-
-async function toggleManager(member, isManager) {
+async function toggleConfirms(member, confirms) {
 	// frappe-ui's checkbox emits every change twice, and any second submit would abort the first.
-	if (savingManager.value) return;
-	savingManager.value = member.name;
-	await setManager.submit({ member: member.name, is_manager: isManager });
-	savingManager.value = "";
-	if (!setManager.error) member.is_manager = isManager;
+	if (savingConfirms.value) return;
+	savingConfirms.value = member.name;
+	await setConfirms.submit({ member: member.name, confirms });
+	savingConfirms.value = "";
+	if (!setConfirms.error) member.confirms_availability = confirms;
 }
 
 const email = ref("");
-const isInvitingManager = ref(false);
 const notInvited = ref("");
 
 async function sendInvitation() {
@@ -61,7 +56,7 @@ async function sendInvitation() {
 	}
 	const result = await invite.submit({
 		emails: address,
-		roles: isInvitingManager.value ? ["Band Member", "Band Manager"] : ["Band Member"],
+		roles: ["Band Member"],
 		redirect_to_path: "/roadie",
 		app_name: APP_NAME,
 	});
@@ -69,7 +64,6 @@ async function sendInvitation() {
 	if (result.invited_emails.length) {
 		toast.success(__("Invitation sent to {0}", [address]));
 		email.value = "";
-		isInvitingManager.value = false;
 		invitations.reload();
 	} else if (result.pending_invite_emails.length) {
 		notInvited.value = __("{0} is already invited", [address]);
@@ -112,11 +106,11 @@ async function cancel(invitation) {
 				<span class="truncate text-sm text-ink-gray-5">{{ member.name }}</span>
 				<FormControl
 					type="checkbox"
-					:label="__('Manager')"
-					:title="managerHint"
-					:model-value="member.is_manager"
-					:disabled="Boolean(savingManager)"
-					@update:model-value="toggleManager(member, $event)"
+					:label="__('Confirms availability')"
+					:title="__('Asked whether they can play each gig')"
+					:model-value="member.confirms_availability"
+					:disabled="Boolean(savingConfirms)"
+					@update:model-value="toggleConfirms(member, $event)"
 				/>
 				<Button
 					v-if="member.has_drive_access === false"
@@ -149,7 +143,7 @@ async function cancel(invitation) {
 				invitations.error ||
 				cancelInvitation.error ||
 				grantDrive.error ||
-				setManager.error
+				setConfirms.error
 			"
 		/>
 		<form class="mt-3 flex items-end gap-2" @submit.prevent="sendInvitation">
@@ -168,7 +162,6 @@ async function cancel(invitation) {
 				:loading="invite.loading"
 			/>
 		</form>
-		<FormControl v-model="isInvitingManager" class="mt-2" type="checkbox" :label="inviteManagerLabel" />
 		<ErrorMessage class="mt-2" :message="notInvited || invite.error" />
 		<p class="mt-2 text-p-sm text-ink-gray-5">
 			{{ __("They get an email with a link to join the band.") }}

@@ -71,7 +71,7 @@ defineExpose({ rows, members, reload });
 			{{ __("Set the gig date to ask the band whether they can play it.") }}
 		</p>
 		<p v-else-if="gigDoc.data && !rows.length" class="mt-2 text-p-sm text-ink-gray-5">
-			{{ __("Ask the band whether they can play this date. Managers aren't asked.") }}
+			{{ __("Ask the band whether they can play this date.") }}
 		</p>
 		<ul v-if="rows.length" class="mt-3 divide-y divide-outline-gray-1 rounded-6 border">
 			<li v-for="row in rows" :key="row.member" class="flex items-center gap-3 px-3 py-2">
