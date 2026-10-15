@@ -15,8 +15,21 @@ export function restoreLastQuery(to) {
 }
 
 export function keepListQueries(router) {
-	router.beforeEach(restoreLastQuery);
-	router.afterEach((to, from, failure) => failure || remember(to.name, to.query));
+	// Back and Forward show an entry as it was left. Redirecting them would push a new entry, so Back would land on
+	// the restored list again and could never leave it.
+	let isHistoryMove = false;
+	router.options.history.listen(() => (isHistoryMove = true));
+	// Taken at once, as a link followed while the move still loads its screen is no history move.
+	router.beforeEach((to) => {
+		const wasHistoryMove = isHistoryMove;
+		isHistoryMove = false;
+		return wasHistoryMove || restoreLastQuery(to);
+	});
+	// Clearing the list remembers itself, so an entry without filters or sort, which only Back and Forward leave in
+	// place, keeps the ones the member left.
+	router.afterEach(
+		(to, from, failure) => failure || !(to.query.filters || to.query.sort) || remember(to.name, to.query)
+	);
 }
 
 export function useListQuery(meta, filterFields, sortFields) {
