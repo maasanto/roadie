@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
-import { Button, ErrorMessage, FormControl, Rating, Skeleton, toast, useCall } from "frappe-ui";
+import { Button, ErrorMessage, FormControl, Rating, Skeleton, TabButtons, toast, useCall } from "frappe-ui";
+import ActivityTimeline from "./ActivityTimeline.vue";
 import FormCustomiser from "./FormCustomiser.vue";
 import { RATING_STARS, splitList, toStars } from "../directory";
 import { useMeta } from "../meta";
@@ -19,6 +20,11 @@ const meta = computed(() => useMeta(props.doctype));
 const fields = computed(() => fieldsFromMeta(meta.value.data?.fields ?? [], props.controls));
 const visibleFields = computed(() => fields.value.filter((field) => !field.hidden));
 const isCustomising = ref(false);
+const tab = ref("details");
+const tabs = [
+	{ label: __("Details"), value: "details" },
+	{ label: __("Activity"), value: "activity" },
+];
 const documentUrl = computed(() => `/api/v2/document/${props.doctype}/${entryName.value}`);
 
 const loadEntry = useCall({ url: documentUrl, immediate: false });
@@ -105,6 +111,7 @@ watch(
 	() => props.name,
 	async (name) => {
 		entryName.value = name;
+		tab.value = "details";
 		fillForm(null);
 		if (!name) return;
 		await loadEntry.execute();
@@ -145,51 +152,56 @@ defineExpose({ form, entryName });
 	</div>
 	<ErrorMessage v-else-if="loadEntry.error" :message="loadEntry.error" />
 	<div v-else class="space-y-6">
-		<FormCustomiser
-			v-if="isCustomising"
-			:doctype="doctype"
-			:fields="fields"
-			@done="isCustomising = false"
-		/>
-		<form v-else class="grid grid-cols-2 gap-4" @submit.prevent="save">
-			<template v-for="field in visibleFields" :key="field.fieldname">
-				<!-- FormControl has no rating type, so the stars are frappe-ui's own Rating. -->
-				<Rating
-					v-if="field.type === 'rating'"
-					v-model="form[field.fieldname]"
-					:label="field.label"
-					:max="RATING_STARS"
-					:disabled="field.disabled"
-				/>
-				<FormControl
-					v-else
-					v-model="form[field.fieldname]"
-					:type="field.type"
-					:label="field.label"
-					:required="field.required"
-					:options="optionsFor(field, form)"
-					:disabled="field.disabled"
-					:class="field.type === 'textarea' ? 'col-span-2' : ''"
-				/>
-			</template>
-			<ErrorMessage class="col-span-2" :message="saveCall.error" />
-			<div class="col-span-2 flex justify-between">
-				<slot name="actions">
-					<Button
-						icon-left="lucide-settings-2"
-						variant="ghost"
-						:label="__('Customise form')"
-						@click="isCustomising = true"
+		<TabButtons v-if="entryName" v-model="tab" :options="tabs" type="underline" />
+		<ActivityTimeline v-if="tab === 'activity'" :doctype="doctype" :name="entryName" />
+		<!-- Hidden rather than unmounted, so a half-typed field, comment or email survives a look at the activity. -->
+		<div v-show="tab === 'details'" class="space-y-6">
+			<FormCustomiser
+				v-if="isCustomising"
+				:doctype="doctype"
+				:fields="fields"
+				@done="isCustomising = false"
+			/>
+			<form v-else class="grid grid-cols-2 gap-4" @submit.prevent="save">
+				<template v-for="field in visibleFields" :key="field.fieldname">
+					<!-- FormControl has no rating type, so the stars are frappe-ui's own Rating. -->
+					<Rating
+						v-if="field.type === 'rating'"
+						v-model="form[field.fieldname]"
+						:label="field.label"
+						:max="RATING_STARS"
+						:disabled="field.disabled"
 					/>
-				</slot>
-				<Button
-					type="submit"
-					variant="solid"
-					:loading="saveCall.loading"
-					:label="entryName ? __('Save') : __('Create')"
-				/>
-			</div>
-		</form>
-		<slot v-if="entryName" :entry-name="entryName" :form="form" />
+					<FormControl
+						v-else
+						v-model="form[field.fieldname]"
+						:type="field.type"
+						:label="field.label"
+						:required="field.required"
+						:options="optionsFor(field, form)"
+						:disabled="field.disabled"
+						:class="field.type === 'textarea' ? 'col-span-2' : ''"
+					/>
+				</template>
+				<ErrorMessage class="col-span-2" :message="saveCall.error" />
+				<div class="col-span-2 flex justify-between">
+					<slot name="actions">
+						<Button
+							icon-left="lucide-settings-2"
+							variant="ghost"
+							:label="__('Customise form')"
+							@click="isCustomising = true"
+						/>
+					</slot>
+					<Button
+						type="submit"
+						variant="solid"
+						:loading="saveCall.loading"
+						:label="entryName ? __('Save') : __('Create')"
+					/>
+				</div>
+			</form>
+			<slot v-if="entryName" :entry-name="entryName" :form="form" />
+		</div>
 	</div>
 </template>

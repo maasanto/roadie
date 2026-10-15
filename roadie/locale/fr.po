@@ -1858,3 +1858,47 @@ msgstr "Tâches en cours, dont certaines en retard"
 #: frontend/src/components/GigCard.vue
 msgid "Open tasks"
 msgstr "Tâches en cours"
+
+#: frontend/src/components/EntryForm.vue
+msgid "Details"
+msgstr "Détails"
+
+#: frontend/src/components/EntryForm.vue
+msgid "Activity"
+msgstr "Activité"
+
+#: frontend/src/activity.js
+msgid "set {0} to {1}"
+msgstr "a renseigné {0} : {1}"
+
+#: frontend/src/activity.js
+msgid "cleared {0}"
+msgstr "a vidé {0}"
+
+#: frontend/src/activity.js
+msgid "changed {0} from {1} to {2}"
+msgstr "a changé {0} de {1} à {2}"
+
+#: frontend/src/activity.js
+msgid "created this record"
+msgstr "a créé cette fiche"
+
+#: frontend/src/activity.js
+msgid "commented"
+msgstr "a commenté"
+
+#: frontend/src/activity.js
+msgid "attached a file"
+msgstr "a joint un fichier"
+
+#: frontend/src/activity.js
+msgid "removed a file"
+msgstr "a retiré un fichier"
+
+#: frontend/src/activity.js
+msgid "sent an email"
+msgstr "a envoyé un e-mail"
+
+#: roadie/api.py
+msgid "Activity can only be listed for {0}, not {1}"
+msgstr "L'activité ne peut être listée que pour {0}, pas pour {1}"
