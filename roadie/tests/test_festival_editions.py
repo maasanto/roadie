@@ -1,6 +1,6 @@
 import frappe
 from frappe.tests import IntegrationTestCase
-from frappe.utils import nowdate
+from frappe.utils import add_months, nowdate
 
 from roadie.patches import create_festival_editions
 from roadie.roadie.doctype.gig.test_gig import MEMBER, make_member
@@ -82,6 +82,28 @@ class TestCreateFestivalEditions(IntegrationTestCase):
 		self.assertEqual(self.edition_of(gig_of_the_year), edition.name)
 		self.assertIsNone(self.edition_of(gig_of_last_year))
 		self.assertIsNone(self.edition_of(undated_gig))
+
+	def test_edition_takes_the_year_of_the_gigs_its_window_was_for(self):
+		winter_call = self.make_legacy_festival(
+			"Acme Festival", application_opens="2026-11-01", application_closes="2027-01-31"
+		)
+		closes_only = self.make_legacy_festival("Acme Nights", application_closes="2027-01-31")
+		no_window = self.make_legacy_festival("Acme Days")
+		gig_after_the_call = self.make_gig(winter_call, "2027-07-10")
+		gig_before_the_call = self.make_gig(winter_call, "2026-07-11")
+		self.make_gig(winter_call, "2029-07-14")
+		upcoming_gig = self.make_gig(no_window, add_months(nowdate(), 6))
+
+		create_festival_editions.execute()
+
+		[edition] = self.editions_of(winter_call)
+		self.assertEqual(edition.year, 2027)
+		self.assertEqual(self.edition_of(gig_after_the_call), edition.name)
+		self.assertIsNone(self.edition_of(gig_before_the_call))
+		[closes_only_edition] = self.editions_of(closes_only)
+		self.assertEqual(closes_only_edition.year, 2027)
+		[no_window_edition] = self.editions_of(no_window)
+		self.assertEqual(self.edition_of(upcoming_gig), no_window_edition.name)
 
 	def edition_of(self, gig):
 		return frappe.db.get_value("Gig", gig.name, "festival_edition")
