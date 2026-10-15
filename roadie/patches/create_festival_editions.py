@@ -1,5 +1,5 @@
 import frappe
-from frappe.utils import getdate, nowdate
+from frappe.utils import add_years, getdate, nowdate
 
 from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns, clean_quick_filters
 
@@ -26,8 +26,22 @@ def execute():
 	forget_moved_fields_in_directory_settings()
 
 
+def guess_edition_year(festival):
+	"""A window often opens the year before the festival it is for, so the edition takes the year of the first gig
+	within a year after the window closes, or after today without a window. Earlier gigs belong to past editions,
+	and gigs further out to editions whose window the festival never held."""
+	window_end = getdate(festival.application_closes or festival.application_opens or nowdate())
+	first_gig_after = frappe.db.get_value(
+		"Gig",
+		{"festival": festival.name, "gig_date": ("between", (window_end, add_years(window_end, 1)))},
+		"gig_date",
+		order_by="gig_date asc",
+	)
+	return getdate(first_gig_after or window_end).year
+
+
 def create_edition(festival):
-	year = getdate(festival.application_opens or nowdate()).year
+	year = guess_edition_year(festival)
 	edition = frappe.get_doc(
 		{
 			"doctype": "Festival Edition",
