@@ -26,7 +26,28 @@ const grantDrive = useCall({
 });
 const grantingMember = ref("");
 
+const setManager = useCall({
+	url: "/api/v2/method/roadie.api.set_band_manager",
+	method: "POST",
+	immediate: false,
+});
+
+const managerHint = __("Managers aren't asked whether they can play a gig");
+const inviteManagerLabel = __("Invite as a manager, who isn't asked whether they can play a gig");
+
+const savingManager = ref("");
+
+async function toggleManager(member, isManager) {
+	// frappe-ui's checkbox emits every change twice, and any second submit would abort the first.
+	if (savingManager.value) return;
+	savingManager.value = member.name;
+	await setManager.submit({ member: member.name, is_manager: isManager });
+	savingManager.value = "";
+	if (!setManager.error) member.is_manager = isManager;
+}
+
 const email = ref("");
+const isInvitingManager = ref(false);
 const notInvited = ref("");
 
 async function sendInvitation() {
@@ -40,7 +61,7 @@ async function sendInvitation() {
 	}
 	const result = await invite.submit({
 		emails: address,
-		roles: ["Band Member"],
+		roles: isInvitingManager.value ? ["Band Member", "Band Manager"] : ["Band Member"],
 		redirect_to_path: "/roadie",
 		app_name: APP_NAME,
 	});
@@ -48,6 +69,7 @@ async function sendInvitation() {
 	if (result.invited_emails.length) {
 		toast.success(__("Invitation sent to {0}", [address]));
 		email.value = "";
+		isInvitingManager.value = false;
 		invitations.reload();
 	} else if (result.pending_invite_emails.length) {
 		notInvited.value = __("{0} is already invited", [address]);
@@ -88,6 +110,14 @@ async function cancel(invitation) {
 				<Avatar :image="member.user_image" :label="member.full_name" size="sm" />
 				<span class="min-w-0 flex-1 truncate text-base">{{ member.full_name }}</span>
 				<span class="truncate text-sm text-ink-gray-5">{{ member.name }}</span>
+				<FormControl
+					type="checkbox"
+					:label="__('Manager')"
+					:title="managerHint"
+					:model-value="member.is_manager"
+					:disabled="Boolean(savingManager)"
+					@update:model-value="toggleManager(member, $event)"
+				/>
 				<Button
 					v-if="member.has_drive_access === false"
 					icon-left="lucide-hard-drive"
@@ -114,7 +144,13 @@ async function cancel(invitation) {
 		</ul>
 		<ErrorMessage
 			class="mt-2"
-			:message="members.error || invitations.error || cancelInvitation.error || grantDrive.error"
+			:message="
+				members.error ||
+				invitations.error ||
+				cancelInvitation.error ||
+				grantDrive.error ||
+				setManager.error
+			"
 		/>
 		<form class="mt-3 flex items-end gap-2" @submit.prevent="sendInvitation">
 			<FormControl
@@ -132,6 +168,7 @@ async function cancel(invitation) {
 				:loading="invite.loading"
 			/>
 		</form>
+		<FormControl v-model="isInvitingManager" class="mt-2" type="checkbox" :label="inviteManagerLabel" />
 		<ErrorMessage class="mt-2" :message="notInvited || invite.error" />
 		<p class="mt-2 text-p-sm text-ink-gray-5">
 			{{ __("They get an email with a link to join the band.") }}
