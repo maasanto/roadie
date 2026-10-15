@@ -99,6 +99,7 @@ function openTask(task) {
 						v-for="task in openTasks"
 						:key="task.name"
 						:task="task"
+						:assignee="scope === 'mine' ? null : assigneeAvatar(task, membersByName)"
 						:gig-title="task.gig_title"
 						@update:done="setDone(tasks, task, $event)"
 						@open="openTask(task)"
