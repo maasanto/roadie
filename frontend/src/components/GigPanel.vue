@@ -1,17 +1,21 @@
 <script setup>
 import { ref } from "vue";
-import { Button } from "frappe-ui";
+import { Button, call, toast } from "frappe-ui";
 import CommentThread from "./CommentThread.vue";
 import EmailThread from "./EmailThread.vue";
 import EntryForm from "./EntryForm.vue";
 import GigAttachments from "./GigAttachments.vue";
 import GigTasks from "./GigTasks.vue";
 import { confirmDiscardDraft } from "../draft";
+import { isUnread } from "../email";
 import { onKey } from "../keyboard";
 
-defineProps({
+const props = defineProps({
 	name: { type: String, default: null },
 	controls: { type: Object, required: true },
+	// A callback rather than an event: marking the mail seen can land after the panel closed, and Vue drops events
+	// from an unmounted component.
+	onMailSeen: { type: Function, default: null },
 });
 const emit = defineEmits(["close", "saved"]);
 
@@ -22,6 +26,17 @@ function close() {
 }
 
 onKey("Escape", close);
+
+// As the Inbox does, or the board's unread badge would outlive the member reading the mail here.
+async function markSeen(gig, thread) {
+	if (!thread.some(isUnread)) return;
+	try {
+		await call("roadie.api.mark_thread_seen", { doctype: "Gig", name: gig });
+		props.onMailSeen?.();
+	} catch (error) {
+		toast.error(error.messages?.join("\n") || error.message);
+	}
+}
 </script>
 
 <template>
@@ -47,7 +62,7 @@ onKey("Escape", close);
 					<GigTasks :gig="entryName" />
 					<GigAttachments :gig="entryName" />
 					<CommentThread doctype="Gig" :name="entryName" />
-					<EmailThread doctype="Gig" :name="entryName" />
+					<EmailThread doctype="Gig" :name="entryName" @loaded="markSeen(entryName, $event)" />
 				</template>
 			</EntryForm>
 		</div>

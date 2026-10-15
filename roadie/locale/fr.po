@@ -1790,3 +1790,15 @@ msgstr "Les e-mails ne peuvent être classés que dans {0}, pas dans {1}"
 #: roadie/api.py
 msgid "Only conversations filed under no gig, task or directory entry can be linked, not {0}"
 msgstr "Seules les conversations rattachées à aucun concert, aucune tâche ni aucune fiche de l'annuaire peuvent être liées, pas {0}"
+
+#: frontend/src/components/GigCard.vue
+msgid "Unread emails"
+msgstr "E-mails non lus"
+
+#: frontend/src/components/GigCard.vue
+msgid "Open tasks, some overdue"
+msgstr "Tâches en cours, dont certaines en retard"
+
+#: frontend/src/components/GigCard.vue
+msgid "Open tasks"
+msgstr "Tâches en cours"
