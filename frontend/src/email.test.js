@@ -3,9 +3,8 @@ import { test } from "node:test";
 
 globalThis.window = globalThis;
 await import("./translation.js");
-const { forwardDraft, isFailedDelivery, openByDefault, replyDraft, splitRecipients } = await import(
-	"./email.js"
-);
+const { forwardDraft, isFailedDelivery, openByDefault, replyDraft, splitRecipients, withSignature } =
+	await import("./email.js");
 
 const received = {
 	name: "comm-1",
@@ -56,6 +55,17 @@ test("a forward of a Bcc copy from a bare address shows no empty To and no doubl
 	const { content } = forwardDraft(bcc);
 	assert.match(content, /From: alice@example\.com<br>/);
 	assert.doesNotMatch(content, /To: /);
+});
+
+test("the signature opens below the cursor, and above the quote so it still folds", () => {
+	const signature = "<p>John, drums</p>";
+	assert.equal(withSignature("", signature), "<p></p><p>John, drums</p>");
+	assert.match(
+		withSignature(replyDraft(received, "reply").content, signature),
+		/^<p><\/p><p>John, drums<\/p><p><\/p><p>On .+ wrote:<\/p><blockquote><p>See you there<\/p><\/blockquote>$/
+	);
+	assert.equal(withSignature("", "John\nAcme Band"), "<p></p><p>John<br>Acme Band</p>");
+	assert.equal(withSignature("", null), "");
 });
 
 test("a mistyped recipient is kept apart from the addresses, never dropped", () => {
