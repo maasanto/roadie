@@ -286,7 +286,7 @@ async function moveGig(gig, status) {
 	<div class="p-6">
 		<div class="flex items-center justify-between">
 			<h1 class="text-2xl-semibold">
-				{{ __("Pipeline") }}
+				{{ __("Gigs") }}
 				<span v-if="!hasNoGigs && !loadError && count" class="ms-1 text-ink-gray-5">{{ count }}</span>
 			</h1>
 			<Button
