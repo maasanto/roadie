@@ -18,6 +18,7 @@ import NotificationPanel from "./components/NotificationPanel.vue";
 import SearchPalette from "./components/SearchPalette.vue";
 import { directoryTypes } from "./directory";
 import { onShortcut } from "./keyboard";
+import { refreshWhileVisible, unreadEmailCount } from "./mailbox";
 import { unreadCount } from "./notifications";
 import { disablePush, isPushAvailable, isPushEnabled } from "./push";
 import { resultRoute } from "./search";
@@ -28,6 +29,12 @@ const router = useRouter();
 const showNotifications = ref(false);
 const notifications = useCall({ url: "/api/v2/method/roadie.api.get_notifications" });
 const unread = computed(() => unreadCount(notifications.data || []));
+refreshWhileVisible(() => unreadEmailCount.reload());
+// Capped, or a backlog's count would spill out of the phone bar's tab.
+const unreadEmailBadge = computed(() => {
+	const count = unreadEmailCount.data;
+	return count > 99 ? "99+" : count ? String(count) : null;
+});
 
 // An open Dialog treats any pointerdown or focus elsewhere as "outside" and closes, so Undo on a toast would close it too.
 onMounted(() => {
@@ -165,7 +172,11 @@ function openResult(item) {
 								:icon="screen.icon"
 								:to="screen.to"
 								:active="route.name === screen.name"
-							/>
+							>
+								<template v-if="screen.name === 'Inbox' && unreadEmailBadge" #suffix>
+									<Badge class="mr-2" :label="unreadEmailBadge" theme="gray" />
+								</template>
+							</SidebarItem>
 							<SidebarItem
 								v-if="driveUrl"
 								:label="__('Drive')"
@@ -220,7 +231,16 @@ function openResult(item) {
 					:class="route.name === screen.name ? 'text-ink-gray-9' : 'text-ink-gray-5'"
 					:aria-current="route.name === screen.name ? 'page' : undefined"
 				>
-					<span class="size-5" :class="screen.icon" aria-hidden="true" />
+					<span class="relative">
+						<span class="block size-5" :class="screen.icon" aria-hidden="true" />
+						<Badge
+							v-if="screen.name === 'Inbox' && unreadEmailBadge"
+							class="absolute -top-1.5 left-3.5"
+							size="sm"
+							:label="unreadEmailBadge"
+							theme="gray"
+						/>
+					</span>
 					<span class="max-w-full truncate">{{ screen.shortLabel }}</span>
 				</router-link>
 			</nav>
