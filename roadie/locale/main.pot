@@ -1618,6 +1618,26 @@ msgstr ""
 msgid "Only the emails Roadie lists can be deleted here, not {0}"
 msgstr ""
 
+#: frontend/src/components/BandMembers.vue
+msgid "Give Drive access"
+msgstr ""
+
+#: frontend/src/components/BandMembers.vue
+msgid "{0} can now open Drive"
+msgstr ""
+
+#: roadie/api.py
+msgid "Drive access needs Frappe Suite, which this site does not have"
+msgstr ""
+
+#: roadie/api.py
+msgid "{0} is not a band member"
+msgstr ""
+
+#: roadie/api.py
+msgid "{0}'s role profile or user type decides their roles: an administrator has to add Suite User there"
+msgstr ""
+
 #: frontend/src/pages/MailboxScreen.vue
 msgid "Link to…"
 msgstr ""

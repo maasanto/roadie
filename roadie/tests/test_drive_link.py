@@ -3,7 +3,14 @@ from unittest.mock import patch
 import frappe
 from frappe.tests import IntegrationTestCase
 
-from roadie.api import is_in_drive, share_drive_link
+from roadie.api import (
+	DRIVE_ROLE,
+	get_members,
+	grant_drive_access,
+	is_drive_installed,
+	is_in_drive,
+	share_drive_link,
+)
 from roadie.roadie.doctype.gig.test_gig import make_member
 from roadie.www import roadie as roadie_page
 
@@ -11,15 +18,16 @@ from roadie.www import roadie as roadie_page
 MEMBER = "drummer@example.com"
 BANDMATE = "bassist@example.com"
 MEMBER_WITHOUT_DRIVE = "keys@example.com"
-
-
-def is_suite_installed():
-	return "suite" in frappe.get_installed_apps()
+MEMBER_WITH_ROLE_PROFILE = "guitarist@example.com"
 
 
 def make_drive_member(email, first_name):
 	make_member(email, first_name)
-	frappe.get_doc("User", email).add_roles("Suite User")
+	frappe.get_doc("User", email).add_roles(DRIVE_ROLE)
+
+
+def member_listing(email):
+	return next(member for member in get_members() if member.name == email)
 
 
 def make_band_folder(file_name):
@@ -34,7 +42,7 @@ class TestDriveLinkWithoutDrive(IntegrationTestCase):
 		frappe.set_user("Administrator")
 
 	def test_composer_hides_drive_links_and_sharing_refuses(self):
-		if is_suite_installed():
+		if is_drive_installed():
 			self.skipTest("Frappe Suite is installed on this site")
 		make_member(MEMBER, "Sam")
 		frappe.set_user(MEMBER)
@@ -42,11 +50,14 @@ class TestDriveLinkWithoutDrive(IntegrationTestCase):
 		self.assertFalse(roadie_page.get_context().boot["can_link_drive_items"])
 		with self.assertRaisesRegex(frappe.PermissionError, "Suite User role"):
 			share_drive_link("anything")
+		self.assertNotIn("has_drive_access", member_listing(MEMBER))
+		with self.assertRaisesRegex(frappe.ValidationError, "needs Frappe Suite"):
+			grant_drive_access(MEMBER)
 
 
 class TestDriveLink(IntegrationTestCase):
 	def setUp(self):
-		if not is_suite_installed():
+		if not is_drive_installed():
 			self.skipTest("Frappe Suite is not installed on this site")
 		make_drive_member(MEMBER, "Sam")
 		frappe.set_user(MEMBER)
@@ -110,6 +121,49 @@ class TestDriveLink(IntegrationTestCase):
 		self.assertIsNone(boot["drive_url"])
 		with self.assertRaisesRegex(frappe.PermissionError, "Suite User role"):
 			share_drive_link("anything")
+
+	def test_member_gives_drive_to_a_bandmate_who_joined_before_suite(self):
+		frappe.set_user("Administrator")
+		make_member(MEMBER_WITHOUT_DRIVE, "Kim")
+		frappe.get_doc("User", MEMBER_WITHOUT_DRIVE).remove_roles("Suite User")
+		frappe.set_user(MEMBER)
+		self.assertFalse(member_listing(MEMBER_WITHOUT_DRIVE).has_drive_access)
+
+		grant_drive_access(MEMBER_WITHOUT_DRIVE)
+
+		self.assertTrue(member_listing(MEMBER_WITHOUT_DRIVE).has_drive_access)
+		frappe.set_user(MEMBER_WITHOUT_DRIVE)
+		self.assertTrue(roadie_page.get_context().boot["can_link_drive_items"])
+
+	def test_drive_access_is_only_given_to_band_members(self):
+		frappe.set_user("Administrator")
+		make_member(MEMBER_WITHOUT_DRIVE, "Kim")
+		outsider = frappe.get_doc("User", MEMBER_WITHOUT_DRIVE)
+		outsider.remove_roles("Band Member", "Suite User")
+		frappe.set_user(MEMBER)
+
+		with self.assertRaisesRegex(frappe.PermissionError, "not a band member"):
+			grant_drive_access(MEMBER_WITHOUT_DRIVE)
+		frappe.set_user(MEMBER_WITHOUT_DRIVE)
+		with self.assertRaises(frappe.PermissionError):
+			grant_drive_access(MEMBER_WITHOUT_DRIVE)
+		self.assertNotIn("Suite User", frappe.get_roles(MEMBER_WITHOUT_DRIVE))
+
+	def test_a_role_profile_that_drops_drive_access_is_reported_not_hidden(self):
+		frappe.set_user("Administrator")
+		make_member(MEMBER_WITH_ROLE_PROFILE, "Robin")
+		if not frappe.db.exists("Role Profile", "Band only"):
+			frappe.get_doc(
+				{"doctype": "Role Profile", "role_profile": "Band only", "roles": [{"role": "Band Member"}]}
+			).insert()
+		robin = frappe.get_doc("User", MEMBER_WITH_ROLE_PROFILE)
+		robin.set("role_profiles", [{"role_profile": "Band only"}])
+		robin.save()
+		frappe.set_user(MEMBER)
+
+		with self.assertRaisesRegex(frappe.ValidationError, "role profile"):
+			grant_drive_access(MEMBER_WITH_ROLE_PROFILE)
+		self.assertNotIn("Suite User", frappe.get_roles(MEMBER_WITH_ROLE_PROFILE))
 
 	def test_bandmate_cannot_make_a_folder_they_do_not_own_public(self):
 		from suite.drive.api.permissions import get_user_access_for_user
