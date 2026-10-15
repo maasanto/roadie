@@ -180,7 +180,12 @@ const listOptions = {
 	getRowRoute: (gig) => gigRoute(gig.name),
 	rowHeight: 44,
 };
-const linkedDoctypes = { festival: "Festival", venue: "Venue", promoter: "Promoter" };
+const linkedDoctypes = {
+	festival: "Festival",
+	festival_edition: "Festival Edition",
+	venue: "Venue",
+	promoter: "Promoter",
+};
 
 const draggedGig = ref(null);
 const dropColumn = ref(null);

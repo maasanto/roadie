@@ -76,12 +76,22 @@ const toOptions = (rows, labelField) =>
 // The members a gig can be assigned to, labelled by name and valued by their user id.
 export const memberOptions = (members) => toOptions(members, "full_name");
 
-export function gigControls({ festivals, venues, promoters, members }) {
+export function gigControls({ festivals, editions, venues, promoters, members }) {
 	return {
 		// The pipeline has one column per status it knows, so a status added in Desk would hide its gigs.
 		status: { options: translatedOptions(GIG_STATUSES) },
 		gig_owner: { type: "combobox", options: memberOptions(members), default: window.user },
 		festival: { type: "combobox", options: toOptions(festivals, "title") },
+		// The form offers only the chosen festival's editions; a filter or bulk edit, with no festival, offers all.
+		festival_edition: {
+			type: "combobox",
+			options: (editions || []).map((edition) => ({
+				label: edition.title,
+				value: edition.name,
+				festival: edition.festival,
+			})),
+			dependsOn: "festival",
+		},
 		venue: { type: "combobox", options: toOptions(venues, "title") },
 		promoter: { type: "combobox", options: toOptions(promoters, "title") },
 	};

@@ -49,6 +49,20 @@ export function fieldsFromMeta(metaFields, controls = {}) {
 		}));
 }
 
+// A field that depends on another, a gig's edition on its festival, offers only the options of the value picked
+// there. With nothing picked there, it offers them all.
+export const optionsFor = (field, form) =>
+	field.dependsOn && form[field.dependsOn]
+		? field.options.filter((option) => option[field.dependsOn] === form[field.dependsOn])
+		: field.options;
+
+// Whether the field holds a pick of another parent than the one now picked. An option not loaded yet cannot be
+// told apart from one of the right parent, so it is kept.
+export function isStalePick(field, form) {
+	const picked = field.dependsOn && field.options.find((option) => option.value === form[field.fieldname]);
+	return Boolean(picked) && picked[field.dependsOn] !== form[field.dependsOn];
+}
+
 // A multiselect is an array in the form and one comma-separated string in the database. A rating is a count of
 // stars in the form and a fraction in the database.
 const STORED_VALUE = { multiselect: joinList, rating: toFraction };

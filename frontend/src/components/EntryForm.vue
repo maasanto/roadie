@@ -4,7 +4,7 @@ import { Button, ErrorMessage, FormControl, Rating, Skeleton, toast, useCall } f
 import FormCustomiser from "./FormCustomiser.vue";
 import { RATING_STARS, splitList, toStars } from "../directory";
 import { useMeta } from "../meta";
-import { fieldsFromMeta, toStoredValue } from "../metaFields";
+import { fieldsFromMeta, isStalePick, optionsFor, toStoredValue } from "../metaFields";
 
 const props = defineProps({
 	doctype: { type: String, required: true },
@@ -87,6 +87,20 @@ const storedFields = (values) => {
 // The meta may land after the record: fill only the newcomers, so it never overwrites what the member typed.
 watch(fields, (newFields) => fillFields(newFields.filter(({ fieldname }) => !(fieldname in loadedForm))));
 
+// When the member changes or clears what a pick depends on, a pick that no longer matches goes, rather than have
+// the server refuse it or put the cleared value back on save. Watched as one string, so only a changed value fires
+// it: an edition picked before any festival stays when the field list reloads.
+watch(
+	() =>
+		fields.value
+			.filter(({ dependsOn }) => dependsOn)
+			.map(({ dependsOn }) => form[dependsOn])
+			.join(),
+	() => {
+		for (const field of fields.value) if (isStalePick(field, form)) form[field.fieldname] = "";
+	}
+);
+
 watch(
 	() => props.name,
 	async (name) => {
@@ -153,7 +167,7 @@ defineExpose({ form, entryName });
 					:type="field.type"
 					:label="field.label"
 					:required="field.required"
-					:options="field.options"
+					:options="optionsFor(field, form)"
 					:disabled="field.disabled"
 					:class="field.type === 'textarea' ? 'col-span-2' : ''"
 				/>
@@ -174,6 +188,6 @@ defineExpose({ form, entryName });
 				/>
 			</div>
 		</form>
-		<slot v-if="entryName" :entry-name="entryName" />
+		<slot v-if="entryName" :entry-name="entryName" :form="form" />
 	</div>
 </template>

@@ -5,7 +5,7 @@ import { test } from "node:test";
 globalThis.window = globalThis;
 window.translations = { "Usual month": "Mois habituel", March: "Mars" };
 await import("./translation.js");
-const { fieldsFromMeta } = await import("./metaFields.js");
+const { fieldsFromMeta, isStalePick, optionsFor } = await import("./metaFields.js");
 
 const festivalMeta = [
 	{ fieldname: "title", fieldtype: "Data", label: "Name", reqd: 1 },
@@ -69,4 +69,31 @@ test("a control override turns a Link into a picker the generic mapping does not
 	const [venue] = fieldsFromMeta(gigMeta, { venue: { type: "combobox", options } });
 	assert.equal(venue.type, "combobox");
 	assert.deepEqual(venue.options, options);
+});
+
+const editionField = {
+	fieldname: "festival_edition",
+	dependsOn: "festival",
+	options: [
+		{ label: "Acme Festival 2027", value: "acme-2027", festival: "acme" },
+		{ label: "Acme Nights 2027", value: "nights-2027", festival: "nights" },
+	],
+};
+
+test("a gig's edition picker offers the chosen festival's editions, or all of them with no festival", () => {
+	const valuesFor = (form) => optionsFor(editionField, form).map(({ value }) => value);
+
+	assert.deepEqual(valuesFor({ festival: "acme" }), ["acme-2027"]);
+	assert.deepEqual(valuesFor({ festival: "" }), ["acme-2027", "nights-2027"]);
+});
+
+test("an edition of another festival or of a cleared one goes when the festival changes, one not loaded yet stays", () => {
+	assert.equal(isStalePick(editionField, { festival: "nights", festival_edition: "acme-2027" }), true);
+	assert.equal(isStalePick(editionField, { festival: "acme", festival_edition: "acme-2027" }), false);
+	assert.equal(isStalePick(editionField, { festival: "acme", festival_edition: "not-loaded-yet" }), false);
+	assert.equal(isStalePick(editionField, { festival: "", festival_edition: "acme-2027" }), true);
+	assert.equal(
+		isStalePick({ ...editionField, dependsOn: undefined }, { festival_edition: "acme-2027" }),
+		false
+	);
 });

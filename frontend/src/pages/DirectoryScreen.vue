@@ -19,6 +19,7 @@ import EmailThread from "../components/EmailThread.vue";
 import EmptyState from "../components/EmptyState.vue";
 import EntryContacts from "../components/EntryContacts.vue";
 import EntryDialog from "../components/EntryDialog.vue";
+import FestivalEditions from "../components/FestivalEditions.vue";
 import ListColumnEditor from "../components/ListColumnEditor.vue";
 import ListFilter from "../components/ListFilter.vue";
 import ListSort from "../components/ListSort.vue";
@@ -261,7 +262,13 @@ async function rate(row, fieldname, stars) {
 			@update:open="(open) => open || closeEntry()"
 			@saved="entries.reload()"
 		>
-			<template #default="{ entryName }">
+			<template #default="{ entryName, form }">
+				<FestivalEditions
+					v-if="doctype === 'Festival'"
+					:festival="entryName"
+					:festival-title="form.title"
+					:festival-website="form.website"
+				/>
 				<EntryContacts :doctype="doctype" :name="entryName" />
 				<CommentThread :doctype="doctype" :name="entryName" />
 				<EmailThread :doctype="doctype" :name="entryName" />

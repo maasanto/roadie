@@ -29,7 +29,7 @@ const entryForm = ref(null);
 			:controls="controls"
 			@saved="emit('saved')"
 		>
-			<template #default="{ entryName }"><slot :entry-name="entryName" /></template>
+			<template #default="{ entryName, form }"><slot :entry-name="entryName" :form="form" /></template>
 		</EntryForm>
 	</Dialog>
 </template>
