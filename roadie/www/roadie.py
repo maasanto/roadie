@@ -49,7 +49,9 @@ def get_context():
 
 # Frappe sends as the member and sets Reply-To to them, so replies would skip the band's mailbox.
 def get_email_sender():
-	band_email = frappe.db.get_value("Email Account", {"enable_outgoing": 1, "default_outgoing": 1}, "email_id")
+	band_email = frappe.db.get_value(
+		"Email Account", {"enable_outgoing": 1, "default_outgoing": 1}, "email_id"
+	)
 	return band_email and frappe.utils.get_formatted_email(frappe.session.user, mail=band_email)
 
 
