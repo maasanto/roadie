@@ -30,7 +30,7 @@ const entryForm = ref(null);
 			@saved="emit('saved')"
 		>
 			<template v-if="$slots.actions" #actions><slot name="actions" /></template>
-			<template #default="{ entryName }"><slot :entry-name="entryName" /></template>
+			<template #default="{ entryName, form }"><slot :entry-name="entryName" :form="form" /></template>
 		</EntryForm>
 	</Dialog>
 </template>
