@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { Button, call, toast } from "frappe-ui";
 import CommentThread from "./CommentThread.vue";
 import EmailThread from "./EmailThread.vue";
@@ -20,6 +20,8 @@ const props = defineProps({
 const emit = defineEmits(["close", "saved"]);
 
 const entryForm = ref(null);
+// A gig created here never reaches the address, so the panel is what knows which gig it shows.
+defineExpose({ entryName: computed(() => entryForm.value?.entryName) });
 
 function close() {
 	if (confirmDiscardDraft()) emit("close");

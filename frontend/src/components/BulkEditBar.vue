@@ -14,7 +14,7 @@ const props = defineProps({
 	doctype: { type: String, required: true },
 	fields: { type: Array, required: true },
 });
-const emit = defineEmits(["updated"]);
+const emit = defineEmits(["updated", "deleted"]);
 
 const list = inject("list");
 const selections = computed(() => list.value.selections);
@@ -105,6 +105,11 @@ async function deleteSelected() {
 	isSaving.value = false;
 	isDeleteDialogOpen.value = false;
 	reloadKeepingFailedSelected(failed);
+	// A record the screen has open must not outlive its deletion, with nothing left to save to.
+	emit(
+		"deleted",
+		names.value.filter((name) => !failed.includes(name))
+	);
 	// frappe-ui drops Frappe's reason from a request that succeeds, and for a member it is a link that refuses a delete.
 	if (failed.length)
 		toast.error(
