@@ -35,8 +35,8 @@ EMAIL_DRAFT_FIELD = "roadie_email_draft"
 MAILBOX_ROLES = ("Band Member", "System Manager")
 # Suite's own role: it opens Drive, and Suite's Mail, Calendar and Meet with it.
 DRIVE_ROLE = "Suite User"
-# Held on top of Band Member: a manager books the gigs rather than plays them, so is never asked about a date.
-MANAGER_ROLE = "Band Manager"
+# A User checkbox, on unless the member only books the gigs rather than plays them.
+AVAILABILITY_FIELD = "roadie_confirms_availability"
 # A task's emails show in its dialog only, so a thread filed there would drop out of every record's history.
 LINKABLE_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 EMAIL_SUMMARY_FIELDS = [
@@ -756,24 +756,14 @@ def reschedule(kind: str, name: str, start: str | None = None, end: str | None =
 
 
 def band_members() -> list[dict]:
-	"""Every enabled member, flagged when they are a manager, whom a gig's availability request leaves out."""
-	members = frappe.get_all(
+	"""Every enabled member, and whether a gig's availability request asks them."""
+	return frappe.get_all(
 		"User",
 		filters=[["Has Role", "role", "=", "Band Member"], ["enabled", "=", 1]],
-		fields=["name", "full_name", "user_image"],
+		fields=["name", "full_name", "user_image", f"{AVAILABILITY_FIELD} as confirms_availability"],
 		order_by="full_name asc",
 		distinct=True,
 	)
-	managers = set(
-		frappe.get_all(
-			"Has Role",
-			filters={"role": MANAGER_ROLE, "parenttype": "User", "parent": ["in", [m.name for m in members]]},
-			pluck="parent",
-		)
-	)
-	for member in members:
-		member.is_manager = member.name in managers
-	return members
 
 
 @frappe.whitelist()
@@ -959,29 +949,15 @@ def grant_drive_access(member: str) -> None:
 
 
 @frappe.whitelist(methods=["POST"])
-def set_band_manager(member: str, is_manager: bool) -> None:
-	"""A manager is a member who isn't asked whether they can play a gig; any member can say who is one."""
+def set_confirms_availability(member: str, confirms: bool) -> None:
+	"""Any member says who is asked whether they can play a gig, as anyone may invite the next member."""
 	frappe.only_for(("Band Member", "System Manager"))
-	listed = next((listed for listed in band_members() if listed.name == member), None)
-	if not listed:
+	if member not in {listed.name for listed in band_members()}:
 		frappe.throw(_("{0} is not a band member").format(member), frappe.PermissionError)
-	if listed.is_manager == is_manager:
-		return
-	user = frappe.get_doc("User", member)
-	# Members invite each other without any right over User records, and this hands out the manager role alone.
-	user.flags.ignore_permissions = True
-	if is_manager:
-		user.add_roles(MANAGER_ROLE)
-	else:
-		user.remove_roles(MANAGER_ROLE)
-	if (MANAGER_ROLE in {row.role for row in user.roles}) != is_manager:
-		frappe.throw(
-			_(
-				"{0}'s role profile or user type decides their roles: an administrator has to change Band Manager there"
-			).format(member)
-		)
-	if is_manager:
-		# A manager is no longer asked, so the gigs still waiting on them stop counting them.
+	# Members have no right over User records, and this one checkbox is all it touches.
+	frappe.db.set_value("User", member, AVAILABILITY_FIELD, int(confirms))
+	if not confirms:
+		# The gigs still waiting on them stop counting them.
 		frappe.db.delete("Gig Availability", {"member": member, "answer": ("is", "not set")})
 
 

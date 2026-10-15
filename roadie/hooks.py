@@ -28,13 +28,8 @@ website_redirects = [{"source": r"/band(/.*)?", "target": r"/roadie\1", "forward
 # Members are website users: logging in lands them on the SPA, never on Desk
 role_home_page = {"Band Member": "roadie"}
 
-# A band has no admin: any member brings in the next one, who joins as a member, or a manager, and nothing more
-user_invitation = {
-	"allowed_roles": {
-		"Band Member": ["Band Member", "Band Manager"],
-		"System Manager": ["Band Member", "Band Manager"],
-	}
-}
+# A band has no admin: any member brings in the next one, who joins as a member and nothing more
+user_invitation = {"allowed_roles": {"Band Member": ["Band Member"], "System Manager": ["Band Member"]}}
 
 after_install = "roadie.install.after_install"
 after_uninstall = "roadie.install.after_uninstall"
@@ -54,6 +49,8 @@ doc_events = {
 }
 
 fixtures = [
-	{"dt": "Role", "filters": [["name", "in", ["Band Member", "Band Manager"]]]},
+	{"dt": "Role", "filters": [["name", "=", "Band Member"]]},
 	{"dt": "Notification", "filters": [["module", "=", "Roadie"]]},
+	# By name: the fields a band adds to its own forms are Custom Fields too, and are theirs, not the app's.
+	{"dt": "Custom Field", "filters": [["name", "=", "User-roadie_confirms_availability"]]},
 ]

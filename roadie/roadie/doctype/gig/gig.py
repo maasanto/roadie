@@ -47,9 +47,9 @@ class Gig(Document):
 		self.flags.ask_availability_again = bool(self.gig_date)
 
 	def sync_availability_rows(self):
-		"""Adds the performers who joined since, and drops the pending rows of members who left the band or became
-		managers. An answer already given stays, as a record of it."""
-		performers = [member.name for member in band_members() if not member.is_manager]
+		"""Adds the performers who joined since, and drops the pending rows of members who left the band or are no
+		longer asked. An answer already given stays, as a record of it."""
+		performers = [member.name for member in band_members() if member.confirms_availability]
 		for row in [row for row in self.availability if not row.answer and row.member not in performers]:
 			self.remove(row)
 		asked = {row.member for row in self.availability}
@@ -63,7 +63,7 @@ class Gig(Document):
 			frappe.throw(_("Set the gig date before asking the band whether they can play it"))
 		self.sync_availability_rows()
 		if not self.availability:
-			frappe.throw(_("Every band member is a manager, so there is nobody to ask"))
+			frappe.throw(_("No band member is set to confirm their availability, so there is nobody to ask"))
 		self.availability_requested_by = self.availability_requested_by or frappe.session.user
 		self.save()
 
