@@ -11,7 +11,7 @@ from markupsafe import Markup
 from roadie.roadie.doctype.roadie_settings.roadie_settings import clean_columns, clean_quick_filters
 
 DIRECTORY_DOCTYPES = ("Festival", "Venue", "Promoter", "Band")
-CUSTOMISABLE_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
+CUSTOMISABLE_DOCTYPES = ("Gig", "Festival Edition", *DIRECTORY_DOCTYPES)
 # The lists whose columns and quick filters the band sets: the directory's and the gig list.
 LIST_DOCTYPES = ("Gig", *DIRECTORY_DOCTYPES)
 # The pipeline, the planning and the reminders read these, so hiding one would quietly break them.

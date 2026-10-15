@@ -1172,16 +1172,6 @@ msgstr "Envoi : {0} %"
 msgid "Uploading…"
 msgstr "Téléversement…"
 
-#. Label of the application_closes (Date) field in DocType 'Festival'
-#: roadie/roadie/doctype/festival/festival.json
-msgid "Usual application closes"
-msgstr "Clôture habituelle des candidatures"
-
-#. Label of the application_opens (Date) field in DocType 'Festival'
-#: roadie/roadie/doctype/festival/festival.json
-msgid "Usual application opens"
-msgstr "Ouverture habituelle des candidatures"
-
 #. Label of the usual_month (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "Usual month"
@@ -1811,6 +1801,45 @@ msgstr "Les e-mails ne peuvent être classés que dans {0}, pas dans {1}"
 msgid "Only conversations filed under no gig, task or directory entry can be linked, not {0}"
 msgstr "Seules les conversations rattachées à aucun concert, aucune tâche ni aucune fiche de l'annuaire peuvent être liées, pas {0}"
 
+#. Name of a DocType
+#: roadie/roadie/doctype/festival_edition/festival_edition.json
+msgid "Festival Edition"
+msgstr "Édition de festival"
+
+#. Label of the festival_edition (Link) field in DocType 'Gig'
+#: roadie/roadie/doctype/gig/gig.json
+msgid "Festival edition"
+msgstr "Édition du festival"
+
+#. Label of the end_date (Date) field in DocType 'Festival Edition'
+#: roadie/roadie/doctype/festival_edition/festival_edition.json
+msgid "End date"
+msgstr "Date de fin"
+
+#. Description of the website (Data) field in DocType 'Festival Edition'
+#: roadie/roadie/doctype/festival_edition/festival_edition.json
+msgid "Only when this edition has its own, otherwise the festival's website applies."
+msgstr "Seulement si cette édition a le sien, sinon le site web du festival s'applique."
+
+#: roadie/roadie/doctype/gig/gig.py
+msgid "The {0} edition belongs to another festival. Pick an edition of this gig's festival."
+msgstr "L'édition {0} appartient à un autre festival. Choisissez une édition du festival de ce concert."
+
+#: frontend/src/components/FestivalEditions.vue
+msgid "Editions"
+msgstr "Éditions"
+
+#: frontend/src/components/FestivalEditions.vue
+msgid "Add edition"
+msgstr "Ajouter une édition"
+
+#: frontend/src/components/FestivalEditions.vue
+msgid "Apply"
+msgstr "Candidater"
+
+#: frontend/src/components/FestivalEditions.vue
+msgid "No editions yet."
+msgstr "Aucune édition pour l'instant."
 #: frontend/src/components/TaskDialog.vue
 msgid "Delete task"
 msgstr "Supprimer la tâche"

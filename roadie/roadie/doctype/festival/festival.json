@@ -11,9 +11,6 @@
   "website",
   "instagram",
   "usual_month",
-  "application_url",
-  "application_opens",
-  "application_closes",
   "notes"
  ],
  "fields": [
@@ -53,29 +50,18 @@
    "options": "\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember"
   },
   {
-   "fieldname": "application_url",
-   "fieldtype": "Data",
-   "label": "Application URL",
-   "options": "URL"
-  },
-  {
-   "fieldname": "application_opens",
-   "fieldtype": "Date",
-   "label": "Usual application opens"
-  },
-  {
-   "fieldname": "application_closes",
-   "fieldtype": "Date",
-   "label": "Usual application closes"
-  },
-  {
    "fieldname": "notes",
    "fieldtype": "Small Text",
    "label": "Notes"
   }
  ],
- "links": [],
- "modified": "2026-10-11 12:00:00.000000",
+ "links": [
+  {
+   "link_doctype": "Festival Edition",
+   "link_fieldname": "festival"
+  }
+ ],
+ "modified": "2026-10-15 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Roadie",
  "name": "Festival",

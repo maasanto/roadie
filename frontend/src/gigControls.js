@@ -2,7 +2,7 @@ import { computed } from "vue";
 import { useCall, useList } from "frappe-ui";
 import { gigControls } from "./gig";
 
-// The gig panel's pickers, with the festivals, venues, promoters and members they offer.
+// The gig panel's pickers, with the festivals, editions, venues, promoters and members they offer.
 export function useGigControls() {
 	const linkLists = Object.fromEntries(
 		["Festival", "Venue", "Promoter"].map((doctype) => [
@@ -10,10 +10,19 @@ export function useGigControls() {
 			useList({ doctype, fields: ["name", "title"], orderBy: "title asc", limit: 500 }),
 		])
 	);
+	linkLists["Festival Edition"] = useList({
+		doctype: "Festival Edition",
+		fields: ["name", "festival", "year", "festival.title as festival_title"],
+		orderBy: "year desc",
+		limit: 500,
+		transform: (editions) =>
+			editions.map((edition) => ({ ...edition, title: `${edition.festival_title} ${edition.year}` })),
+	});
 	const members = useCall({ url: "/api/v2/method/roadie.api.get_members" });
 	const controls = computed(() =>
 		gigControls({
 			festivals: linkLists.Festival.data,
+			editions: linkLists["Festival Edition"].data,
 			venues: linkLists.Venue.data,
 			promoters: linkLists.Promoter.data,
 			members: members.data,

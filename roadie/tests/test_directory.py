@@ -63,18 +63,6 @@ class TestDirectory(IntegrationTestCase):
 		self.assertEqual(get_contacts("Venue", venue.name), [])
 		self.assertEqual([contact.name for contact in get_contacts("Promoter", promoter.name)], [bob.name])
 
-	def test_festival_refuses_an_application_window_that_closes_before_it_opens(self):
-		frappe.set_user(MEMBER)
-		with self.assertRaises(frappe.ValidationError):
-			frappe.get_doc(
-				{
-					"doctype": "Festival",
-					"title": "Acme Festival",
-					"application_opens": "2027-03-01",
-					"application_closes": "2027-01-31",
-				}
-			).insert()
-
 	def test_contacts_are_only_listed_for_directory_doctypes(self):
 		frappe.set_user(MEMBER)
 		with self.assertRaises(frappe.ValidationError):

@@ -1,0 +1,108 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-10-15 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "festival",
+  "year",
+  "start_date",
+  "end_date",
+  "website",
+  "application_url",
+  "application_opens",
+  "application_closes",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "festival",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Festival",
+   "options": "Festival",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "year",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Start date"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End date"
+  },
+  {
+   "description": "Only when this edition has its own, otherwise the festival's website applies.",
+   "fieldname": "website",
+   "fieldtype": "Data",
+   "label": "Website",
+   "options": "URL"
+  },
+  {
+   "fieldname": "application_url",
+   "fieldtype": "Data",
+   "label": "Application URL",
+   "options": "URL"
+  },
+  {
+   "fieldname": "application_opens",
+   "fieldtype": "Date",
+   "label": "Application opens"
+  },
+  {
+   "fieldname": "application_closes",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Application closes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-15 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Roadie",
+ "name": "Festival Edition",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "read": 1,
+   "role": "Band Member",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "search_fields": "festival",
+ "show_title_field_in_link": 1,
+ "sort_field": "year",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "year",
+ "track_changes": 1
+}

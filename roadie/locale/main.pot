@@ -1291,16 +1291,6 @@ msgstr ""
 msgid "Uploading…"
 msgstr ""
 
-#. Label of the application_closes (Date) field in DocType 'Festival'
-#: roadie/roadie/doctype/festival/festival.json
-msgid "Usual application closes"
-msgstr ""
-
-#. Label of the application_opens (Date) field in DocType 'Festival'
-#: roadie/roadie/doctype/festival/festival.json
-msgid "Usual application opens"
-msgstr ""
-
 #. Label of the usual_month (Select) field in DocType 'Festival'
 #: roadie/roadie/doctype/festival/festival.json
 msgid "Usual month"
@@ -1662,6 +1652,44 @@ msgstr ""
 msgid "Only conversations filed under no gig, task or directory entry can be linked, not {0}"
 msgstr ""
 
+#. Name of a DocType
+#: roadie/roadie/doctype/festival_edition/festival_edition.json
+msgid "Festival Edition"
+msgstr ""
+
+#. Label of the festival_edition (Link) field in DocType 'Gig'
+#: roadie/roadie/doctype/gig/gig.json
+msgid "Festival edition"
+msgstr ""
+
+#. Label of the end_date (Date) field in DocType 'Festival Edition'
+#: roadie/roadie/doctype/festival_edition/festival_edition.json
+msgid "End date"
+msgstr ""
+
+#. Description of the website (Data) field in DocType 'Festival Edition'
+#: roadie/roadie/doctype/festival_edition/festival_edition.json
+msgid "Only when this edition has its own, otherwise the festival's website applies."
+msgstr ""
+
+#: roadie/roadie/doctype/gig/gig.py
+msgid "The {0} edition belongs to another festival. Pick an edition of this gig's festival."
+msgstr ""
+
+#: frontend/src/components/FestivalEditions.vue
+msgid "Editions"
+msgstr ""
+
+#: frontend/src/components/FestivalEditions.vue
+msgid "Add edition"
+msgstr ""
+
+#: frontend/src/components/FestivalEditions.vue
+msgid "Apply"
+msgstr ""
+
+#: frontend/src/components/FestivalEditions.vue
+msgid "No editions yet."
 #: frontend/src/components/TaskDialog.vue
 msgid "Delete task"
 msgstr ""

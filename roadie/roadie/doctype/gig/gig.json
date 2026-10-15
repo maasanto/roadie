@@ -10,6 +10,7 @@
   "gig_owner",
   "gig_date",
   "festival",
+  "festival_edition",
   "venue",
   "promoter",
   "fee",
@@ -49,10 +50,18 @@
    "label": "Gig date"
   },
   {
+   "fetch_from": "festival_edition.festival",
+   "fetch_if_empty": 1,
    "fieldname": "festival",
    "fieldtype": "Link",
    "label": "Festival",
    "options": "Festival"
+  },
+  {
+   "fieldname": "festival_edition",
+   "fieldtype": "Link",
+   "label": "Festival edition",
+   "options": "Festival Edition"
   },
   {
    "fieldname": "venue",
@@ -72,14 +81,14 @@
    "label": "Fee"
   },
   {
-   "fetch_from": "festival.application_opens",
+   "fetch_from": "festival_edition.application_opens",
    "fetch_if_empty": 1,
    "fieldname": "application_opens",
    "fieldtype": "Date",
    "label": "Application opens"
   },
   {
-   "fetch_from": "festival.application_closes",
+   "fetch_from": "festival_edition.application_closes",
    "fetch_if_empty": 1,
    "fieldname": "application_closes",
    "fieldtype": "Date",
@@ -92,7 +101,7 @@
   }
  ],
  "links": [],
- "modified": "2026-10-10 12:00:00.000000",
+ "modified": "2026-10-15 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Roadie",
  "name": "Gig",
