@@ -28,8 +28,13 @@ website_redirects = [{"source": r"/band(/.*)?", "target": r"/roadie\1", "forward
 # Members are website users: logging in lands them on the SPA, never on Desk
 role_home_page = {"Band Member": "roadie"}
 
-# A band has no admin: any member brings in the next one, who joins as a member and nothing more
-user_invitation = {"allowed_roles": {"Band Member": ["Band Member"], "System Manager": ["Band Member"]}}
+# A band has no admin: any member brings in the next one, who joins as a member, or a manager, and nothing more
+user_invitation = {
+	"allowed_roles": {
+		"Band Member": ["Band Member", "Band Manager"],
+		"System Manager": ["Band Member", "Band Manager"],
+	}
+}
 
 after_install = "roadie.install.after_install"
 after_uninstall = "roadie.install.after_uninstall"
@@ -49,6 +54,6 @@ doc_events = {
 }
 
 fixtures = [
-	{"dt": "Role", "filters": [["name", "=", "Band Member"]]},
+	{"dt": "Role", "filters": [["name", "in", ["Band Member", "Band Manager"]]]},
 	{"dt": "Notification", "filters": [["module", "=", "Roadie"]]},
 ]
