@@ -80,7 +80,8 @@ dokos set-value "Band Task" "<task name>" done 1 --quiet
 ```
 
 Ask the band whether they can play a gig, which needs its `gig_date`. Calling it again reminds whoever hasn't
-answered. Managers (the Band Manager role) are never asked, and a new `gig_date` sends every answer back to empty.
+answered. Only members whose "Confirms gig availability" box is ticked in Settings are asked, and a new `gig_date`
+sends every answer back to empty.
 Each member answers for themselves:
 
 ```bash
