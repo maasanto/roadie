@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 import frappe
 from frappe import _
 from frappe.translate import get_translations_from_apps
+from frappe.utils import strip_html
 from frappe.utils.data import Weekday
 
 from roadie.api import PROTECTED_FIELDS, can_use_drive
@@ -40,5 +41,18 @@ def get_context():
 			"protected_fields": PROTECTED_FIELDS,
 			"can_link_drive_items": can_link_drive_items,
 			"push_relay_server_url": frappe.conf.push_relay_server_url if is_push_configured() else None,
+			"email_signature": get_email_signature(),
 		}
 	)
+
+
+# Desk's precedence, from Communication.set_signature_in_email_content: an account signs only when told to, and
+# here only one that can send. Desk saves a cleared signature as an empty editor, hence the check on its text.
+def get_email_signature():
+	signatures = (
+		frappe.db.get_value("User", frappe.session.user, "email_signature"),
+		frappe.db.get_value(
+			"Email Account", {"enable_outgoing": 1, "default_outgoing": 1, "add_signature": 1}, "signature"
+		),
+	)
+	return next((signature for signature in signatures if strip_html(signature or "").strip()), None)
