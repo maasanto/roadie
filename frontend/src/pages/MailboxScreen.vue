@@ -1,5 +1,5 @@
 <script>
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 
 // Module scope: a delete still waiting on its toast must outlive this screen, which remounts on every switch
 // between Inbox and Outbox. A thread stays hidden once deleted, its key never comes back.
@@ -18,6 +18,7 @@ import { directoryTypes } from "../directory";
 import { confirmDiscardDraft, hasEditedDraft } from "../draft";
 import { deliveryState, formatListDate, isUnread } from "../email";
 import { onKey, onShortcut } from "../keyboard";
+import { refreshWhileVisible, unreadEmailCount } from "../mailbox";
 import { resultRoute } from "../search";
 import { toastWithUndo } from "../undo";
 
@@ -39,7 +40,11 @@ const mailbox = useCall({
 	url: "/api/v2/method/roadie.api.get_mailbox",
 	params: () => ({ sent_or_received: props.sentOrReceived, query: query.value, limit: emailLimit.value }),
 	refetch: true,
-	onSuccess: () => (loaded.value = { query: query.value, limit: emailLimit.value }),
+	onSuccess: () => {
+		loaded.value = { query: query.value, limit: emailLimit.value };
+		// Alongside the list, so the badge never disagrees with the rows the member is looking at.
+		if (isInbox.value) unreadEmailCount.reload();
+	},
 });
 // A search or a Load more aborts the request in flight, and frappe-ui reports that abort as the mailbox's error.
 const loadError = computed(() =>
@@ -50,25 +55,7 @@ const hasOlderEmails = computed(
 	() => (mailbox.data || []).reduce((emails, row) => emails + row.count, 0) >= loaded.value.limit
 );
 
-// Nothing tells the screen that mail arrived, so it asks again whenever the member may be looking at it.
-const MAILBOX_REFRESH_INTERVAL_MS = 60 * 1000;
-
-function refreshMailbox() {
-	// Offline, the failed request would swap the rows for an error.
-	if (document.visibilityState === "visible" && navigator.onLine) mailbox.reload();
-}
-
-let refreshTimer = null;
-onMounted(() => {
-	document.addEventListener("visibilitychange", refreshMailbox);
-	window.addEventListener("online", refreshMailbox);
-	refreshTimer = setInterval(refreshMailbox, MAILBOX_REFRESH_INTERVAL_MS);
-});
-onUnmounted(() => {
-	document.removeEventListener("visibilitychange", refreshMailbox);
-	window.removeEventListener("online", refreshMailbox);
-	clearInterval(refreshTimer);
-});
+refreshWhileVisible(() => mailbox.reload());
 
 const isUnreadOnly = ref(false);
 const isComposing = ref(false);

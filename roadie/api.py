@@ -33,6 +33,12 @@ THREAD_DOCTYPES = (*EMAIL_DOCTYPES, "Communication")
 # The composer stamps its uploads with this, so a draft can only ever delete a file it uploaded itself.
 EMAIL_DRAFT_FIELD = "roadie_email_draft"
 MAILBOX_ROLES = ("Band Member", "System Manager")
+UNREAD_EMAIL_FILTERS = {
+	"communication_medium": "Email",
+	"communication_type": "Communication",
+	"sent_or_received": "Received",
+	"seen": 0,
+}
 # Suite's own role: it opens Drive, and Suite's Mail, Calendar and Meet with it.
 DRIVE_ROLE = "Suite User"
 # A User checkbox, on unless the member only books the gigs rather than plays them.
@@ -413,21 +419,15 @@ def get_gig_activity() -> dict[str, dict]:
 
 def _unread_emails(gigs):
 	"""Counted from the emails the gig's thread shows, which opening it marks seen."""
-	unread = {
-		"communication_medium": "Email",
-		"communication_type": "Communication",
-		"sent_or_received": "Received",
-		"seen": 0,
-	}
 	referencing = frappe.get_all(
 		"Communication",
-		filters={**unread, "reference_doctype": "Gig", "reference_name": ["in", gigs]},
+		filters={**UNREAD_EMAIL_FILTERS, "reference_doctype": "Gig", "reference_name": ["in", gigs]},
 		fields=["name", "reference_name as gig"],
 	)
 	linked = frappe.get_all(
 		"Communication",
 		filters=[
-			*([field, "=", value] for field, value in unread.items()),
+			*([field, "=", value] for field, value in UNREAD_EMAIL_FILTERS.items()),
 			["Communication Link", "link_doctype", "=", "Gig"],
 			["Communication Link", "link_name", "in", gigs],
 		],
@@ -480,6 +480,13 @@ def get_mailbox(sent_or_received: str, query: str | None = None, limit: int = 20
 		# Bulk delete refuses a conversation holding mail filed under a record, so the list can say so upfront.
 		latest["holds_filed_mail"] = latest["holds_filed_mail"] or _is_filed(email)
 	return [frappe._dict(thread) for thread in threads.values()]
+
+
+@frappe.whitelist()
+def get_unread_email_count() -> int:
+	"""Every received email still unread, for the Inbox badge: unlike the mailbox, not capped to the latest ones."""
+	frappe.only_for(MAILBOX_ROLES)
+	return frappe.db.count("Communication", UNREAD_EMAIL_FILTERS)
 
 
 def _thread_of(email, directory_links):

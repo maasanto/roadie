@@ -11,6 +11,7 @@ import { confirmBooking } from "../availability";
 import { confirmDiscardDraft } from "../draft";
 import { isUnread } from "../email";
 import { onKey } from "../keyboard";
+import { unreadEmailCount } from "../mailbox";
 
 const props = defineProps({
 	name: { type: String, default: null },
@@ -46,11 +47,12 @@ function close() {
 
 onKey("Escape", close);
 
-// As the Inbox does, or the board's unread badge would outlive the member reading the mail here.
+// As the Inbox does, or the board's and the sidebar's unread badges would outlive the member reading the mail here.
 async function markSeen(gig, thread) {
 	if (!thread.some(isUnread)) return;
 	try {
 		await call("roadie.api.mark_thread_seen", { doctype: "Gig", name: gig });
+		unreadEmailCount.reload();
 		props.onMailSeen?.();
 	} catch (error) {
 		toast.error(error.messages?.join("\n") || error.message);
