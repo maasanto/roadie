@@ -6,7 +6,7 @@ import EmptyState from "../components/EmptyState.vue";
 import ListSkeleton from "../components/ListSkeleton.vue";
 import TaskDialog from "../components/TaskDialog.vue";
 import TaskRow from "../components/TaskRow.vue";
-import { TASK_FIELDS, byDueDate, setDone } from "../task";
+import { TASK_FIELDS, byDueDate, isShownTask, setDone } from "../task";
 import { TASK_SCOPES, assigneeAvatar, scopeFromQuery } from "../taskScopes";
 
 const route = useRoute();
@@ -36,8 +36,9 @@ const membersByName = computed(
 	() => members.data && Object.fromEntries(members.data.map((member) => [member.name, member]))
 );
 
-const openTasks = computed(() => (tasks.data || []).filter((task) => !task.done).sort(byDueDate));
-const doneTasks = computed(() => (tasks.data || []).filter((task) => task.done).sort(byDueDate));
+const shownTasks = computed(() => (tasks.data || []).filter(isShownTask));
+const openTasks = computed(() => shownTasks.value.filter((task) => !task.done).sort(byDueDate));
+const doneTasks = computed(() => shownTasks.value.filter((task) => task.done).sort(byDueDate));
 const isShowingDone = ref(false);
 
 const isTaskOpen = ref(false);
@@ -64,6 +65,11 @@ watch(
 	},
 	{ immediate: true }
 );
+
+function openTask(task) {
+	openedTask.value = task;
+	isTaskOpen.value = true;
+}
 </script>
 
 <template>
@@ -76,7 +82,7 @@ watch(
 		<ListSkeleton v-else-if="loadedScope !== scope" class="mt-6" />
 		<template v-else>
 			<EmptyState
-				v-if="!tasks.data?.length"
+				v-if="!shownTasks.length"
 				class="mt-6"
 				icon="lucide-list-checks"
 				:title="TASK_SCOPES[scope].emptyTitle"
@@ -95,6 +101,7 @@ watch(
 						:task="task"
 						:gig-title="task.gig_title"
 						@update:done="setDone(tasks, task, $event)"
+						@open="openTask(task)"
 					/>
 				</ul>
 			</section>
@@ -122,6 +129,7 @@ watch(
 						:assignee="scope === 'mine' ? null : assigneeAvatar(task, membersByName)"
 						:gig-title="task.gig_title"
 						@update:done="setDone(tasks, task, $event)"
+						@open="openTask(task)"
 					/>
 				</ul>
 			</section>
@@ -130,7 +138,8 @@ watch(
 			v-if="openedTask"
 			v-model:open="isTaskOpen"
 			:name="openedTask.name"
-			:title="openedTask.title"
+			:members="members.data"
+			@saved="tasks.reload()"
 		/>
 	</div>
 </template>

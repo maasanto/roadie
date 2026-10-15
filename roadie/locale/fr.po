@@ -1790,3 +1790,11 @@ msgstr "Les e-mails ne peuvent être classés que dans {0}, pas dans {1}"
 #: roadie/api.py
 msgid "Only conversations filed under no gig, task or directory entry can be linked, not {0}"
 msgstr "Seules les conversations rattachées à aucun concert, aucune tâche ni aucune fiche de l'annuaire peuvent être liées, pas {0}"
+
+#: frontend/src/components/TaskDialog.vue
+msgid "Delete task"
+msgstr "Supprimer la tâche"
+
+#: frontend/src/task.js
+msgid "Task deleted"
+msgstr "Tâche supprimée"

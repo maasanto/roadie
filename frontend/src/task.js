@@ -1,4 +1,6 @@
+import { ref } from "vue";
 import { call, toast } from "frappe-ui";
+import { toastWithUndo } from "./undo";
 
 export const TASK_FIELDS = ["name", "title", "done", "assignee", "gig", "start_date", "due_date"];
 
@@ -17,6 +19,29 @@ export async function setDone(tasks, task, isDone) {
 		});
 	} catch (error) {
 		tasks.updateRow({ name: task.name, done: done ? 0 : 1 });
+		toast.error(error.messages?.join("\n") || error.message);
+	}
+}
+
+// Module scope: the delete lands once its toast closes, by which time the dialog and the list it was opened from
+// may be gone. Every task list hides these, and a task stays hidden once deleted, its name never comes back.
+const deletedTasks = ref(new Set());
+
+export const isShownTask = (task) => !deletedTasks.value.has(task.name);
+
+export function deleteTask(name) {
+	deletedTasks.value.add(name);
+	toastWithUndo(__("Task deleted"), {
+		undo: () => deletedTasks.value.delete(name),
+		commit: () => deleteForGood(name),
+	});
+}
+
+async function deleteForGood(name) {
+	try {
+		await call("frappe.client.delete", { doctype: "Band Task", name });
+	} catch (error) {
+		deletedTasks.value.delete(name);
 		toast.error(error.messages?.join("\n") || error.message);
 	}
 }

@@ -1641,3 +1641,11 @@ msgstr ""
 #: roadie/api.py
 msgid "Only conversations filed under no gig, task or directory entry can be linked, not {0}"
 msgstr ""
+
+#: frontend/src/components/TaskDialog.vue
+msgid "Delete task"
+msgstr ""
+
+#: frontend/src/task.js
+msgid "Task deleted"
+msgstr ""

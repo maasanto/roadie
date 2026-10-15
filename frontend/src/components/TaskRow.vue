@@ -1,7 +1,5 @@
 <script setup>
-import { ref } from "vue";
 import { Avatar, Checkbox } from "frappe-ui";
-import TaskDialog from "./TaskDialog.vue";
 import { daysUntil, formatDate } from "../gig";
 import { resultRoute } from "../search";
 
@@ -10,10 +8,10 @@ defineProps({
 	assignee: { type: Object, default: null },
 	gigTitle: { type: String, default: "" },
 });
-const emit = defineEmits(["update:done"]);
+// The list holds the task's dialog: a save can move the row to another list, which would unmount a dialog kept here.
+const emit = defineEmits(["update:done", "open"]);
 
 const isOverdue = (task) => !task.done && task.due_date && daysUntil(task.due_date) < 0;
-const isShowingEmails = ref(false);
 </script>
 
 <template>
@@ -33,7 +31,7 @@ const isShowingEmails = ref(false);
 				type="button"
 				class="block max-w-full truncate text-left text-base hover:underline"
 				:class="task.done ? 'text-ink-gray-5 line-through' : 'text-ink-gray-8'"
-				@click="isShowingEmails = true"
+				@click="emit('open')"
 			>
 				{{ task.title }}
 			</button>
@@ -59,6 +57,5 @@ const isShowingEmails = ref(false);
 			size="sm"
 			:title="assignee.full_name"
 		/>
-		<TaskDialog v-model:open="isShowingEmails" :name="task.name" :title="task.title" />
 	</li>
 </template>
