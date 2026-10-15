@@ -177,6 +177,7 @@ const {
 	create: createGig,
 	close: closeGig,
 } = useOpenRecord("gig");
+const gigPanel = ref(null);
 const activity = useCall({ url: "/api/v2/method/roadie.api.get_gig_activity" });
 // A task, comment or file added in the panel doesn't reach the board, so the counts are read again once the member
 // leaves a gig, by Close, Back or another card.
@@ -384,7 +385,12 @@ async function moveGig(gig, status) {
 			>
 				<ListHeader />
 				<ListRows />
-				<BulkEditBar doctype="Gig" :fields="filterFields" @updated="gigs.reload()" />
+				<BulkEditBar
+					doctype="Gig"
+					:fields="filterFields"
+					@updated="gigs.reload()"
+					@deleted="(names) => names.includes(gigPanel?.entryName) && closeGig()"
+				/>
 				<template #cell="{ column, row }">
 					<Badge v-if="column.key === 'status'" :label="__(row.status)" />
 					<span v-else-if="column.key === 'fee'" class="truncate">
@@ -498,6 +504,7 @@ async function moveGig(gig, status) {
 		</template>
 		<GigPanel
 			v-if="isPanelOpen"
+			ref="gigPanel"
 			:name="openedName"
 			:controls="controls"
 			:on-mail-seen="() => activity.reload()"
