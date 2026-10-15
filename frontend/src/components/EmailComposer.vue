@@ -50,6 +50,7 @@ const email = reactive({
 	content: withSignature(draftFields.content || "", window.email_signature),
 });
 const invalidRecipientFields = reactive({ to: false, cc: false, bcc: false });
+const typedRecipients = reactive({ to: "", cc: "", bcc: "" });
 const hasInvalidRecipient = computed(() => Object.values(invalidRecipientFields).some(Boolean));
 const sendButton = ref(null);
 const attachments = ref([...draftAttachments]);
@@ -64,6 +65,7 @@ const currentState = () =>
 		email.to,
 		email.cc,
 		email.bcc,
+		typedRecipients,
 		email.subject,
 		attachments.value,
 		textEditor.value.editor.getHTML().replace(/(<p><\/p>)+$/, ""),
@@ -159,14 +161,16 @@ async function removeAttachment(file) {
 }
 
 // Discard, replying elsewhere and closing the record all unmount the draft. A send under way owns the files.
+let isClosed = false;
 onBeforeUnmount(() => {
+	isClosed = true;
 	if (!send.loading && !send.data) attachments.value.forEach(deleteUpload);
 });
 
-function submit(event) {
+async function submit(event) {
 	// The editor's toolbar buttons are submit buttons too: a Bold click, or Enter in the subject, would send the email.
 	if (event.submitter !== sendButton.value.rootRef) return;
-	send.submit({
+	await send.submit({
 		doctype: props.doctype,
 		name: props.name,
 		recipients: email.to,
@@ -178,6 +182,11 @@ function submit(event) {
 		in_reply_to: email.inReplyTo,
 		send_email: 1,
 	});
+	// Left mid-send, the composer is gone: nothing else would show the failure or delete the uploads it held.
+	if (isClosed && send.error) {
+		toast.error(__("Your email “{0}” was not sent: {1}", [email.subject, send.error.message]));
+		attachments.value.forEach(deleteUpload);
+	}
 }
 </script>
 
@@ -187,6 +196,7 @@ function submit(event) {
 			<EmailRecipients
 				v-model="email.to"
 				v-model:invalid="invalidRecipientFields.to"
+				v-model:query="typedRecipients.to"
 				class="flex-1"
 				:label="__('To')"
 				:suggestions="suggestions"
@@ -203,12 +213,14 @@ function submit(event) {
 			<EmailRecipients
 				v-model="email.cc"
 				v-model:invalid="invalidRecipientFields.cc"
+				v-model:query="typedRecipients.cc"
 				:label="__('Cc')"
 				:suggestions="suggestions"
 			/>
 			<EmailRecipients
 				v-model="email.bcc"
 				v-model:invalid="invalidRecipientFields.bcc"
+				v-model:query="typedRecipients.bcc"
 				:label="__('Bcc')"
 				:suggestions="suggestions"
 			/>
@@ -280,7 +292,7 @@ function submit(event) {
 				/>
 			</div>
 			<div class="ms-auto flex gap-2">
-				<Button :label="__('Discard')" variant="ghost" @click="discard" />
+				<Button :label="__('Discard')" variant="ghost" :disabled="send.loading" @click="discard" />
 				<Button
 					ref="sendButton"
 					type="submit"

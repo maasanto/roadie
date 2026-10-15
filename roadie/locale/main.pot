@@ -1751,3 +1751,7 @@ msgstr ""
 #: roadie/api.py
 msgid "Activity can only be listed for {0}, not {1}"
 msgstr ""
+
+#: frontend/src/components/EmailComposer.vue
+msgid "Your email “{0}” was not sent: {1}"
+msgstr ""
