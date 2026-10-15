@@ -17,6 +17,7 @@ from roadie.api import (
 	get_attachments,
 	get_emails,
 	get_mailbox,
+	get_unread_email_count,
 	link_thread,
 	mark_threads_read,
 	mark_threads_unread,
@@ -235,6 +236,31 @@ class TestEmail(IntegrationTestCase):
 		row = next(row for row in get_mailbox("Received") if row.name == replies[1])
 		self.assertEqual(row.unread, 1)
 		self.assertEqual(frappe.db.get_value("Communication", replies[1], "seen"), 0)
+
+	def test_inbox_badge_counts_unread_emails_until_their_thread_is_read(self):
+		frappe.set_user(MEMBER)
+		unread_before = get_unread_email_count()
+		frappe.set_user("Administrator")
+		message_id = frappe.generate_hash()
+		# A sender no contact knows, so each email is its own conversation.
+		for reply in ("first", "second"):
+			InboundMail(
+				incoming_email(
+					f"{reply}-{message_id}@example.com", "Acme Festival line-up", f"{reply}-{message_id}"
+				).as_string(),
+				self.mailbox,
+			).process()
+		threads = [
+			{"doctype": "Communication", "name": name}
+			for name in frappe.get_all(
+				"Communication", filters={"message_id": ["like", f"%{message_id}%"]}, pluck="name"
+			)
+		]
+
+		frappe.set_user(MEMBER)
+		self.assertEqual(get_unread_email_count(), unread_before + 2)
+		mark_threads_read(threads)
+		self.assertEqual(get_unread_email_count(), unread_before)
 
 	def test_bulk_delete_clears_an_unlinked_conversation_but_never_a_gigs_mail(self):
 		enquiry = incoming_email("Jane Doe <jane.promoter@example.com>", "Spam?", frappe.generate_hash())
