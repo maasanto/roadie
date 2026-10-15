@@ -1707,3 +1707,47 @@ msgstr ""
 #: frontend/src/components/GigCard.vue
 msgid "Open tasks"
 msgstr ""
+
+#: frontend/src/components/EntryForm.vue
+msgid "Details"
+msgstr ""
+
+#: frontend/src/components/EntryForm.vue
+msgid "Activity"
+msgstr ""
+
+#: frontend/src/activity.js
+msgid "set {0} to {1}"
+msgstr ""
+
+#: frontend/src/activity.js
+msgid "cleared {0}"
+msgstr ""
+
+#: frontend/src/activity.js
+msgid "changed {0} from {1} to {2}"
+msgstr ""
+
+#: frontend/src/activity.js
+msgid "created this record"
+msgstr ""
+
+#: frontend/src/activity.js
+msgid "commented"
+msgstr ""
+
+#: frontend/src/activity.js
+msgid "attached a file"
+msgstr ""
+
+#: frontend/src/activity.js
+msgid "removed a file"
+msgstr ""
+
+#: frontend/src/activity.js
+msgid "sent an email"
+msgstr ""
+
+#: roadie/api.py
+msgid "Activity can only be listed for {0}, not {1}"
+msgstr ""
