@@ -473,13 +473,50 @@ def get_mailbox(sent_or_received: str, query: str | None = None, limit: int = 20
 		thread = _thread_of(email, email.directory_links)
 		latest = threads.setdefault(
 			(thread["doctype"], thread["name"]),
-			{**email, "thread": thread, "count": 0, "unread": 0, "holds_filed_mail": False},
+			{**email, "thread": thread, "count": 0, "unread": 0},
 		)
 		latest["count"] += 1
 		latest["unread"] += not email.seen
-		# Bulk delete refuses a conversation holding mail filed under a record, so the list can say so upfront.
-		latest["holds_filed_mail"] = latest["holds_filed_mail"] or _is_filed(email)
+	_flag_filed_mail(threads)
 	return [frappe._dict(thread) for thread in threads.values()]
+
+
+def _flag_filed_mail(threads):
+	"""Bulk delete refuses a conversation holding mail filed under a record, so the list can say so upfront. It
+	checks both directions and mail older than the limit, so the flag can't be built from the listed emails."""
+	conversations = _conversation_emails([name for doctype, name in threads if doctype == "Communication"])
+	for (doctype, name), latest in threads.items():
+		latest["holds_filed_mail"] = doctype != "Communication" or _holds_filed_mail(
+			name, conversations.get(name, [])
+		)
+
+
+def _conversation_emails(roots):
+	"""`_mailbox_thread` of many conversations rooted on an email, in three queries rather than three per row."""
+	if not roots:
+		return {}
+	replies = frappe.get_all(
+		"Communication",
+		filters={"reference_doctype": "Communication", "reference_name": ["in", roots]},
+		pluck="name",
+	)
+	emails = frappe.get_all(
+		"Communication",
+		filters={
+			"communication_medium": "Email",
+			"communication_type": "Communication",
+			"name": ["in", [*roots, *replies]],
+		},
+		fields=["name", "reference_doctype", "reference_name"],
+	)
+	links = _directory_links([email.name for email in emails])
+	by_root = {}
+	for email in emails:
+		email.directory_links = links.get(email.name, [])
+		thread = _thread_of(email, email.directory_links)
+		if thread["doctype"] == "Communication":
+			by_root.setdefault(thread["name"], []).append(email)
+	return by_root
 
 
 @frappe.whitelist()
@@ -580,7 +617,7 @@ def delete_threads(names: list[str]) -> None:
 		if not frappe.db.exists("Communication", name):
 			continue
 		emails = _mailbox_thread({"doctype": "Communication", "name": name})
-		if name not in [email.name for email in emails] or any(_is_filed(email) for email in emails):
+		if _holds_filed_mail(name, emails):
 			frappe.throw(
 				_(
 					"Only conversations filed under no gig, task or directory entry can be deleted in bulk, not {0}"
@@ -590,6 +627,11 @@ def delete_threads(names: list[str]) -> None:
 	for emails in conversations:
 		for email in emails:
 			_delete_email(email.name)
+
+
+def _holds_filed_mail(root, emails):
+	"""A root missing from its own conversation replies to another one, so deleting it would split that one."""
+	return root not in [email.name for email in emails] or any(_is_filed(email) for email in emails)
 
 
 def _is_filed(email):
