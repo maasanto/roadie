@@ -30,6 +30,8 @@ const route = useRoute();
 const router = useRouter();
 
 const EMAILS_PER_PAGE = 200;
+// Warning: mirrors MAILBOX_MAX_EMAILS in roadie/api.py, which refuses a higher limit.
+const MAX_EMAILS = 1000;
 const query = ref("");
 const emailLimit = ref(EMAILS_PER_PAGE);
 watch(query, () => (emailLimit.value = EMAILS_PER_PAGE));
@@ -466,11 +468,21 @@ onKey("Escape", close);
 						</button>
 					</li>
 				</ul>
-				<div v-if="hasOlderEmails" class="flex justify-center p-4">
+				<p
+					v-if="hasOlderEmails && loaded.limit >= MAX_EMAILS"
+					class="p-4 text-center text-p-sm text-ink-gray-5"
+				>
+					{{
+						loaded.query
+							? __("Narrow the search to find older emails")
+							: __("Search to find older emails")
+					}}
+				</p>
+				<div v-else-if="hasOlderEmails" class="flex justify-center p-4">
 					<Button
 						:label="__('Load more')"
 						:loading="mailbox.loading && emailLimit > loaded.limit"
-						@click="emailLimit += EMAILS_PER_PAGE"
+						@click="emailLimit = Math.min(emailLimit + EMAILS_PER_PAGE, MAX_EMAILS)"
 					/>
 				</div>
 			</div>

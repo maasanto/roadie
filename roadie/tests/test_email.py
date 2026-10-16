@@ -11,6 +11,7 @@ from frappe.tests import IntegrationTestCase
 
 from roadie.api import (
 	EMAIL_DRAFT_FIELD,
+	MAILBOX_MAX_EMAILS,
 	delete_draft_attachment,
 	delete_email,
 	delete_threads,
@@ -354,16 +355,17 @@ class TestEmail(IntegrationTestCase):
 		sender, subject = frappe.generate_hash(), frappe.generate_hash()
 		enquiry = incoming_email(f"Sunny Fest <{sender}@sunnyfest.example.com>", f"Line-up {subject}", sender)
 		InboundMail(enquiry.as_string(), self.mailbox).process()
-		march = frappe.get_last_doc("Communication", filters={"subject": f"Line-up {subject}"})
-		frappe.db.set_value("Communication", march.name, "communication_date", "2000-03-12 09:00:00")
+		earlier = frappe.get_last_doc("Communication", filters={"subject": f"Line-up {subject}"})
 		newer = incoming_email("Jane Roe <jane.roe@example.com>", "Photos", subject)
 		InboundMail(newer.as_string(), self.mailbox).process()
-		every_email = frappe.db.count(
+		# Counted from the earlier email's own date, so the limit stays under the cap whatever older runs left.
+		reaching_earlier = frappe.db.count(
 			"Communication",
 			{
 				"communication_medium": "Email",
 				"communication_type": "Communication",
 				"sent_or_received": "Received",
+				"communication_date": [">=", earlier.communication_date],
 			},
 		)
 
@@ -371,11 +373,26 @@ class TestEmail(IntegrationTestCase):
 			return {row.name for row in get_mailbox("Received", **kwargs)}
 
 		frappe.set_user(MEMBER)
-		self.assertNotIn(march.name, listed(limit=1))
-		self.assertIn(march.name, listed(limit=every_email))
-		self.assertEqual(listed(query=f" {sender}@SUNNYFEST ", limit=1), {march.name})
-		self.assertEqual(listed(query=f"line-up {subject}"), {march.name})
+		self.assertNotIn(earlier.name, listed(limit=reaching_earlier - 1))
+		self.assertIn(earlier.name, listed(limit=reaching_earlier))
+		self.assertEqual(listed(query=f" {sender}@SUNNYFEST ", limit=1), {earlier.name})
+		self.assertEqual(listed(query=f"line-up {subject}"), {earlier.name})
 		self.assertEqual(listed(query=f"nothing like {subject}"), set())
+
+	def test_search_takes_wildcards_literally_and_the_limit_is_capped(self):
+		tag = frappe.generate_hash()
+		for subject in (f"Fee 100% {tag}", f"Fee 1000 {tag}", f"set_list {tag}", f"setxlist {tag}"):
+			email = incoming_email("Jane Roe <jane.roe@example.com>", subject, frappe.generate_hash())
+			InboundMail(email.as_string(), self.mailbox).process()
+
+		def subjects(query):
+			return {row.subject for row in get_mailbox("Received", query=query)}
+
+		frappe.set_user(MEMBER)
+		self.assertEqual(subjects(f"100% {tag}"), {f"Fee 100% {tag}"})
+		self.assertEqual(subjects(f"set_list {tag}"), {f"set_list {tag}"})
+		self.assertTrue(get_mailbox("Received", limit=MAILBOX_MAX_EMAILS))
+		self.assertRaises(frappe.ValidationError, get_mailbox, "Received", limit=MAILBOX_MAX_EMAILS + 1)
 
 	def test_linked_thread_and_its_later_replies_file_under_the_gig(self):
 		enquiry = incoming_email(

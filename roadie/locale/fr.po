@@ -1002,6 +1002,14 @@ msgstr "Résultats de recherche"
 msgid "Search subject, sender or recipient"
 msgstr "Rechercher par objet, expéditeur ou destinataire"
 
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Search to find older emails"
+msgstr "Lancez une recherche pour retrouver les e-mails plus anciens"
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Narrow the search to find older emails"
+msgstr "Affinez la recherche pour retrouver les e-mails plus anciens"
+
 #: frontend/src/components/EmailComposer.vue:173
 msgid "Send"
 msgstr "Envoyer"
@@ -1109,6 +1117,10 @@ msgstr "Les candidatures pour {0} ferment le {1}, dans {2} jours, et le concert 
 #: roadie/api.py
 msgid "The mailbox lists at least one email, not {0}"
 msgstr "La boîte liste au moins un e-mail, pas {0}"
+
+#: roadie/api.py
+msgid "The mailbox lists at most {0} emails, not {1}: search to reach older ones"
+msgstr "La boîte liste au plus {0} e-mails, pas {1} : lancez une recherche pour atteindre les plus anciens"
 
 #: roadie/api.py:138
 msgid "This file isn't an unsent email attachment of yours, so it can't be deleted from a draft"

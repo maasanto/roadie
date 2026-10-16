@@ -58,6 +58,8 @@ EMAIL_SUMMARY_FIELDS = [
 	"seen",
 ]
 MAILBOX_SEARCH_FIELDS = ("subject", "sender", "sender_full_name", "recipients", "cc")
+# Each Load more re-reads every email above it with its links, so the list stops growing here and search takes over.
+MAILBOX_MAX_EMAILS = 1000
 
 
 SEARCH_DOCTYPES = ("Gig", "Band Task", *DIRECTORY_DOCTYPES)
@@ -72,7 +74,7 @@ def search(query: str) -> list[dict]:
 	if not query:
 		return []
 
-	needle = f"%{query}%"
+	needle = _literal_contains_pattern(query)
 	groups = []
 	for doctype in SEARCH_DOCTYPES:
 		# get_list throws rather than return nothing when the caller cannot read the DocType.
@@ -102,6 +104,11 @@ def _clean_query(query):
 			_("Search is limited to {0} characters, not {1}").format(SEARCH_QUERY_MAX_LENGTH, len(query))
 		)
 	return query
+
+
+def _literal_contains_pattern(query):
+	escaped = query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+	return f"%{escaped}%"
 
 
 @frappe.whitelist()
@@ -451,6 +458,12 @@ def get_mailbox(sent_or_received: str, query: str | None = None, limit: int = 20
 	# Frappe reads a limit of 0 as no limit at all.
 	if limit < 1:
 		frappe.throw(_("The mailbox lists at least one email, not {0}").format(limit))
+	if limit > MAILBOX_MAX_EMAILS:
+		frappe.throw(
+			_("The mailbox lists at most {0} emails, not {1}: search to reach older ones").format(
+				MAILBOX_MAX_EMAILS, limit
+			)
+		)
 
 	query = _clean_query(query)
 	# ponytail: every account's emails, filter by Email Account if the band adds a second mailbox
@@ -461,7 +474,9 @@ def get_mailbox(sent_or_received: str, query: str | None = None, limit: int = 20
 			"communication_type": "Communication",
 			"sent_or_received": sent_or_received,
 		},
-		or_filters={field: ["like", f"%{query}%"] for field in MAILBOX_SEARCH_FIELDS} if query else None,
+		or_filters={field: ["like", _literal_contains_pattern(query)] for field in MAILBOX_SEARCH_FIELDS}
+		if query
+		else None,
 		fields=[*EMAIL_SUMMARY_FIELDS, "reference_doctype", "reference_name"],
 		order_by="communication_date desc",
 		limit=limit,
