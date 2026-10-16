@@ -3,7 +3,6 @@ import { computed } from "vue";
 import { Button } from "frappe-ui";
 import EmailThread from "./EmailThread.vue";
 import EntryDialog from "./EntryDialog.vue";
-import { confirmDiscardDraft } from "../draft";
 import { memberOptions } from "../gig";
 import { deleteTask } from "../task";
 
@@ -18,10 +17,8 @@ const controls = computed(() => ({
 	assignee: { type: "combobox", options: memberOptions(props.members) },
 }));
 
-function deleteThisTask() {
-	if (!confirmDiscardDraft()) return;
-	open.value = false;
-	deleteTask(props.name);
+function deleteThisTask(closeDialog) {
+	if (closeDialog()) deleteTask(props.name);
 }
 </script>
 
@@ -34,13 +31,13 @@ function deleteThisTask() {
 		@saved="emit('saved')"
 	>
 		<!-- Band Task isn't one of the forms members customise, so Delete takes the customiser's place. -->
-		<template #actions>
+		<template #actions="{ close }">
 			<Button
 				icon-left="lucide-trash-2"
 				variant="ghost"
 				theme="red"
 				:label="__('Delete task')"
-				@click="deleteThisTask"
+				@click="deleteThisTask(close)"
 			/>
 		</template>
 		<template #default="{ entryName }">

@@ -14,6 +14,12 @@ const open = keepOpenForDraft(openModel);
 const emit = defineEmits(["saved"]);
 
 const entryForm = ref(null);
+
+// Tells whether the dialog closed, which it doesn't when its draft is kept.
+function close() {
+	open.value = false;
+	return !open.value;
+}
 </script>
 
 <template>
@@ -29,7 +35,7 @@ const entryForm = ref(null);
 			:controls="controls"
 			@saved="emit('saved')"
 		>
-			<template v-if="$slots.actions" #actions><slot name="actions" /></template>
+			<template v-if="$slots.actions" #actions><slot name="actions" :close="close" /></template>
 			<template #default="{ entryName, form }"><slot :entry-name="entryName" :form="form" /></template>
 		</EntryForm>
 	</Dialog>

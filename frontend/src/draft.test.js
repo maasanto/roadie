@@ -3,10 +3,18 @@ import { test } from "node:test";
 
 globalThis.window = globalThis;
 await import("./translation.js");
-const { DRAFT_UPLOAD_ARGS, confirmDiscardDraft, isDraftUpload, keepOpenForDraft, pickedFile, trackDraft } =
-	await import("./draft.js");
+const {
+	DIALOG_EDITED_CHECKS,
+	DRAFT_UPLOAD_ARGS,
+	confirmDiscardDraft,
+	isDraftUpload,
+	keepOpenForDraft,
+	pickedFile,
+	trackDraft,
+} = await import("./draft.js");
 const { forwardDraft } = await import("./email.js");
-const { ref } = await import("vue");
+const { createSSRApp, h, inject, ref } = await import("vue");
+const { renderToString } = await import("vue/server-renderer");
 
 let answer;
 let questions;
@@ -84,11 +92,29 @@ test("a file picked from the gig is never deleted, even an earlier draft's uploa
 	assert.equal(isDraftUpload(picked), false);
 });
 
-test("a dialog holding a kept draft stays open, and opens freely", (t) => {
+// Mounts a dialog around composers that register the way EmailComposer does, so provide and inject are exercised.
+async function dialogWithComposers(t, composerEdits) {
+	let isOpen;
+	const DialogComposer = {
+		props: ["isEdited"],
+		setup(props) {
+			t.after(trackDraft(() => props.isEdited, inject(DIALOG_EDITED_CHECKS, null)));
+			return () => null;
+		},
+	};
+	const Dialog = {
+		setup() {
+			isOpen = keepOpenForDraft(ref(true));
+			return () => composerEdits.map((isEdited) => h(DialogComposer, { isEdited }));
+		},
+	};
+	await renderToString(createSSRApp(Dialog));
+	return isOpen;
+}
+
+test("a dialog holding a kept draft stays open, and opens freely", async (t) => {
 	questions = 0;
-	const isOpen = keepOpenForDraft(ref(true));
-	const reply = composer({ isEdited: true });
-	t.after(reply.forget);
+	const isOpen = await dialogWithComposers(t, [true]);
 	answer = false;
 	isOpen.value = false;
 	assert.equal(isOpen.value, true);
@@ -98,4 +124,16 @@ test("a dialog holding a kept draft stays open, and opens freely", (t) => {
 	isOpen.value = true;
 	assert.equal(isOpen.value, true);
 	assert.equal(questions, 2);
+});
+
+test("a task dialog closes without asking about the gig's unsent reply behind it", async (t) => {
+	questions = 0;
+	const gigReply = composer({ isEdited: true });
+	t.after(gigReply.forget);
+	const isOpen = await dialogWithComposers(t, [false]);
+	answer = false;
+	isOpen.value = false;
+	assert.equal(isOpen.value, false);
+	assert.equal(questions, 0);
+	assert.equal(confirmDiscardDraft(), false, "leaving the gig still asks about its reply");
 });
