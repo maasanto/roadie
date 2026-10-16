@@ -44,6 +44,15 @@ class TestDirectoryColumns(IntegrationTestCase):
 
 		self.assertEqual([column["fieldname"] for column in self.columns()], ["title"])
 
+	def test_a_column_whose_field_was_removed_after_the_save_is_dropped_when_read(self):
+		set_directory_columns("Gig", '[{"fieldname": "title"}, {"fieldname": "fee"}]')
+		# What the layout holds once Desk deletes or renames the field it saved: nothing cleans it on that side.
+		layouts = frappe.parse_json(frappe.db.get_single_value("Roadie Settings", "directory_columns"))
+		layouts["Gig"].append({"fieldname": "stage_size", "label": "Stage size"})
+		frappe.db.set_single_value("Roadie Settings", "directory_columns", frappe.as_json(layouts))
+
+		self.assertEqual([column["fieldname"] for column in self.columns("Gig")], ["title", "fee"])
+
 	def test_columns_that_are_not_a_list_are_refused(self):
 		with self.assertRaises(frappe.ValidationError):
 			set_directory_columns(DOCTYPE, '{"fieldname": "title"}')

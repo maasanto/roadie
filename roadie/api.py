@@ -797,10 +797,19 @@ def get_members() -> list[dict]:
 
 @frappe.whitelist()
 def get_directory_columns() -> dict:
-	"""The columns each directory list and the gig list show, keyed by DocType: one setting for the whole site."""
+	"""The columns each directory list and the gig list show, keyed by DocType: one setting for the whole site.
+
+	Cleaned again on read, as a field deleted or renamed in Desk since the save would otherwise linger as a column."""
 	frappe.only_for(("Band Member", "System Manager"))
 
-	return frappe.parse_json(frappe.db.get_single_value("Roadie Settings", "directory_columns") or "{}") or {}
+	all_columns = (
+		frappe.parse_json(frappe.db.get_single_value("Roadie Settings", "directory_columns") or "{}") or {}
+	)
+	return {
+		doctype: clean_columns(doctype, columns)
+		for doctype, columns in all_columns.items()
+		if doctype in LIST_DOCTYPES and isinstance(columns, list)
+	}
 
 
 @frappe.whitelist(methods=["POST"])
