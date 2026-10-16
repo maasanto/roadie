@@ -106,6 +106,12 @@ function toggleSelection(row, event) {
 const clearSelection = () => (selectedKeys.value = new Set());
 // A selection the search hides would come back with the next search and be acted on unseen.
 watch(query, clearSelection);
+// The same goes for a row the Unread filter hides, which may be once it is closed, not when the filter is switched.
+watch(rows, (shownRows) => {
+	const shown = new Set(shownRows.map((row) => threadKey(row.thread)));
+	const kept = [...selectedKeys.value].filter((key) => shown.has(key));
+	if (kept.length < selectedKeys.value.size) selectedKeys.value = new Set(kept);
+});
 
 function toggleEveryRow() {
 	selectedKeys.value = isEveryRowSelected.value
