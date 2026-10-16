@@ -216,6 +216,34 @@ class TestFestivalEdition(IntegrationTestCase):
 		with self.assertRaises(frappe.CannotChangeConstantError):
 			edition.save()
 
+	def test_festival_has_one_edition_per_year(self):
+		other = frappe.get_doc({"doctype": "Festival", "title": "Acme Nights"}).insert()
+		edition = self.make_edition(self.festival.name)
+		self.make_edition(self.festival.name, year=2028)
+		self.make_edition(other.name)
+
+		frappe.set_user(MEMBER)
+		with self.assertRaisesRegex(frappe.ValidationError, "already has a 2027 edition"):
+			self.make_edition(self.festival.name)
+		edition.notes = "Main stage"
+		edition.save()
+		edition.year = 2028
+		with self.assertRaisesRegex(frappe.ValidationError, "already has a 2028 edition"):
+			edition.save()
+
+	def test_a_duplicate_saved_before_the_rule_stays_editable(self):
+		self.make_edition(self.festival.name)
+		duplicate = frappe.get_doc(
+			{"doctype": "Festival Edition", "festival": self.festival.name, "year": 2027}
+		)
+		duplicate.set_new_name()
+		duplicate.db_insert()
+
+		frappe.set_user(MEMBER)
+		duplicate.reload()
+		duplicate.notes = "Main stage"
+		duplicate.save()
+
 	def test_edition_and_its_application_window_cannot_end_before_they_start(self):
 		frappe.set_user(MEMBER)
 		for start, end in (("start_date", "end_date"), ("application_opens", "application_closes")):

@@ -1880,3 +1880,7 @@ msgstr ""
 #: roadie/roadie/doctype/gig/gig.py
 msgid "No band member is set to confirm their availability, so there is nobody to ask"
 msgstr ""
+
+#: roadie/roadie/doctype/festival_edition/festival_edition.py
+msgid "{0} already has a {1} edition. Open that one, or pick another year."
+msgstr ""
