@@ -6,6 +6,7 @@ import frappe
 from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 from frappe.email import relink
+from frappe.model import get_permitted_fields
 from frappe.utils import get_fullname, today
 from markupsafe import Markup
 
@@ -415,6 +416,20 @@ def get_gig_activity() -> dict[str, dict]:
 	):
 		activity.setdefault(row.pop("parent"), {}).setdefault("availability", []).append(row)
 	return activity
+
+
+@frappe.whitelist()
+def get_pipeline_totals(filters: str) -> list[dict]:
+	"""Each status's count and fee over every gig the member can read under the board's filters, for a board that
+	only loads the first of them. A member who can't read the fee gets counts alone, as their cards show none."""
+	fields = ["status", {"COUNT": "*", "as": "count"}]
+	if "fee" in get_permitted_fields("Gig"):
+		fields.append({"SUM": "fee", "as": "fee"})
+	# The board's own query builder rather than frappe.get_list, whose IFNULL would count gigs with an empty field
+	# under a "<" or "!=" filter that leaves them off the board.
+	return frappe.qb.get_query(
+		"Gig", fields=fields, filters=frappe.parse_json(filters), group_by="status", ignore_permissions=False
+	).run(as_dict=True)
 
 
 def _unread_emails(gigs):
