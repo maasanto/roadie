@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { computed, inject, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import {
 	Button,
 	Dropdown,
@@ -13,7 +13,14 @@ import {
 } from "frappe-ui";
 import DriveLinkDialog from "./DriveLinkDialog.vue";
 import EmailRecipients from "./EmailRecipients.vue";
-import { DRAFT_UPLOAD_ARGS, confirmDiscardDraft, isDraftUpload, pickedFile, trackDraft } from "../draft";
+import {
+	DIALOG_EDITED_CHECKS,
+	DRAFT_UPLOAD_ARGS,
+	confirmDiscardDraft,
+	isDraftUpload,
+	pickedFile,
+	trackDraft,
+} from "../draft";
 import { withSignature } from "../email";
 
 const props = defineProps({
@@ -73,10 +80,11 @@ const currentState = () =>
 let untouchedState;
 // Once on its way, the email is no longer the writer's to lose: the request completes without the composer.
 const isEdited = () => !send.loading && currentState() !== untouchedState;
+const dialogEditedChecks = inject(DIALOG_EDITED_CHECKS, null);
 let forgetDraft;
 onMounted(() => {
 	untouchedState = currentState();
-	forgetDraft = trackDraft(isEdited);
+	forgetDraft = trackDraft(isEdited, dialogEditedChecks);
 });
 // Before the editor inside is torn down, which would leave the check reading a destroyed editor.
 onBeforeUnmount(() => forgetDraft());
