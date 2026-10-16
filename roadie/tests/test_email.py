@@ -293,6 +293,41 @@ class TestEmail(IntegrationTestCase):
 			delete_threads([gig_email["name"]])
 		self.assertTrue(frappe.db.exists("Communication", gig_email["name"]))
 
+	def test_inbox_flags_a_conversation_whose_sent_reply_is_filed_as_bulk_delete_refuses_it(self):
+		frappe.set_user(MEMBER)
+		venue = frappe.get_doc({"doctype": "Venue", "title": "Le Petit Club"}).insert()
+		frappe.get_doc(
+			{
+				"doctype": "Contact",
+				"first_name": "Bob",
+				"email_ids": [{"email_id": VENUE, "is_primary": 1}],
+				"links": [{"link_doctype": "Venue", "link_name": venue.name}],
+			}
+		).insert()
+		frappe.set_user("Administrator")
+		enquiry = incoming_email("John Doe <john.doe@example.com>", "Autumn tour", frappe.generate_hash())
+		InboundMail(enquiry.as_string(), self.mailbox).process()
+		received = frappe.get_last_doc("Communication", filters={"subject": "Autumn tour"})
+
+		frappe.set_user(MEMBER)
+		self.assertFalse(self.inbox_row(received.name).holds_filed_mail)
+		make(
+			doctype="Communication",
+			name=received.name,
+			subject="Re: Autumn tour",
+			content="<p>Copying the venue.</p>",
+			recipients=["john.doe@example.com"],
+			cc=[VENUE],
+			send_email=True,
+		)
+
+		self.assertTrue(self.inbox_row(received.name).holds_filed_mail)
+		with self.assertRaises(frappe.ValidationError):
+			delete_threads([received.name])
+
+	def inbox_row(self, name):
+		return next(row for row in get_mailbox("Received") if row.name == name)
+
 	def test_deleting_a_conversations_first_email_hands_it_to_the_next(self):
 		enquiry = incoming_email(
 			"Jane Doe <jane.promoter@example.com>", "Summer dates", frappe.generate_hash()
