@@ -1101,6 +1101,14 @@ msgstr ""
 msgid "Search subject, sender or recipient"
 msgstr ""
 
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Search to find older emails"
+msgstr ""
+
+#: frontend/src/pages/MailboxScreen.vue
+msgid "Narrow the search to find older emails"
+msgstr ""
+
 #: frontend/src/components/EmailComposer.vue:173
 msgid "Send"
 msgstr ""
@@ -1210,6 +1218,10 @@ msgstr ""
 
 #: roadie/api.py
 msgid "The mailbox lists at least one email, not {0}"
+msgstr ""
+
+#: roadie/api.py
+msgid "The mailbox lists at most {0} emails, not {1}: search to reach older ones"
 msgstr ""
 
 #. Description of the 'Directory Columns' (Code) field in DocType 'Roadie
