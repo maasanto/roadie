@@ -34,7 +34,7 @@ import {
 	formatFee,
 	isDeadlineClose,
 	pipelineColumns,
-	totalFee,
+	columnTotals,
 } from "../gig";
 import { useDirectoryColumns } from "../directoryColumns";
 import { useDirectoryQuickFilters } from "../directoryQuickFilters";
@@ -148,11 +148,54 @@ const loadError = computed(() => (gigs.loading ? null : gigs.error));
 
 const feeLabel = computed(() => feeLabelOf(meta.data?.fields ?? []));
 
+// Past the limit a column holds only some of its gigs, so its count and fee are summed on the server instead, under
+// the same filters. Below it the loaded cards are every gig, and nothing is asked.
+const statusTotals = useCall({
+	url: "/api/v2/method/roadie.api.get_pipeline_totals",
+	params: () => ({ filters: JSON.stringify(activeFilters.value) }),
+	immediate: false,
+});
+const isBoardTruncated = computed(() => Boolean(gigs.data) && gigs.hasNextPage);
+// A reload aborts the one in flight, whose failure would then stand as the totals' error, so a load that ends while
+// the totals are still being summed asks again once they are in.
+let areTotalsOutdated = false;
+async function reloadStatusTotals() {
+	if (statusTotals.loading) {
+		areTotalsOutdated = true;
+		return;
+	}
+	await statusTotals.reload();
+	if (!areTotalsOutdated) return;
+	areTotalsOutdated = false;
+	reloadStatusTotals();
+}
+watch(
+	[() => gigs.loading, view],
+	([isLoading]) =>
+		!isLoading && !gigs.error && view.value === "kanban" && isBoardTruncated.value && reloadStatusTotals()
+);
+// Totals still being summed belong to the previous load, so the columns show none rather than the cards' own.
+const areTotalsKnown = computed(
+	() => !statusTotals.loading && !statusTotals.error && Boolean(statusTotals.data)
+);
+
 const columns = computed(() =>
 	pipelineColumns.map((column) => {
 		const columnGigs = (gigs.data || []).filter((gig) => column.statuses.includes(gig.status));
-		const fee = feeLabel.value ? totalFee(columnGigs) : 0;
-		return { ...column, gigs: columnGigs, fee: fee ? formatFee(fee) : null };
+		if (isBoardTruncated.value && !areTotalsKnown.value)
+			return { ...column, gigs: columnGigs, count: null, countLabel: null, fee: null };
+		const totals = columnTotals(
+			column.statuses,
+			columnGigs,
+			isBoardTruncated.value ? statusTotals.data : null
+		);
+		return {
+			...column,
+			gigs: columnGigs,
+			count: totals.count,
+			countLabel: totals.count.toLocaleString(window.lang),
+			fee: feeLabel.value && totals.fee ? formatFee(totals.fee) : null,
+		};
 	})
 );
 // A card has no room for every date, so the opening date shows only while the board is ordered by it.
@@ -392,6 +435,11 @@ async function moveGig(gig, status) {
 		<template v-else>
 			<ErrorMessage class="mt-4" :message="gigs.setValue.error" />
 			<ErrorMessage v-if="view === 'kanban'" class="mt-4" :message="activity.error" />
+			<ErrorMessage
+				v-if="view === 'kanban' && isBoardTruncated"
+				class="mt-4"
+				:message="statusTotals.error"
+			/>
 			<p v-if="limitNotice" class="mt-4 text-p-sm text-ink-gray-6">{{ limitNotice }}</p>
 			<ListView
 				v-if="view === 'list'"
@@ -471,7 +519,7 @@ async function moveGig(gig, status) {
 						{{ column.label }}
 						<span class="flex shrink-0 gap-2 text-ink-gray-5">
 							<span v-if="column.fee" :title="feeLabel">{{ column.fee }}</span>
-							{{ column.gigs.length }}
+							{{ column.countLabel }}
 						</span>
 					</h2>
 					<div class="min-h-24 flex-1 space-y-2">
@@ -497,10 +545,15 @@ async function moveGig(gig, status) {
 				</section>
 			</div>
 			<div v-if="view === 'kanban'" class="mt-4 space-y-6 md:hidden">
-				<section v-for="column in columns.filter((column) => column.gigs.length)" :key="column.label">
+				<!-- Past the limit a column whose gigs were all left out still shows its count. -->
+				<section
+					v-for="column in columns.filter((column) => column.gigs.length || column.count)"
+					:key="column.label"
+				>
 					<h2 class="pb-2 text-sm-medium text-ink-gray-7">
-						{{ column.label }} · {{ column.gigs.length
-						}}<template v-if="column.fee"> · {{ column.fee }}</template>
+						{{ column.label
+						}}<template v-if="column.countLabel"> · {{ column.countLabel }}</template
+						><template v-if="column.fee"> · {{ column.fee }}</template>
 					</h2>
 					<div class="space-y-2">
 						<GigCard

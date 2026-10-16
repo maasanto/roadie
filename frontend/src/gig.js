@@ -70,6 +70,14 @@ export function feeLabelOf(metaFields) {
 
 export const totalFee = (gigs) => gigs.reduce((total, gig) => total + (gig.fee || 0), 0);
 
+// A column's count and fee from its cards, or from the server's totals by status once the board holds only some of
+// its gigs.
+export function columnTotals(statuses, cards, statusTotals) {
+	if (!statusTotals) return { count: cards.length, fee: totalFee(cards) };
+	const rows = statusTotals.filter((row) => statuses.includes(row.status));
+	return { count: rows.reduce((total, row) => total + row.count, 0), fee: totalFee(rows) };
+}
+
 const toOptions = (rows, labelField) =>
 	(rows || []).map((row) => ({ label: row[labelField], value: row.name }));
 

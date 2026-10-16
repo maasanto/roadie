@@ -4,7 +4,7 @@ import { test } from "node:test";
 // gig.js reads the page boot (window.lang, window.translations) and the global __ at import time.
 globalThis.window = globalThis;
 window.lang = "fr";
-const { feeLabelOf, formatDate, formatFee, memberOptions, totalFee } = await import("./gig.js");
+const { columnTotals, feeLabelOf, formatDate, formatFee, memberOptions, totalFee } = await import("./gig.js");
 
 test("a date in the current year is shown without its year", () => {
 	const thisYear = new Date().getFullYear();
@@ -45,6 +45,18 @@ test("the fee takes the band's label, and leaves the board once the customiser h
 test("a column totals the fees it has and counts an unpriced gig as nothing", () => {
 	assert.equal(totalFee([{ fee: 1500 }, { fee: 0 }, {}, { fee: 700.5 }]), 2200.5);
 	assert.equal(totalFee([]), 0);
+});
+
+test("past the row limit a column counts every matching gig, not only the cards the board loaded", () => {
+	const loadedCards = [{ status: "Contacted", fee: 2600 }];
+	const statusTotals = [
+		{ status: "Contacted", count: 5, fee: 13000 },
+		{ status: "Declined", count: 2, fee: 1000 },
+		{ status: "Dropped", count: 1 },
+	];
+	assert.deepEqual(columnTotals(["Contacted"], loadedCards, null), { count: 1, fee: 2600 });
+	assert.deepEqual(columnTotals(["Contacted"], loadedCards, statusTotals), { count: 5, fee: 13000 });
+	assert.deepEqual(columnTotals(["Declined", "Dropped"], [], statusTotals), { count: 3, fee: 1000 });
 });
 
 test("members are offered by full name and valued by their user", () => {
