@@ -10,7 +10,7 @@ from frappe.utils import set_request
 from frappe.website.path_resolver import resolve_redirect
 from pypdf import PdfWriter
 
-from roadie.api import get_attachments, get_members
+from roadie.api import get_attachments, get_members, get_pipeline_totals
 from roadie.www import roadie as roadie_page
 
 MEMBER = "john@example.com"
@@ -126,6 +126,36 @@ class TestGig(IntegrationTestCase):
 		)
 
 		self.assertEqual(document_list("Gig"), [{"name": gig.name}])
+
+	def test_pipeline_totals_count_and_sum_every_matching_gig_by_status(self):
+		"""Past its row limit the board reads its column counts and fees from here, not from the cards it loaded."""
+		frappe.set_user(MEMBER)
+		for title, status, fee in (
+			("Acme Totals 1", "Contacted", 2600),
+			("Acme Totals 2", "Contacted", 2600),
+			("Acme Totals 3", "Booked", 1500),
+			("Acme Other", "Contacted", 9999),
+		):
+			frappe.get_doc({"doctype": "Gig", "title": title, "status": status, "fee": fee}).insert()
+
+		totals = get_pipeline_totals(json.dumps({"title": ["like", "Acme Totals%"]}))
+
+		self.assertCountEqual(
+			totals,
+			[{"status": "Contacted", "count": 2, "fee": 5200}, {"status": "Booked", "count": 1, "fee": 1500}],
+		)
+
+	def test_pipeline_totals_leave_out_a_fee_above_the_members_permlevel(self):
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Festival 2027", "fee": 1500}).insert()
+		restriction = make_property_setter("Gig", "fee", "permlevel", 1, "Int")
+		self.addCleanup(frappe.clear_cache, doctype="Gig")
+		self.addCleanup(frappe.delete_doc, "Property Setter", restriction.name, ignore_permissions=True)
+
+		frappe.set_user(MEMBER)
+
+		self.assertEqual(
+			get_pipeline_totals(json.dumps({"name": gig.name})), [{"status": "Idea", "count": 1}]
+		)
 
 	def test_old_band_links_land_on_roadie(self):
 		frappe.cache.delete_value("website_redirects")
