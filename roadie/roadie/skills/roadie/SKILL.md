@@ -25,7 +25,7 @@ Records are named by a random hash, so always look a record up by `title` first 
 - **Gig** — a booking being chased: `title`, `status`, `gig_owner` (User), `gig_date`, `festival`, `festival_edition`, `venue`, `promoter`, `application_opens`, `application_closes`, `fee`, `notes`, and `availability`, the band's answers on whether they can play it.
 - **Gig Availability** — one member's answer on a gig: `member` (User) and `answer` (Yes, No, or empty while they haven't answered).
 - **Festival** — `title`, `city`, `website`, `instagram`, `usual_month`, `notes`.
-- **Festival Edition** — one year of a festival: `festival`, `year`, `start_date`, `end_date`, `website` (only when it differs from the festival's), `application_url`, `application_opens`, `application_closes`, `notes`.
+- **Festival Edition** — one year of a festival, at most one per festival and year (look it up before inserting): `festival`, `year`, `start_date`, `end_date`, `website` (only when it differs from the festival's), `application_url`, `application_opens`, `application_closes`, `notes`.
 - **Venue** — `title`, `city`, `website`, `instagram`, `capacity`, `address`, `notes`.
 - **Promoter** — `title`, `city`, `website`, `instagram`, `notes`.
 - **Band** — `title`, `city`, `website`, `instagram`, `genre` (a comma-separated list of genres), `notes`.
