@@ -467,7 +467,7 @@ def _email_counts(gigs):
 @frappe.whitelist()
 def get_mailbox(sent_or_received: str, query: str | None = None, limit: int = 200) -> list[dict]:
 	"""The shared account's threads, newest first: each one's latest email in this direction, with how many
-	emails and unread emails it holds in that direction. Only the latest `limit` emails are read, and with a query
+	emails and unread emails it holds in that direction, and their names. Only the latest `limit` emails are read, and with a query
 	only those whose subject, sender or recipients contain it."""
 	frappe.only_for(MAILBOX_ROLES)
 	if sent_or_received not in ("Sent", "Received"):
@@ -505,9 +505,10 @@ def get_mailbox(sent_or_received: str, query: str | None = None, limit: int = 20
 		thread = _thread_of(email, email.directory_links)
 		latest = threads.setdefault(
 			(thread["doctype"], thread["name"]),
-			{**email, "thread": thread, "count": 0, "unread": 0},
+			{**email, "thread": thread, "count": 0, "unread": 0, "emails": []},
 		)
 		latest["count"] += 1
+		latest["emails"].append(email.name)
 		latest["unread"] += not email.seen
 	_flag_filed_mail(threads)
 	return [frappe._dict(thread) for thread in threads.values()]
