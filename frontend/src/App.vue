@@ -156,7 +156,7 @@ function openResult(item) {
 								@click="showNotifications = true"
 							>
 								<template v-if="unread" #suffix>
-									<Badge class="mr-2" :label="String(unread)" theme="gray" />
+									<Badge class="mr-2" :label="String(unread)" theme="blue" variant="solid" />
 								</template>
 							</SidebarItem>
 							<SidebarItem
@@ -186,7 +186,7 @@ function openResult(item) {
 								:active="route.name === screen.name"
 							>
 								<template v-if="screen.name === 'Inbox' && unreadEmailBadge" #suffix>
-									<Badge class="mr-2" :label="unreadEmailBadge" theme="gray" />
+									<Badge class="mr-2" :label="unreadEmailBadge" theme="blue" variant="solid" />
 								</template>
 							</SidebarItem>
 							<SidebarItem
@@ -221,7 +221,7 @@ function openResult(item) {
 					@click="showNotifications = true"
 				>
 					<template v-if="unread" #suffix>
-						<Badge :label="String(unread)" theme="gray" />
+						<Badge :label="String(unread)" theme="blue" variant="solid" />
 					</template>
 				</Button>
 				<Dropdown
@@ -253,7 +253,7 @@ function openResult(item) {
 							class="absolute -top-1.5 left-3.5"
 							size="sm"
 							:label="unreadEmailBadge"
-							theme="gray"
+							theme="blue" variant="solid"
 						/>
 					</span>
 					<span class="max-w-full truncate">{{ screen.shortLabel }}</span>
