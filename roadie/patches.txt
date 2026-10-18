@@ -6,6 +6,7 @@
 # Patches added in this section will be executed after doctypes are migrated
 roadie.patches.add_relevance_column
 roadie.patches.create_festival_editions
+roadie.patches.grant_communication_create
 
 [post_fixture_sync]
 # Patches added in this section will be executed after fixtures and customizations
