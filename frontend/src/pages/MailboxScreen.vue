@@ -397,11 +397,7 @@ onKey("Escape", close);
 						v-for="row in rows"
 						:key="threadKey(row.thread)"
 						class="group flex items-start hover:bg-surface-gray-2"
-						:class="
-							isOpen(row) || isSelected(row)
-								? 'bg-surface-gray-2'
-								: { 'bg-surface-blue-1': isInbox && row.unread }
-						"
+						:class="{ 'bg-surface-gray-2': isOpen(row) || isSelected(row) }"
 					>
 						<label class="flex shrink-0 cursor-pointer items-start gap-3 py-3 pl-4">
 							<span
