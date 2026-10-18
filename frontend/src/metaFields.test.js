@@ -69,6 +69,7 @@ test("a control override turns a Link into a picker the generic mapping does not
 	const [venue] = fieldsFromMeta(gigMeta, { venue: { type: "combobox", options } });
 	assert.equal(venue.type, "combobox");
 	assert.deepEqual(venue.options, options);
+	assert.equal(venue.linkTo, "Venue", "the picker knows which record to open");
 });
 
 const editionField = {

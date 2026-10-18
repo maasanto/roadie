@@ -1,11 +1,13 @@
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import { Button, ErrorMessage, FormControl, Rating, Skeleton, TabButtons, toast, useCall } from "frappe-ui";
 import ActivityTimeline from "./ActivityTimeline.vue";
 import FormCustomiser from "./FormCustomiser.vue";
 import { RATING_STARS, splitList, toStars } from "../directory";
 import { useMeta } from "../meta";
 import { fieldsFromMeta, isStalePick, optionsFor, toStoredValue } from "../metaFields";
+import { resultRoute } from "../search";
 
 const props = defineProps({
 	doctype: { type: String, required: true },
@@ -122,6 +124,20 @@ watch(
 	{ immediate: true }
 );
 
+const router = useRouter();
+
+// Opened in a new tab, as leaving would lose what the form holds unsaved.
+function linkedRecordHref(field) {
+	const route = field.linkTo && resultRoute({ doctype: field.linkTo, name: form[field.fieldname] });
+	return route ? router.resolve(route).href : null;
+}
+
+// The button goes with the value, so focus moves to the picker rather than falling back to the page.
+function clearPick(field, event) {
+	event.currentTarget.closest("[data-slot=trigger]")?.querySelector("input")?.focus();
+	form[field.fieldname] = "";
+}
+
 const saveCall = computed(() => (entryName.value ? updateEntry : createEntry));
 
 async function save() {
@@ -185,7 +201,25 @@ defineExpose({ form, entryName });
 						:options="optionsFor(field, form)"
 						:disabled="field.disabled"
 						:class="field.type === 'textarea' ? 'col-span-2' : ''"
-					/>
+					>
+						<template v-if="field.type === 'combobox' && form[field.fieldname]" #suffix>
+							<a
+								v-if="linkedRecordHref(field)"
+								:href="linkedRecordHref(field)"
+								target="_blank"
+								rel="noopener"
+								class="lucide-arrow-up-right size-4 shrink-0 text-ink-gray-5 hover:text-ink-gray-8"
+								:aria-label="__('Open {0}', [__(field.linkTo)])"
+							/>
+							<button
+								v-if="!field.disabled"
+								type="button"
+								class="lucide-x size-4 shrink-0 text-ink-gray-5 hover:text-ink-gray-8"
+								:aria-label="__('Clear')"
+								@click="clearPick(field, $event)"
+							/>
+						</template>
+					</FormControl>
 				</template>
 				<ErrorMessage class="col-span-2" :message="saveCall.error" />
 				<div class="col-span-2 flex justify-between">
