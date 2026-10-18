@@ -5,7 +5,7 @@ import { test } from "node:test";
 globalThis.window = globalThis;
 window.translations = { "Usual month": "Mois habituel", March: "Mars" };
 await import("./translation.js");
-const { fieldsFromMeta, isStalePick, optionsFor } = await import("./metaFields.js");
+const { fieldsFromMeta, isStalePick, optionsFor, valuesFromPick } = await import("./metaFields.js");
 
 const festivalMeta = [
 	{ fieldname: "title", fieldtype: "Data", label: "Name", reqd: 1 },
@@ -97,4 +97,74 @@ test("an edition of another festival or of a cleared one goes when the festival 
 		isStalePick({ ...editionField, dependsOn: undefined }, { festival_edition: "acme-2027" }),
 		false
 	);
+});
+
+const gigFields = fieldsFromMeta([
+	{ fieldname: "title", fieldtype: "Data", label: "Title" },
+	{ fieldname: "notes", fieldtype: "Small Text", label: "Notes" },
+	{ fieldname: "custom_city", fieldtype: "Data", label: "City", is_custom_field: 1 },
+	{ fieldname: "custom_usual_month", fieldtype: "Data", label: "Usual month", is_custom_field: 1 },
+	{ fieldname: "custom_drive_time", fieldtype: "Int", label: "Drive time", is_custom_field: 1 },
+	{ fieldname: "custom_camping", fieldtype: "Check", label: "Camping", is_custom_field: 1 },
+	{ fieldname: "fee", fieldtype: "Currency", label: "Fee" },
+]);
+const festival = {
+	name: "acme",
+	title: "Acme Open Air",
+	notes: "Ask for the side stage",
+	city: "Lyon",
+	usual_month: "July",
+	custom_drive_time: 180,
+	custom_camping: 1,
+	fee: 0,
+};
+
+test("a picked festival fills the gig's empty fields it shares, a field added from the form included, not a 0", () => {
+	const form = {
+		title: "",
+		notes: "",
+		custom_city: "",
+		custom_usual_month: "",
+		custom_drive_time: "",
+		fee: "",
+	};
+	assert.deepEqual(valuesFromPick(gigFields, form, festival), {
+		custom_city: "Lyon",
+		custom_usual_month: "July",
+		custom_drive_time: 180,
+	});
+});
+
+test("a pick never overwrites what the member filled, nor the festival's own title, notes or checkboxes", () => {
+	const form = {
+		title: "",
+		notes: "",
+		custom_city: "Lille",
+		custom_usual_month: "",
+		custom_camping: false,
+	};
+	assert.deepEqual(valuesFromPick(gigFields, form, { ...festival, usual_month: "" }), {
+		custom_drive_time: 180,
+	});
+});
+
+test("picking another festival replaces what the first one filled, except what the member changed since", () => {
+	const firstFill = { custom_city: "Lyon", custom_usual_month: "July", custom_drive_time: 180 };
+	const form = { ...firstFill, custom_city: "Roubaix" };
+	const otherFestival = { name: "doe", title: "Doe Nights", city: "Nantes", custom_drive_time: 420 };
+	assert.deepEqual(valuesFromPick(gigFields, form, otherFestival, firstFill), {
+		custom_usual_month: "",
+		custom_drive_time: 420,
+	});
+});
+
+test("clearing the festival blanks only what it filled and the member left alone", () => {
+	const firstFill = { custom_city: "Lyon", custom_drive_time: 180 };
+	const form = { custom_city: "Lyon", custom_drive_time: 200 };
+	assert.deepEqual(valuesFromPick(gigFields, form, {}, firstFill), { custom_city: "" });
+});
+
+test("a record's own columns never fill a field added under the same name", () => {
+	const fields = fieldsFromMeta([{ fieldname: "custom_owner", fieldtype: "Data", label: "Owner" }]);
+	assert.deepEqual(valuesFromPick(fields, { custom_owner: "" }, { owner: "john@example.com" }), {});
 });

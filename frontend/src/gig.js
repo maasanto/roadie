@@ -89,7 +89,7 @@ export function gigControls({ festivals, editions, venues, promoters, members })
 		// The pipeline has one column per status it knows, so a status added in Desk would hide its gigs.
 		status: { options: translatedOptions(GIG_STATUSES) },
 		gig_owner: { type: "combobox", options: memberOptions(members), default: window.user },
-		festival: { type: "combobox", options: toOptions(festivals, "title") },
+		festival: { type: "combobox", options: toOptions(festivals, "title"), fillsForm: true },
 		// The form offers only the chosen festival's editions; a filter or bulk edit, with no festival, offers all.
 		festival_edition: {
 			type: "combobox",
@@ -99,8 +99,9 @@ export function gigControls({ festivals, editions, venues, promoters, members })
 				festival: edition.festival,
 			})),
 			dependsOn: "festival",
+			fillsForm: true,
 		},
-		venue: { type: "combobox", options: toOptions(venues, "title") },
+		venue: { type: "combobox", options: toOptions(venues, "title"), fillsForm: true },
 		promoter: { type: "combobox", options: toOptions(promoters, "title") },
 	};
 }
