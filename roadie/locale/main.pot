@@ -1896,3 +1896,7 @@ msgstr ""
 #: roadie/roadie/doctype/festival_edition/festival_edition.py
 msgid "{0} already has a {1} edition. Open that one, or pick another year."
 msgstr ""
+
+#: frontend/src/components/EntryForm.vue
+msgid "Clear"
+msgstr ""

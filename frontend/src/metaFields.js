@@ -44,6 +44,7 @@ export function fieldsFromMeta(metaFields, controls = {}) {
 				field.fieldtype === "Select"
 					? translatedOptions((field.options || "").split("\n").filter(Boolean))
 					: undefined,
+			linkTo: field.fieldtype === "Link" ? field.options : undefined,
 			default: DYNAMIC_DEFAULT.test(field.default) ? undefined : field.default,
 			...controls[field.fieldname],
 		}));
