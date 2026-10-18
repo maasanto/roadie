@@ -4,7 +4,46 @@ import { test } from "node:test";
 // gig.js reads the page boot (window.lang, window.translations) and the global __ at import time.
 globalThis.window = globalThis;
 window.lang = "fr";
-const { columnTotals, feeLabelOf, formatDate, formatFee, memberOptions, totalFee } = await import("./gig.js");
+const {
+	columnTotals,
+	feeLabelOf,
+	formatDate,
+	formatFee,
+	gigControls,
+	gigTitleFromPicks,
+	memberOptions,
+	titleAfterPick,
+	totalFee,
+} = await import("./gig.js");
+
+test("a gig is named after its edition, else its festival, else its venue", () => {
+	const controls = gigControls({
+		festivals: [{ name: "acme", title: "Acme Open Air" }],
+		editions: [{ name: "acme-2027", title: "Acme Open Air 2027", festival: "acme" }],
+		venues: [{ name: "hall", title: "Acme Hall" }],
+	});
+	const titleOf = (form) =>
+		gigTitleFromPicks({ festival: "", festival_edition: "", venue: "", ...form }, controls);
+
+	assert.equal(titleOf({ venue: "hall" }), "Acme Hall");
+	assert.equal(titleOf({ festival: "acme", venue: "hall" }), "Acme Open Air");
+	assert.equal(
+		titleOf({ festival: "acme", festival_edition: "acme-2027", venue: "hall" }),
+		"Acme Open Air 2027"
+	);
+	assert.equal(titleOf({}), "");
+	assert.equal(titleOf({ festival: "not-loaded-yet", venue: "hall" }), "Acme Hall");
+});
+
+test("a blank title takes the pick's name, and keeps following picks until the member types their own", () => {
+	assert.equal(titleAfterPick("", "", "Acme Hall"), "Acme Hall");
+	assert.equal(titleAfterPick("Acme Hall", "Acme Hall", "Acme Open Air 2027"), "Acme Open Air 2027");
+	assert.equal(
+		titleAfterPick("Acme Hall residency", "Acme Hall", "Acme Open Air 2027"),
+		"Acme Hall residency"
+	);
+	assert.equal(titleAfterPick("Release party", "", "Acme Hall"), "Release party");
+});
 
 test("a date in the current year is shown without its year", () => {
 	const thisYear = new Date().getFullYear();

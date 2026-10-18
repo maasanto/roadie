@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { Button, call, toast } from "frappe-ui";
 import CommentThread from "./CommentThread.vue";
 import EmailThread from "./EmailThread.vue";
@@ -10,6 +10,7 @@ import GigTasks from "./GigTasks.vue";
 import { confirmBooking } from "../availability";
 import { confirmDiscardDraft } from "../draft";
 import { isUnread } from "../email";
+import { gigTitleFromPicks, titleAfterPick } from "../gig";
 import { onKey } from "../keyboard";
 import { unreadEmailCount } from "../mailbox";
 
@@ -25,6 +26,21 @@ const emit = defineEmits(["close", "saved"]);
 const entryForm = ref(null);
 // A gig created here never reaches the address, so the panel is what knows which gig it shows.
 defineExpose({ entryName: computed(() => entryForm.value?.entryName) });
+
+// Only a new gig is named from its picks: renaming a saved one would surprise the band.
+let pickedTitle = "";
+watch(
+	() =>
+		entryForm.value && !entryForm.value.entryName
+			? gigTitleFromPicks(entryForm.value.form, props.controls)
+			: null,
+	(title) => {
+		if (title === null) return;
+		const { form } = entryForm.value;
+		form.title = titleAfterPick(form.title, pickedTitle, title);
+		pickedTitle = title;
+	}
+);
 
 const availability = ref(null);
 

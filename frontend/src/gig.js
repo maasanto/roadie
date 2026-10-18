@@ -84,6 +84,18 @@ const toOptions = (rows, labelField) =>
 // The members a gig can be assigned to, labelled by name and valued by their user id.
 export const memberOptions = (members) => toOptions(members, "full_name");
 
+const pickedLabel = (control, value) => control?.options?.find((option) => option.value === value)?.label;
+
+// The edition names a gig best, as it carries the year, then its festival, then the venue.
+export const gigTitleFromPicks = (form, controls) =>
+	["festival_edition", "festival", "venue"]
+		.map((fieldname) => form[fieldname] && pickedLabel(controls[fieldname], form[fieldname]))
+		.find(Boolean) ?? "";
+
+// A title left blank follows the picks, until the member types their own: then it is theirs to keep.
+export const titleAfterPick = (title, lastPickedTitle, pickedTitle) =>
+	!title || title === lastPickedTitle ? pickedTitle : title;
+
 export function gigControls({ festivals, editions, venues, promoters, members }) {
 	return {
 		// The pipeline has one column per status it knows, so a status added in Desk would hide its gigs.
