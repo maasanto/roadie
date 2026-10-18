@@ -1860,8 +1860,8 @@ msgstr "Supprimer la tâche"
 msgid "Task deleted"
 msgstr "Tâche supprimée"
 #: frontend/src/components/GigCard.vue
-msgid "Unread emails"
-msgstr "E-mails non lus"
+msgid "Emails, {0} unread"
+msgstr "E-mails, dont {0} non lus"
 
 #: frontend/src/components/GigCard.vue
 msgid "Open tasks, some overdue"

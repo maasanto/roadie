@@ -223,8 +223,8 @@ const {
 } = useOpenRecord("gig");
 const gigPanel = ref(null);
 const activity = useCall({ url: "/api/v2/method/roadie.api.get_gig_activity" });
-// A task, comment or file added in the panel doesn't reach the board, so the counts are read again once the member
-// leaves a gig, by Close, Back or another card.
+// A task, comment, email or file added in the panel doesn't reach the board, so the counts are read again once the
+// member leaves a gig, by Close, Back or another card.
 watch([isPanelOpen, openedName], (_, [wasOpen]) => {
 	if (wasOpen) activity.reload();
 });

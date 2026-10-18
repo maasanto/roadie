@@ -1709,7 +1709,7 @@ msgstr ""
 #: frontend/src/task.js
 msgid "Task deleted"
 #: frontend/src/components/GigCard.vue
-msgid "Unread emails"
+msgid "Emails, {0} unread"
 msgstr ""
 
 #: frontend/src/components/GigCard.vue
