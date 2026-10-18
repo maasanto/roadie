@@ -65,7 +65,7 @@ class TestGigActivity(IntegrationTestCase):
 	def tearDown(self):
 		frappe.set_user("Administrator")
 
-	def test_cards_count_what_the_panel_shows_until_its_emails_are_read(self):
+	def test_cards_count_what_the_panel_shows_and_its_emails_still_unread(self):
 		gig = make_gig("Le Petit Club residency").name
 		add_activity(gig)
 		file_email(written_from=gig)
@@ -79,6 +79,7 @@ class TestGigActivity(IntegrationTestCase):
 		self.assertEqual(
 			activity,
 			{
+				"emails": 5,
 				"unread_emails": 3,
 				"open_tasks": 2,
 				"next_due": frappe.utils.getdate(add_days(today(), -1)),
@@ -88,7 +89,15 @@ class TestGigActivity(IntegrationTestCase):
 		)
 
 		mark_thread_seen("Gig", gig)
-		self.assertNotIn("unread_emails", get_gig_activity()[gig])
+		activity = get_gig_activity()[gig]
+		self.assertEqual((activity["emails"], activity["unread_emails"]), (5, 0))
+
+	def test_a_gig_with_only_sent_mail_still_counts_it(self):
+		gig = make_gig("Acme Festival 2027").name
+		file_email(written_from=gig, sent_or_received="Sent")
+
+		frappe.set_user(MEMBER)
+		self.assertEqual(get_gig_activity()[gig], {"emails": 1, "unread_emails": 0})
 
 	def test_member_gets_no_counts_for_a_gig_they_cannot_read(self):
 		readable = make_gig("Acme Festival 2027").name

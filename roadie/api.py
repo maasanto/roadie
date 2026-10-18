@@ -1,5 +1,4 @@
 import re
-from collections import Counter
 from urllib.parse import urlsplit
 
 import frappe
@@ -34,12 +33,8 @@ THREAD_DOCTYPES = (*EMAIL_DOCTYPES, "Communication")
 # The composer stamps its uploads with this, so a draft can only ever delete a file it uploaded itself.
 EMAIL_DRAFT_FIELD = "roadie_email_draft"
 MAILBOX_ROLES = ("Band Member", "System Manager")
-UNREAD_EMAIL_FILTERS = {
-	"communication_medium": "Email",
-	"communication_type": "Communication",
-	"sent_or_received": "Received",
-	"seen": 0,
-}
+EMAIL_FILTERS = {"communication_medium": "Email", "communication_type": "Communication"}
+UNREAD_EMAIL_FILTERS = {**EMAIL_FILTERS, "sent_or_received": "Received", "seen": 0}
 # Suite's own role: it opens Drive, and Suite's Mail, Calendar and Meet with it.
 DRIVE_ROLE = "Suite User"
 # A User checkbox, on unless the member only books the gigs rather than plays them.
@@ -382,7 +377,7 @@ def _email_activity(doctype, name):
 
 @frappe.whitelist()
 def get_gig_activity() -> dict[str, dict]:
-	"""What the board's cards show of every gig the member can read: unread emails, open tasks and the earliest
+	"""What the board's cards show of every gig the member can read: emails, unread ones, open tasks and the earliest
 	one's due date, comments and attachments. Members can't list Comment or File themselves, so the gig grants
 	access, as it does in its panel. A gig with none of these is left out."""
 	# ponytail: every readable gig, not only the board's filtered ones; take the board's names if a band keeps thousands
@@ -391,7 +386,7 @@ def get_gig_activity() -> dict[str, dict]:
 		return {}
 
 	counts = [
-		_unread_emails(gigs),
+		_email_counts(gigs),
 		frappe.get_all(
 			"Band Task",
 			filters={"gig": ["in", gigs], "done": 0},
@@ -439,27 +434,33 @@ def get_pipeline_totals(filters: str) -> list[dict]:
 	).run(as_dict=True)
 
 
-def _unread_emails(gigs):
-	"""Counted from the emails the gig's thread shows, which opening it marks seen."""
+def _email_counts(gigs):
+	"""Counted from the emails the gig's thread shows, the unread ones apart since opening it marks them seen."""
+	# ponytail: one row per email, not a COUNT, since the two queries overlap; aggregate in SQL if history grows large
+	fields = ["name", "sent_or_received", "seen"]
 	referencing = frappe.get_all(
 		"Communication",
-		filters={**UNREAD_EMAIL_FILTERS, "reference_doctype": "Gig", "reference_name": ["in", gigs]},
-		fields=["name", "reference_name as gig"],
+		filters={**EMAIL_FILTERS, "reference_doctype": "Gig", "reference_name": ["in", gigs]},
+		fields=[*fields, "reference_name as gig"],
 	)
 	linked = frappe.get_all(
 		"Communication",
 		filters=[
-			*([field, "=", value] for field, value in UNREAD_EMAIL_FILTERS.items()),
+			*([field, "=", value] for field, value in EMAIL_FILTERS.items()),
 			["Communication Link", "link_doctype", "=", "Gig"],
 			["Communication Link", "link_name", "in", gigs],
 		],
-		fields=["name", "`tabCommunication Link`.link_name as gig"],
+		fields=[*fields, "`tabCommunication Link`.link_name as gig"],
 	)
 	# An email can both be written from a gig and reach it through a contact.
-	emails = {(email.gig, email.name) for email in [*referencing, *linked]}
-	return [
-		frappe._dict(gig=gig, unread_emails=count) for gig, count in Counter(gig for gig, _ in emails).items()
-	]
+	emails = {(email.gig, email.name): email for email in [*referencing, *linked]}
+	counts = {}
+	for email in emails.values():
+		count = counts.setdefault(email.gig, frappe._dict(gig=email.gig, emails=0, unread_emails=0))
+		count.emails += 1
+		if email.sent_or_received == "Received" and not email.seen:
+			count.unread_emails += 1
+	return counts.values()
 
 
 @frappe.whitelist()
