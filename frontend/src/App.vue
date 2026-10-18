@@ -122,7 +122,7 @@ function openResult(item) {
 	const target = resultRoute(item);
 	const current = router.currentRoute.value;
 	router.push(
-		target.name === current.name ? { ...target, query: { ...current.query, ...target.query } } : target,
+		target.name === current.name ? { ...target, query: { ...current.query, ...target.query } } : target
 	);
 }
 </script>
