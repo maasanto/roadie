@@ -72,7 +72,11 @@ class TestComments(IntegrationTestCase):
 		frappe.set_user(BANDMATE)
 		[notification] = [n for n in get_notifications() if n.document_name == gig.name]
 		self.assertEqual(notification.type, "Mention")
-		self.assertEqual(notification.title, "John Doe mentioned you in a comment in Gig Acme Festival 2027")
+		self.assertEqual(
+			notification.title,
+			"<strong>John Doe</strong> mentioned you in a comment in <strong>Gig</strong> <b>Acme Festival 2027</b>",
+		)
+		self.assertEqual(notification.from_user_name, "John Doe")
 		self.assertEqual(notification.description, "@Jane Doe & @John Doe can you book the van? Thanks!")
 		self.assertTrue(notification.link.endswith(f"/roadie?gig={gig.name}"))
 		self.assertFalse(notification.read)

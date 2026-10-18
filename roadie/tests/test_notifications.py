@@ -118,6 +118,24 @@ class TestNotifications(IntegrationTestCase):
 		[notification] = get_notifications()
 		self.assertEqual(notification.route, "/directory")
 
+	def test_a_title_keeps_only_its_bold_and_escapes_the_rest(self):
+		frappe.get_doc(
+			{
+				"doctype": "Notification Log",
+				"for_user": MEMBER,
+				"from_user": OTHER_MEMBER,
+				"subject": '<strong>Jane <3</strong> wrote <a href="/x">doors &lt; 18h</a> on <b class="subject-title">'
+				"Tour > 2027</b><img src=x onerror=alert(1)><script>alert(1)</script>",
+			}
+		).insert(ignore_permissions=True)
+
+		frappe.set_user(MEMBER)
+		[notification] = get_notifications()
+		self.assertEqual(
+			notification.title, "<strong>Jane &lt;3</strong> wrote doors &lt; 18h on <b>Tour &gt; 2027</b>"
+		)
+		self.assertEqual(notification.from_user_name, "Jane Doe")
+
 	def test_mark_notifications_read_clears_unread(self):
 		frappe.set_user(MEMBER)
 		frappe.get_doc({"doctype": "Band Task", "title": "Book the van", "assignee": OTHER_MEMBER}).insert()
