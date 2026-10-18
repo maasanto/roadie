@@ -46,8 +46,9 @@ def grant_contact_access():
 
 def grant_communication_access():
 	"""Read defers to the linked record, so members open received attachments. Write and email let them reply to
-	mail linked to no record, which Frappe threads on the first Communication itself."""
+	mail linked to no record, which Frappe threads on the first Communication itself. Create lets them write a new
+	email from the Inbox, which Frappe checks on Communication when the email is linked to no record."""
 	if not frappe.db.exists("Custom DocPerm", {"parent": "Communication", "role": ROLE, "permlevel": 0}):
 		add_permission("Communication", ROLE)
-	for ptype in ("write", "email"):
+	for ptype in ("write", "email", "create"):
 		update_permission_property("Communication", ROLE, 0, ptype, 1)
