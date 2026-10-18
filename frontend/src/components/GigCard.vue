@@ -29,7 +29,7 @@ const hasOpenDeadline = computed(
 	() => props.gig.application_closes && daysUntil(props.gig.application_closes) >= 0
 );
 
-// The label carries what the red or bold alone would only show.
+// The label carries what the colour alone would only show.
 const activityBadges = computed(() => {
 	const { emails, unread_emails, open_tasks, next_due, comments, attachments } = props.activity;
 	const isOverdue = next_due && daysUntil(next_due) < 0;
@@ -38,7 +38,7 @@ const activityBadges = computed(() => {
 			icon: "lucide-mail",
 			count: emails,
 			label: unread_emails ? __("Emails, {0} unread", [unread_emails]) : __("Emails"),
-			class: unread_emails ? "font-semibold text-ink-gray-9" : "",
+			class: unread_emails ? "font-semibold text-ink-blue-7" : "",
 		},
 		{
 			icon: "lucide-list-checks",
