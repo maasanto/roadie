@@ -1,6 +1,6 @@
 <script setup>
 import { watch } from "vue";
-import { Button, ErrorMessage, useCall } from "frappe-ui";
+import { Avatar, Button, ErrorMessage, useCall } from "frappe-ui";
 import { useRouter } from "vue-router";
 import EmptyState from "./EmptyState.vue";
 import ListSkeleton from "./ListSkeleton.vue";
@@ -58,33 +58,37 @@ function openNotification(notification) {
 				:title="__('No notifications yet')"
 				:description="__('Task assignments, deadlines and mentions show up here.')"
 			/>
-			<ul v-else class="flex-1 divide-y divide-outline-gray-1 overflow-y-auto">
+			<ul v-else class="flex-1 space-y-0.5 overflow-y-auto p-2">
 				<li v-for="notification in notifications.data" :key="notification.name">
 					<button
-						class="flex w-full items-start gap-2 px-4 py-3 text-left hover:bg-surface-gray-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-3"
+						class="flex w-full items-start gap-2 rounded-6 px-2 py-2.5 text-left hover:bg-surface-gray-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-3"
 						@click="openNotification(notification)"
 					>
 						<span
-							class="mt-1.5 size-2 shrink-0 rounded-full"
+							class="mt-3.5 size-2 shrink-0 rounded-full"
 							:class="notification.read ? 'bg-transparent' : 'bg-surface-blue-7'"
 							:aria-label="notification.read ? undefined : __('Unread')"
 						/>
-						<span class="min-w-0 flex-1">
+						<Avatar
+							:image="notification.from_user_image"
+							:label="notification.from_user_name || notification.from_user"
+							class="size-9"
+							aria-hidden="true"
+						/>
+						<span class="min-w-0 flex-1 pl-0.5">
+							<!-- Sanitised by get_notifications down to its bold tags. -->
 							<span
-								class="block text-base"
-								:class="
-									notification.read ? 'text-ink-gray-7' : 'font-semibold text-ink-gray-9'
-								"
-							>
-								{{ notification.title }}
-							</span>
+								class="line-clamp-3 text-base"
+								:class="notification.read ? 'text-ink-gray-7' : 'text-ink-gray-9'"
+								v-html="notification.title"
+							/>
 							<span
 								v-if="notification.description"
 								class="mt-0.5 line-clamp-2 text-p-sm text-ink-gray-6"
 							>
 								{{ notification.description }}
 							</span>
-							<span class="mt-0.5 block text-sm text-ink-gray-5">{{
+							<span class="mt-0.5 block text-xs text-ink-gray-5">{{
 								relativeDate(notification.creation)
 							}}</span>
 						</span>

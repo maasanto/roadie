@@ -3,6 +3,7 @@ from collections import Counter
 from urllib.parse import urlsplit
 
 import frappe
+import nh3
 from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 from frappe.email import relink
@@ -1120,6 +1121,7 @@ def share_drive_link(entity_name: str) -> str:
 SPA_BASE = "/roadie"
 # Where a block element ends, so its text doesn't run into the next one's once the tags are stripped.
 BLOCK_END = re.compile(r"<(?:br|/p|/div|/li|/h[1-6])\b[^>]*>", re.IGNORECASE)
+BOLD_TAGS = {"b", "strong"}
 NOTIFICATION_FIELDS = [
 	"name",
 	"type",
@@ -1131,6 +1133,9 @@ NOTIFICATION_FIELDS = [
 	"link",
 	"read",
 	"creation",
+	"from_user",
+	"from_user.full_name as from_user_name",
+	"from_user.user_image as from_user_image",
 ]
 
 
@@ -1148,8 +1153,11 @@ def get_notifications() -> list[dict]:
 	)
 	for notification in notifications:
 		notification.route = _notification_route(notification)
-		# A mention keeps the email's HTML in its title and the comment's in its description; the panel shows text.
-		notification.title = _html_to_text(notification.title or notification.subject)
+		# A mention keeps the email's HTML in its title and the comment's in its description. The panel renders the
+		# title as HTML, so only the bold the Desk shows survives.
+		notification.title = nh3.clean(
+			notification.title or notification.subject or "", tags=BOLD_TAGS, attributes={}
+		)
 		notification.description = _html_to_text(notification.description)
 	return notifications
 
