@@ -61,7 +61,8 @@ function openNotification(notification) {
 			<ul v-else class="flex-1 space-y-0.5 overflow-y-auto p-2">
 				<li v-for="notification in notifications.data" :key="notification.name">
 					<button
-						class="flex w-full items-start gap-2 rounded-6 px-2 py-2.5 text-left hover:bg-surface-gray-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-3"
+						class="flex w-full items-start gap-2 rounded-6 px-2 py-2.5 text-left hover:bg-surface-gray-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-outline-gray-3"
+						:class="{ 'bg-surface-blue-1': !notification.read }"
 						@click="openNotification(notification)"
 					>
 						<span
@@ -79,7 +80,7 @@ function openNotification(notification) {
 							<!-- Sanitised by get_notifications down to its bold tags. -->
 							<span
 								class="line-clamp-3 text-base"
-								:class="notification.read ? 'text-ink-gray-7' : 'text-ink-gray-9'"
+								:class="notification.read ? 'text-ink-gray-7' : 'font-medium text-ink-gray-9'"
 								v-html="notification.title"
 							/>
 							<span
