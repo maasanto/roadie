@@ -2047,3 +2047,7 @@ msgstr "Aucun membre du groupe ne confirme sa disponibilité : il n'y a personne
 #: roadie/roadie/doctype/festival_edition/festival_edition.py
 msgid "{0} already has a {1} edition. Open that one, or pick another year."
 msgstr "{0} a déjà une édition {1}. Ouvrez-la, ou choisissez une autre année."
+
+#: frontend/src/components/EntryForm.vue
+msgid "Clear"
+msgstr "Effacer"
