@@ -1,8 +1,13 @@
 import { useCall } from "frappe-ui";
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 
 // One request shared by every screen, so the sidebar's Inbox badge drops as soon as one of them marks mail read.
 export const unreadEmailCount = useCall({ url: "/api/v2/method/roadie.api.get_unread_email_count" });
+
+// Module scope: a delete still waiting on its toast must outlive the thread it was made from, which remounts when
+// the reader moves on. Threads hide these emails and the mailbox the rows they empty. An email stays hidden once
+// deleted, its name never comes back.
+export const deletedEmails = ref(new Set());
 
 // Nothing tells the app that mail arrived, so it asks again whenever the member may be looking at it.
 const MAIL_REFRESH_INTERVAL_MS = 60 * 1000;

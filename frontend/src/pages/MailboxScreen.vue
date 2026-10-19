@@ -18,7 +18,7 @@ import { directoryTypes } from "../directory";
 import { confirmDiscardDraft, hasEditedDraft } from "../draft";
 import { deliveryState, formatListDate, isUnread } from "../email";
 import { onKey, onShortcut } from "../keyboard";
-import { refreshWhileVisible, unreadEmailCount } from "../mailbox";
+import { deletedEmails, refreshWhileVisible, unreadEmailCount } from "../mailbox";
 import { resultRoute } from "../search";
 import { toastWithUndo } from "../undo";
 
@@ -67,10 +67,13 @@ const openThread = computed(() =>
 const threadKey = (thread) => `${thread.doctype}:${thread.name}`;
 const isOpen = (row) => Boolean(openThread.value) && threadKey(row.thread) === threadKey(openThread.value);
 // The open thread stays listed once read, or it would vanish under the reader and j/k would lose their place.
+// A row goes as soon as every email it stands for is deleted, not once their undo window closes.
+const isEmptiedByDelete = (row) => row.emails.every((name) => deletedEmails.value.has(name));
 const rows = computed(() =>
 	(mailbox.data || []).filter(
 		(row) =>
 			!deletedKeys.value.has(threadKey(row.thread)) &&
+			(!isEmptiedByDelete(row) || isOpen(row)) &&
 			(!isUnreadOnly.value || row.unread || isOpen(row))
 	)
 );
@@ -539,6 +542,7 @@ onKey("Escape", close);
 						:name="openThread.name"
 						@loaded="onThreadLoaded"
 						@deleted="onEmailDeleted"
+						@emptied="close"
 					/>
 				</div>
 				<SearchPalette

@@ -1,12 +1,5 @@
-<script>
-import { computed, ref, watch } from "vue";
-
-// Module scope: a delete still waiting on its toast must outlive this thread, which remounts when the reader
-// moves on. An email stays hidden once deleted, its name never comes back.
-const deletedEmails = ref(new Set());
-</script>
-
 <script setup>
+import { computed, ref, watch } from "vue";
 import { Avatar, Badge, Button, ErrorMessage, call, toast, useCall } from "frappe-ui";
 import EmailBody from "./EmailBody.vue";
 import EmailComposer from "./EmailComposer.vue";
@@ -21,6 +14,7 @@ import {
 	openByDefault,
 	replyDraft,
 } from "../email";
+import { deletedEmails } from "../mailbox";
 import { toastWithUndo } from "../undo";
 
 const props = defineProps({
@@ -30,7 +24,7 @@ const props = defineProps({
 	// its toast closes, often after the reader has moved to another thread.
 	onDeleted: { type: Function, default: null },
 });
-const emit = defineEmits(["loaded"]);
+const emit = defineEmits(["loaded", "emptied"]);
 
 const openEmails = ref(new Set());
 const emails = useCall({
@@ -67,6 +61,8 @@ function deleteEmail(email) {
 		undo: () => deletedEmails.value.delete(email.name),
 		commit: () => deleteForGood(email.name),
 	});
+	// A reply being written keeps the thread open: closing it would ask to throw the draft away.
+	if (!shownEmails.value.length && !draft.value) emit("emptied");
 }
 
 async function deleteForGood(name) {

@@ -227,6 +227,8 @@ class TestEmail(IntegrationTestCase):
 		frappe.set_user(MEMBER)
 		rows = [row for row in get_mailbox("Received") if row.thread == {"doctype": "Gig", "name": gig.name}]
 		self.assertEqual([(row.name, row.count, row.unread) for row in rows], [(replies[1], 2, 2)])
+		# The list hides a row once these are all deleted, so the gig's own sent email must not be among them.
+		self.assertCountEqual(rows[0].emails, replies)
 
 		thread = {"doctype": "Gig", "name": gig.name}
 		mark_threads_read([thread])
