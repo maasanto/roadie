@@ -1,5 +1,11 @@
 @import "frappe-ui/style.css";
 
+/* The screens scroll inside their own panes, so a scroll that runs past a pane's end chains to the page, which macOS
+   and iOS then bounce, sliding the app up off the bare page beneath. */
+html {
+	overscroll-behavior: none;
+}
+
 /* A modal Dialog sets pointer-events: none on body, which would make Undo on a toast, or a bandmate in the @ mention
    list, unclickable while a directory entry is open. Both render on body, outside the dialog. */
 [data-sonner-toaster],
