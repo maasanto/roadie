@@ -1,4 +1,5 @@
 import { joinList, toFraction } from "./directory.js";
+import { isBlank } from "./listFilters.js";
 import { translatedOptions } from "./translation.js";
 
 // Field types a form can edit without a dedicated picker. Anything else, a table or an attachment
@@ -62,6 +63,49 @@ export const optionsFor = (field, form) =>
 export function isStalePick(field, form) {
 	const picked = field.dependsOn && field.options.find((option) => option.value === form[field.fieldname]);
 	return Boolean(picked) && picked[field.dependsOn] !== form[field.dependsOn];
+}
+
+// A field added from the form customiser gets Frappe's custom_ prefix, so a "City" added to the gig matches the
+// festival's own city.
+const sharedName = (fieldname) => fieldname.replace(/^custom_/, "");
+
+// Every record has these, and no gig field means them.
+const STANDARD_FIELDS = new Set([
+	"name",
+	"owner",
+	"creation",
+	"modified",
+	"modified_by",
+	"docstatus",
+	"idx",
+	"doctype",
+]);
+
+// A title and notes describe the picked record itself rather than the gig.
+const NOT_FILLED_FROM_PICK = new Set(["title", "notes"]);
+
+// Frappe stores an unset number as 0, so a picked record's 0 is nothing to fill in.
+const isFilledOnPick = (value) => Boolean(value) && !isBlank(value);
+
+// Only a blank field is filled, or one this picker filled before and the member left alone: picking another record
+// replaces it, or blanks it when that record holds nothing for it. A checkbox can't tell untouched from unticked,
+// so it is never filled.
+export function valuesFromPick(fields, form, pickedDoc, previousFill = {}) {
+	const pickedValues = {};
+	for (const [fieldname, value] of Object.entries(pickedDoc))
+		if (!STANDARD_FIELDS.has(fieldname) && isFilledOnPick(value))
+			pickedValues[sharedName(fieldname)] = value;
+
+	const values = {};
+	for (const { fieldname, type, disabled } of fields) {
+		const name = sharedName(fieldname);
+		const wasFilledByPick = fieldname in previousFill && form[fieldname] === previousFill[fieldname];
+		const isFillable = isBlank(form[fieldname]) || wasFilledByPick;
+		if (NOT_FILLED_FROM_PICK.has(name) || type === "checkbox" || disabled || !isFillable) continue;
+		if (name in pickedValues) values[fieldname] = pickedValues[name];
+		else if (wasFilledByPick) values[fieldname] = "";
+	}
+	return values;
 }
 
 // A multiselect is an array in the form and one comma-separated string in the database. A rating is a count of

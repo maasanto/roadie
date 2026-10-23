@@ -1,12 +1,22 @@
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import { Button, ErrorMessage, FormControl, Rating, Skeleton, TabButtons, toast, useCall } from "frappe-ui";
+import {
+	Button,
+	call,
+	ErrorMessage,
+	FormControl,
+	Rating,
+	Skeleton,
+	TabButtons,
+	toast,
+	useCall,
+} from "frappe-ui";
 import ActivityTimeline from "./ActivityTimeline.vue";
 import FormCustomiser from "./FormCustomiser.vue";
 import { RATING_STARS, splitList, toStars } from "../directory";
 import { useMeta } from "../meta";
-import { fieldsFromMeta, isStalePick, optionsFor, toStoredValue } from "../metaFields";
+import { fieldsFromMeta, isStalePick, optionsFor, toStoredValue, valuesFromPick } from "../metaFields";
 import { resultRoute } from "../search";
 
 const props = defineProps({
@@ -44,6 +54,12 @@ const updateEntry = useCall({ url: documentUrl, method: "PUT", immediate: false 
 let loadedForm = {};
 let loadedDoc = null;
 
+// A loaded record's own picks fill nothing, so opening a gig leaves its form untouched. What each picker filled is
+// kept, so another pick can replace it as long as the member left it alone.
+let knownPicks = {};
+let pickFills = {};
+let formVersion = 0;
+
 // The way back from what toStoredValue writes to the database.
 const FORM_VALUE = { multiselect: splitList, rating: toStars };
 
@@ -62,11 +78,14 @@ function fillFields(newFields) {
 		// A checkbox emits booleans, so a stored 0 must load as false for an untouched box to read as unchanged.
 		form[fieldname] = type === "checkbox" ? Boolean(Number(value)) : toFormValue(field, value);
 		loadedForm[fieldname] = form[fieldname];
+		if (field.fillsForm) knownPicks[fieldname] = form[fieldname];
 	}
 }
 
 function fillForm(doc) {
 	loadedDoc = doc;
+	pickFills = {};
+	formVersion += 1;
 	fillFields(fields.value);
 }
 
@@ -108,6 +127,37 @@ watch(
 			.join(),
 	() => {
 		for (const field of fields.value) if (isStalePick(field, form)) form[field.fieldname] = "";
+	}
+);
+
+async function fillFromPick(field, name) {
+	const version = formVersion;
+	try {
+		const pickedDoc = name ? await call("frappe.client.get", { doctype: field.linkTo, name }) : {};
+		// The member may have picked another record, or saved, while this one loaded.
+		if (form[field.fieldname] !== name || formVersion !== version) return;
+		const values = valuesFromPick(visibleFields.value, form, pickedDoc, pickFills[field.fieldname]);
+		pickFills[field.fieldname] = {};
+		for (const target of visibleFields.value) {
+			if (!(target.fieldname in values)) continue;
+			form[target.fieldname] = toFormValue(target, values[target.fieldname]);
+			// A festival an edition filled in is the member's pick from then on, so clearing the edition keeps it.
+			if (target.type !== "combobox")
+				pickFills[field.fieldname][target.fieldname] = form[target.fieldname];
+		}
+	} catch (error) {
+		toast.error(error.messages?.join("\n") || error.message);
+	}
+}
+
+watch(
+	() => fields.value.filter(({ fillsForm }) => fillsForm).map((field) => [field, form[field.fieldname]]),
+	(picks) => {
+		for (const [field, name] of picks) {
+			if (name === knownPicks[field.fieldname]) continue;
+			knownPicks[field.fieldname] = name;
+			fillFromPick(field, name);
+		}
 	}
 );
 
