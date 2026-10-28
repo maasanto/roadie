@@ -182,7 +182,12 @@ def get_emails(doctype: str, name: str) -> list[dict]:
 		doctype,
 		name,
 		# Reply all leaves out the shared account's own address
-		fields=[*EMAIL_SUMMARY_FIELDS, "content", "email_account.email_id as account_email"],
+		fields=[
+			*EMAIL_SUMMARY_FIELDS,
+			"content",
+			"email_account.email_id as account_email",
+			"reference_doctype",
+		],
 	)
 	attachments = frappe.get_all(
 		"File",
@@ -721,21 +726,36 @@ def _delete_email(name):
 
 @frappe.whitelist(methods=["POST"])
 def link_thread(communication: str, doctype: str, name: str) -> None:
-	"""Files a conversation filed under nothing under a gig or directory record. A reply takes its record from the
-	Email Queue entry it answers, or else from the email itself, so both move for later replies to follow."""
+	"""Files the conversation `communication` belongs to under a gig or directory record, unless one of its emails
+	was written from a record. Mail Frappe filed under a directory entry through a contact moves too, and the entry
+	still lists it. A reply takes its record from the Email Queue entry it answers, or else from the email itself,
+	so both move for later replies to follow."""
+	frappe.only_for(MAILBOX_ROLES)
 	if doctype not in LINKABLE_DOCTYPES:
 		frappe.throw(
 			_("Emails can only be filed under {0}, not {1}").format(", ".join(LINKABLE_DOCTYPES), doctype)
 		)
 	# The right Frappe asks for to send an email from the record itself.
 	frappe.get_doc(doctype, name).check_permission("email")
-	emails = [email.name for email in _mailbox_thread({"doctype": "Communication", "name": communication})]
-	# A reply or a filed email would move without the rest of its conversation.
-	if communication not in emails:
+	picked = frappe.get_doc("Communication", communication)
+	picked.check_permission("read")
+	root = picked.reference_name if picked.reference_doctype == "Communication" else picked.name
+	_check_readable_thread("Communication", root)
+	conversation = _thread_emails("Communication", root, fields=["name", "reference_doctype"])
+	emails = [email.name for email in conversation]
+	# A reply written from a record's thread references that record, not the root, so only in_reply_to finds it.
+	replies_from_a_record = frappe.db.exists(
+		"Communication", {**EMAIL_FILTERS, "in_reply_to": ["in", emails], "name": ["not in", emails]}
+	)
+	if (
+		root not in emails
+		or replies_from_a_record
+		or any(email.reference_doctype not in (None, "", "Communication") for email in conversation)
+	):
 		frappe.throw(
-			_("Only conversations filed under no gig, task or directory entry can be linked, not {0}").format(
-				communication
-			)
+			_(
+				"Only conversations filed under nothing, or under a directory entry through a contact, can be linked, not {0}"
+			).format(communication)
 		)
 
 	for email in emails:
