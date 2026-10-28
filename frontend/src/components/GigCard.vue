@@ -7,6 +7,7 @@ import {
 	daysUntil,
 	formatDate,
 	formatFee,
+	gigStatusBadge,
 	isDeadlineClose,
 	memberOptions,
 	pipelineColumns,
@@ -139,7 +140,7 @@ const moveOptions = computed(() =>
 				<span class="size-3.5" :class="badge.icon" aria-hidden="true" />{{ badge.count
 				}}<span class="sr-only">{{ badge.label }}</span>
 			</span>
-			<Badge v-if="closedStatuses.includes(gig.status)" :label="__(gig.status)" />
+			<Badge v-if="closedStatuses.includes(gig.status)" v-bind="gigStatusBadge(gig.status)" />
 			<!-- Beside Assign to, a second button would leave the title a third of a narrow column. -->
 			<span class="ms-auto" @click.stop>
 				<Dropdown

@@ -11,6 +11,20 @@ export const GIG_STATUSES = [
 	"Dropped",
 ];
 
+// A no from the promoter shows red; a gig the band dropped itself is just set aside.
+const GIG_STATUS_THEMES = {
+	Idea: "gray",
+	Contacted: "blue",
+	Applied: "violet",
+	Negotiating: "orange",
+	Booked: "green",
+	Played: "green",
+	Declined: "red",
+	Dropped: "gray",
+};
+
+export const gigStatusBadge = (status) => ({ label: __(status), theme: GIG_STATUS_THEMES[status] });
+
 export const pipelineColumns = [
 	...GIG_STATUSES.slice(0, 6).map((status) => ({ label: __(status), statuses: [status] })),
 	{ label: __("Declined / Dropped"), statuses: ["Declined", "Dropped"] },
