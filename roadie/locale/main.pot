@@ -1449,6 +1449,14 @@ msgstr ""
 msgid "{0} stays visible: Roadie relies on it"
 msgstr ""
 
+#: frontend/src/components/MentionEmails.vue
+msgid "Email me when I'm mentioned"
+msgstr ""
+
+#: frontend/src/components/MentionEmails.vue
+msgid "Mentions still appear in Roadie's notifications either way."
+msgstr ""
+
 #: frontend/src/components/PushNotifications.vue
 msgid "Push notifications on this device"
 msgstr ""

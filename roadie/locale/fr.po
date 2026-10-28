@@ -1567,6 +1567,14 @@ msgstr "Au moins {0} ★"
 msgid "Quick filters saved"
 msgstr "Filtres rapides enregistrés"
 
+#: frontend/src/components/MentionEmails.vue
+msgid "Email me when I'm mentioned"
+msgstr "M'envoyer un e-mail quand on me mentionne"
+
+#: frontend/src/components/MentionEmails.vue
+msgid "Mentions still appear in Roadie's notifications either way."
+msgstr "Les mentions restent visibles dans les notifications de Roadie dans tous les cas."
+
 #: frontend/src/components/PushNotifications.vue
 msgid "Push notifications on this device"
 msgstr "Notifications push sur cet appareil"

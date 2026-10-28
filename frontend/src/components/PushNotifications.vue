@@ -36,16 +36,12 @@ async function run(action) {
 </script>
 
 <template>
-	<section>
-		<h2 class="text-lg-semibold">{{ __("Notifications") }}</h2>
-		<Switch
-			class="mt-3"
-			:model-value="enabled"
-			:label="__('Push notifications on this device')"
-			:description="description"
-			:error="error"
-			:disabled="busy || (blocked && !enabled)"
-			@update:model-value="(turningOn) => run(turningOn ? turnOn : disablePush)"
-		/>
-	</section>
+	<Switch
+		:model-value="enabled"
+		:label="__('Push notifications on this device')"
+		:description="description"
+		:error="error"
+		:disabled="busy || (blocked && !enabled)"
+		@update:model-value="(turningOn) => run(turningOn ? turnOn : disablePush)"
+	/>
 </template>

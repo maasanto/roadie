@@ -5,6 +5,10 @@ import frappe
 import nh3
 from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
+from frappe.desk.doctype.notification_settings.notification_settings import (
+	create_notification_settings,
+	is_email_notifications_enabled_for_type,
+)
 from frappe.email import relink
 from frappe.model import get_permitted_fields
 from frappe.utils import get_fullname, today
@@ -1277,6 +1281,37 @@ def mark_notifications_read(names: list[str] | None = None) -> None:
 		if names:
 			filters["name"] = ["in", names]
 		frappe.db.set_value(doctype, filters, "read", 1, update_modified=False)
+
+
+@frappe.whitelist()
+def are_mention_emails_enabled() -> bool:
+	frappe.only_for(("Band Member", "System Manager"))
+	return is_email_notifications_enabled_for_type(frappe.session.user, "Mention")
+
+
+@frappe.whitelist(methods=["POST"])
+def set_mention_emails_enabled(enabled: bool) -> None:
+	"""Members can't reach the Desk's Notification Settings form, so Roadie edits the same allow-list for them."""
+	frappe.only_for(("Band Member", "System Manager"))
+
+	create_notification_settings(frappe.session.user)
+	settings = frappe.get_doc("Notification Settings", frappe.session.user)
+	is_listed = any(row.notification_type == "Mention" for row in settings.email_notification_types)
+	if enabled and not settings.enable_email_notifications:
+		# The allow-list is ignored while every email is off. Turning that back on would also revive the other types
+		# still listed, so only mentions come back.
+		settings.enable_email_notifications = 1
+		settings.email_notification_types = []
+		settings.append("email_notification_types", {"notification_type": "Mention"})
+	elif enabled and not is_listed:
+		settings.append("email_notification_types", {"notification_type": "Mention"})
+	elif not enabled and is_listed:
+		settings.email_notification_types = [
+			row for row in settings.email_notification_types if row.notification_type != "Mention"
+		]
+	else:
+		return
+	settings.save()
 
 
 def has_app_permission() -> bool:
