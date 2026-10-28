@@ -5,17 +5,21 @@ from frappe.push_notification import PushNotification
 from frappe.tests import IntegrationTestCase
 from frappe.utils import get_url
 
-from roadie.push_notifications import send_push
+from roadie.api import is_drive_installed
+from roadie.push_notifications import send_drive_push, send_push
 from roadie.roadie.doctype.gig.test_gig import MEMBER, OTHER_MEMBER, make_member
+from roadie.tests.test_drive_link import share_from_drive
+from roadie.tests.test_notifications import SHEET_SHARE_NOTIFICATION
 
 SEND_PUSH = "roadie.push_notifications.send_push"
+SEND_DRIVE_PUSH = "roadie.push_notifications.send_drive_push"
 ICON_URL = "/assets/roadie/pwa/icon-192.png"
 real_enqueue = frappe.enqueue
 
 
 def enqueue_all_but_pushes(method, *args, **kwargs):
 	"""Notification Logs are still created, but a push is never handed to a worker that would send it for real."""
-	if method != SEND_PUSH:
+	if method not in (SEND_PUSH, SEND_DRIVE_PUSH):
 		return real_enqueue(method, *args, **kwargs)
 
 
@@ -117,6 +121,34 @@ class TestPushNotifications(IntegrationTestCase):
 		send_push(notification_log.name)
 
 		self.assertEqual(self.send.call_args.kwargs["link"], get_url(f"/roadie/tasks?task={task.name}"))
+
+	def test_a_shared_sheet_opens_in_suite(self):
+		notification_log = frappe.get_doc(SHEET_SHARE_NOTIFICATION).insert(
+			ignore_permissions=True, ignore_links=True
+		)
+
+		send_push(notification_log.name)
+
+		self.assertEqual(self.send.call_args.kwargs["link"], get_url("/sheets/a1b2c3d4e5"))
+
+	def test_a_drive_share_opens_the_shared_document(self):
+		if not is_drive_installed():
+			self.skipTest("Frappe Suite is not installed on this site")
+		from suite.drive.utils import create_drive_file, get_root_folder
+
+		frappe.get_doc("User", MEMBER).add_roles("Suite User")
+		document = create_drive_file("Tour plan", get_root_folder().name, "Document", "")
+		share_from_drive(document, MEMBER)
+
+		[drive_notification] = [
+			call.kwargs["drive_notification"]
+			for call in self.enqueue.call_args_list
+			if call.args == (SEND_DRIVE_PUSH,)
+		]
+		send_drive_push(drive_notification)
+
+		self.assertEqual(self.send.call_args.args, (MEMBER,))
+		self.assertEqual(self.send.call_args.kwargs["link"], get_url(f"/writer/w/{document.name}"))
 
 	def test_nothing_is_queued_without_the_relay_url(self):
 		# A backup restored elsewhere keeps the settings enabled but not the site config's relay URL.

@@ -1159,11 +1159,27 @@ NOTIFICATION_FIELDS = [
 	"from_user.full_name as from_user_name",
 	"from_user.user_image as from_user_image",
 ]
+NOTIFICATION_LIMIT = 50
+# Drive keeps its share and mention notifications apart from Frappe's, in its own doctype.
+DRIVE_NOTIFICATION = "Drive Notification"
+# Its shares and mentions, about a file; the rest, like a newcomer joining the site, are Drive's admin business.
+DRIVE_FILE_NOTIFICATIONS = {"notif_doctype": "File"}
+DRIVE_NOTIFICATION_FIELDS = [
+	"name",
+	"type",
+	"message as title",
+	"notif_doctype_name",
+	"read",
+	"creation",
+	"from_user",
+	"from_user.full_name as from_user_name",
+	"from_user.user_image as from_user_image",
+]
 
 
 @frappe.whitelist()
 def get_notifications() -> list[dict]:
-	"""The caller's in-app notifications: unread first, newest first, capped."""
+	"""The caller's in-app notifications, Frappe's and Drive's: unread first, newest first, capped."""
 	frappe.only_for(("Band Member", "System Manager"))
 
 	notifications = frappe.get_all(
@@ -1171,10 +1187,18 @@ def get_notifications() -> list[dict]:
 		filters={"for_user": frappe.session.user},
 		fields=NOTIFICATION_FIELDS,
 		order_by="read asc, creation desc",
-		limit=50,
+		limit=NOTIFICATION_LIMIT,
 	)
 	for notification in notifications:
 		notification.route = _notification_route(notification)
+		notification.url = suite_document_path(notification)
+	if can_use_drive():
+		notifications = sorted(
+			[*notifications, *_drive_notifications()],
+			key=lambda notification: (not notification.read, notification.creation),
+			reverse=True,
+		)[:NOTIFICATION_LIMIT]
+	for notification in notifications:
 		# A mention keeps the email's HTML in its title and the comment's in its description. The panel renders the
 		# title as HTML, so only the bold the Desk shows survives.
 		notification.title = nh3.clean(
@@ -1197,15 +1221,62 @@ def _notification_route(notification) -> str | None:
 	return path[len(SPA_BASE) :] or "/"
 
 
+def suite_document_path(notification) -> str | None:
+	"""Suite opens its documents in its own app, outside Roadie, and its share notification carries no link."""
+	if notification.document_type == "Sheet" and notification.document_name:
+		return f"/sheets/{notification.document_name}"
+	return None
+
+
+def _drive_notifications() -> list[dict]:
+	notifications = frappe.get_all(
+		DRIVE_NOTIFICATION,
+		filters={"to_user": frappe.session.user, **DRIVE_FILE_NOTIFICATIONS},
+		fields=DRIVE_NOTIFICATION_FIELDS,
+		order_by="read asc, creation desc",
+		limit=NOTIFICATION_LIMIT,
+	)
+	paths = drive_document_paths([notification.notif_doctype_name for notification in notifications])
+	for notification in notifications:
+		notification.url = paths.get(notification.notif_doctype_name)
+		# Drive writes plain text, file name included, where the panel expects HTML.
+		notification.title = frappe.utils.escape_html(notification.title)
+	return notifications
+
+
+def drive_document_paths(file_names: list[str]) -> dict[str, str]:
+	"""Where Suite opens each Drive file, as Drive's own links do (getFileLink in Suite's Drive)."""
+	files = frappe.get_all(
+		"File",
+		filters={"name": ["in", file_names]},
+		fields=["name", "is_folder", "file_type", "content_doctype", "content_docname"],
+	)
+	return {file.name: _drive_document_path(file) for file in files}
+
+
+def _drive_document_path(file) -> str:
+	if file.content_doctype == "Sheet":
+		return f"/sheets/{file.content_docname or file.name}"
+	if file.content_doctype == "Presentation":
+		return f"/slides/presentation/{file.content_docname}"
+	if file.file_type in ("Document", "Markdown"):
+		return f"/writer/w/{file.name}"
+	return f"/drive/{'d' if file.is_folder else 'f'}/{file.name}"
+
+
 @frappe.whitelist(methods=["POST"])
 def mark_notifications_read(names: list[str] | None = None) -> None:
 	"""Clears the unread flag on the caller's notifications, all of them or just those in `names`."""
 	frappe.only_for(("Band Member", "System Manager"))
 
-	filters = {"for_user": frappe.session.user, "read": 0}
-	if names:
-		filters["name"] = ["in", names]
-	frappe.db.set_value("Notification Log", filters, "read", 1, update_modified=False)
+	sources = {"Notification Log": {"for_user": frappe.session.user}}
+	if can_use_drive():
+		sources[DRIVE_NOTIFICATION] = {"to_user": frappe.session.user, **DRIVE_FILE_NOTIFICATIONS}
+	for doctype, filters in sources.items():
+		filters["read"] = 0
+		if names:
+			filters["name"] = ["in", names]
+		frappe.db.set_value(doctype, filters, "read", 1, update_modified=False)
 
 
 def has_app_permission() -> bool:
