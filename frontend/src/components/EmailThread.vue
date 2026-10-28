@@ -23,7 +23,11 @@ const props = defineProps({
 	// A callback rather than an event: Vue drops events from an unmounted component, and the delete lands once
 	// its toast closes, often after the reader has moved to another thread.
 	onDeleted: { type: Function, default: null },
+	onLink: { type: Function, default: null },
 });
+
+const isLinkable = (email) =>
+	props.onLink && (!email.reference_doctype || email.reference_doctype === "Communication");
 const emit = defineEmits(["loaded", "emptied"]);
 
 const openEmails = ref(new Set());
@@ -196,6 +200,13 @@ function onSent() {
 							variant="ghost"
 							:label="__('Forward')"
 							@click="compose(forwardDraft(email))"
+						/>
+						<Button
+							v-if="isLinkable(email)"
+							icon-left="lucide-link"
+							variant="ghost"
+							:label="__('Link to…')"
+							@click="onLink(email.name)"
 						/>
 						<Button
 							class="ml-auto"

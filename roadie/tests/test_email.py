@@ -470,6 +470,62 @@ class TestEmail(IntegrationTestCase):
 		with self.assertRaises(frappe.ValidationError):
 			link_thread(received.name, "Gig", other_gig.name)
 
+	def test_conversation_filed_under_a_venue_through_its_contact_links_to_a_gig(self):
+		frappe.set_user(MEMBER)
+		venue = frappe.get_doc({"doctype": "Venue", "title": "Le Petit Club"}).insert()
+		frappe.get_doc(
+			{
+				"doctype": "Contact",
+				"first_name": "Bob",
+				"email_ids": [{"email_id": VENUE, "is_primary": 1}],
+				"links": [{"link_doctype": "Venue", "link_name": venue.name}],
+			}
+		).insert()
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Le Petit Club residency"}).insert()
+		sent = make(subject="Residency dates", content="<p>Hi Bob</p>", recipients=[VENUE], send_email=True)
+
+		frappe.set_user("Administrator")
+		InboundMail(venue_reply(frappe.get_doc("Communication", sent["name"])), self.mailbox).process()
+		reply = frappe.get_last_doc("Communication", filters={"in_reply_to": sent["name"]})
+
+		frappe.set_user(MEMBER)
+		self.assertEqual(
+			{row.name: row.thread for row in get_mailbox("Sent")}[sent["name"]],
+			{"doctype": "Venue", "name": venue.name},
+		)
+		link_thread(reply.name, "Gig", gig.name)
+		from_venue_page = make(
+			doctype="Venue",
+			name=venue.name,
+			subject="Parking",
+			content="<p>Where can the van park?</p>",
+			recipients=[VENUE],
+			send_email=True,
+		)
+
+		self.assertEqual([email.name for email in get_emails("Gig", gig.name)], [sent["name"], reply.name])
+		self.assertEqual(
+			{row.name: row.thread for row in get_mailbox("Sent")}[sent["name"]],
+			{"doctype": "Gig", "name": gig.name},
+		)
+		self.assertIn(sent["name"], [email.name for email in get_emails("Venue", venue.name)])
+		with self.assertRaises(frappe.ValidationError):
+			link_thread(from_venue_page["name"], "Gig", gig.name)
+
+		load_in = make(subject="Load-in", content="<p>At 4pm?</p>", recipients=[VENUE], send_email=True)
+		make(
+			doctype="Venue",
+			name=venue.name,
+			subject="Re: Load-in",
+			content="<p>Or 5pm.</p>",
+			recipients=[VENUE],
+			send_email=True,
+			in_reply_to=load_in["name"],
+		)
+		# Linking would leave the reply written from the venue's thread behind.
+		with self.assertRaises(frappe.ValidationError):
+			link_thread(load_in["name"], "Gig", gig.name)
+
 	def test_new_email_from_the_inbox_needs_no_record(self):
 		frappe.set_user(MEMBER)
 		# Its own content: Frappe dedupes files by hash, and make() commits, so a shared blank PDF leaks into other tests.

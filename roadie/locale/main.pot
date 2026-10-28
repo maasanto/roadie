@@ -1661,7 +1661,7 @@ msgid "Emails can only be filed under {0}, not {1}"
 msgstr ""
 
 #: roadie/api.py
-msgid "Only conversations filed under no gig, task or directory entry can be linked, not {0}"
+msgid "Only conversations filed under nothing, or under a directory entry through a contact, can be linked, not {0}"
 msgstr ""
 
 #. Name of a DocType
