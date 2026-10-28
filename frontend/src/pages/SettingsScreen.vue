@@ -2,6 +2,7 @@
 import { Avatar, Button, ErrorMessage, FileUploader, call, toast } from "frappe-ui";
 import { ref } from "vue";
 import BandMembers from "../components/BandMembers.vue";
+import MentionEmails from "../components/MentionEmails.vue";
 import PushNotifications from "../components/PushNotifications.vue";
 import { isPushAvailable } from "../push";
 import { initials, user } from "../user";
@@ -75,7 +76,11 @@ async function setPicture(fileUrl) {
 
 		<ErrorMessage class="mt-4" :message="error" />
 
-		<PushNotifications v-if="isPushAvailable()" class="mt-10" />
+		<section class="mt-10">
+			<h2 class="text-lg-semibold">{{ __("Notifications") }}</h2>
+			<MentionEmails class="mt-3" />
+			<PushNotifications v-if="isPushAvailable()" class="mt-4" />
+		</section>
 
 		<BandMembers class="mt-10" />
 	</div>
