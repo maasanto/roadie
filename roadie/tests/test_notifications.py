@@ -6,6 +6,17 @@ from roadie.api import get_notifications, mark_notifications_read
 from roadie.roadie.doctype.gig.test_gig import MEMBER, OTHER_MEMBER, make_member
 from roadie.tests.test_reminders import GIG_REMINDER, TASK_REMINDER, run_daily_reminder
 
+# As Suite's share_sheet writes it: no link. Inserted without link checks, as CI sites don't have Suite's Sheet.
+SHEET_SHARE_NOTIFICATION = {
+	"doctype": "Notification Log",
+	"for_user": MEMBER,
+	"from_user": OTHER_MEMBER,
+	"type": "Share",
+	"document_type": "Sheet",
+	"document_name": "a1b2c3d4e5",
+	"subject": "Jane Doe shared the sheet <b>Setlist</b> with you (can edit)",
+}
+
 
 def notifications_for(user, document_name):
 	return frappe.get_all(
@@ -117,6 +128,14 @@ class TestNotifications(IntegrationTestCase):
 
 		[notification] = get_notifications()
 		self.assertEqual(notification.route, "/directory")
+
+	def test_a_shared_sheet_opens_in_suite(self):
+		frappe.get_doc(SHEET_SHARE_NOTIFICATION).insert(ignore_permissions=True, ignore_links=True)
+
+		frappe.set_user(MEMBER)
+		[notification] = get_notifications()
+		self.assertEqual(notification.url, "/sheets/a1b2c3d4e5")
+		self.assertIsNone(notification.route)
 
 	def test_a_title_keeps_only_its_bold_and_escapes_the_rest(self):
 		frappe.get_doc(

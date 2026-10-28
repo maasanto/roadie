@@ -38,6 +38,11 @@ function toAppPath(link) {
 self.addEventListener("notificationclick", (event) => {
 	event.notification.close();
 	const url = event.notification.data?.url || APP_ROUTE;
+	// A Suite document opens beside Roadie, as from the panel, so the member's open screen is kept.
+	if (!url.startsWith(APP_ROUTE)) {
+		event.waitUntil(self.clients.openWindow(url));
+		return;
+	}
 	event.waitUntil(
 		self.clients.matchAll({ type: "window" }).then(([open]) =>
 			open

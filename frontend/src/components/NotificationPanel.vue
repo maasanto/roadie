@@ -24,8 +24,13 @@ watch(open, (isOpen) => isOpen && props.notifications.reload());
 
 function openNotification(notification) {
 	if (!notification.read) markRead.submit({ names: [notification.name] });
-	const route = notificationRoute(notification);
-	if (route) router.push(route);
+	// Suite's documents open in their own app, in a new tab as the sidebar's Drive link does.
+	if (notification.url) {
+		window.open(notification.url, "_blank", "noopener");
+	} else {
+		const route = notificationRoute(notification);
+		if (route) router.push(route);
+	}
 	open.value = false;
 }
 </script>

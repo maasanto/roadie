@@ -7,6 +7,7 @@ from frappe.utils import get_url
 
 from roadie.push_notifications import send_push
 from roadie.roadie.doctype.gig.test_gig import MEMBER, OTHER_MEMBER, make_member
+from roadie.tests.test_notifications import SHEET_SHARE_NOTIFICATION
 
 SEND_PUSH = "roadie.push_notifications.send_push"
 ICON_URL = "/assets/roadie/pwa/icon-192.png"
@@ -117,6 +118,15 @@ class TestPushNotifications(IntegrationTestCase):
 		send_push(notification_log.name)
 
 		self.assertEqual(self.send.call_args.kwargs["link"], get_url(f"/roadie/tasks?task={task.name}"))
+
+	def test_a_shared_sheet_opens_in_suite(self):
+		notification_log = frappe.get_doc(SHEET_SHARE_NOTIFICATION).insert(
+			ignore_permissions=True, ignore_links=True
+		)
+
+		send_push(notification_log.name)
+
+		self.assertEqual(self.send.call_args.kwargs["link"], get_url("/sheets/a1b2c3d4e5"))
 
 	def test_nothing_is_queued_without_the_relay_url(self):
 		# A backup restored elsewhere keeps the settings enabled but not the site config's relay URL.

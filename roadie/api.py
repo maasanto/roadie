@@ -1155,6 +1155,7 @@ def get_notifications() -> list[dict]:
 	)
 	for notification in notifications:
 		notification.route = _notification_route(notification)
+		notification.url = suite_document_path(notification)
 		# A mention keeps the email's HTML in its title and the comment's in its description. The panel renders the
 		# title as HTML, so only the bold the Desk shows survives.
 		notification.title = nh3.clean(
@@ -1175,6 +1176,13 @@ def _notification_route(notification) -> str | None:
 	if not path.startswith(SPA_BASE):
 		return None
 	return path[len(SPA_BASE) :] or "/"
+
+
+def suite_document_path(notification) -> str | None:
+	"""Suite opens its documents in its own app, outside Roadie, and its share notification carries no link."""
+	if notification.document_type == "Sheet" and notification.document_name:
+		return f"/sheets/{notification.document_name}"
+	return None
 
 
 @frappe.whitelist(methods=["POST"])
