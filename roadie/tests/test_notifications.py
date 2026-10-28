@@ -2,7 +2,7 @@ import frappe
 from frappe.tests import IntegrationTestCase
 from frappe.utils import add_days, get_url, today
 
-from roadie.api import get_notifications, mark_notifications_read
+from roadie.api import get_notifications, is_drive_installed, mark_notifications_read
 from roadie.roadie.doctype.gig.test_gig import MEMBER, OTHER_MEMBER, make_member
 from roadie.tests.test_reminders import GIG_REMINDER, TASK_REMINDER, run_daily_reminder
 
@@ -32,6 +32,8 @@ class TestNotifications(IntegrationTestCase):
 		make_member(OTHER_MEMBER, "Jane")
 		# A test class shares one transaction, so notifications from the earlier tests would show up in the later ones.
 		frappe.db.delete("Notification Log", {"for_user": ["in", (MEMBER, OTHER_MEMBER)]})
+		if is_drive_installed():
+			frappe.db.delete("Drive Notification", {"to_user": ["in", (MEMBER, OTHER_MEMBER)]})
 
 	def tearDown(self):
 		frappe.set_user("Administrator")

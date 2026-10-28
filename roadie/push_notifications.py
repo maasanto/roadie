@@ -6,7 +6,14 @@ import frappe
 from frappe.push_notification import PushNotification
 from frappe.utils import get_url, strip_html
 
-from roadie.api import SEARCH_DOCTYPES, suite_document_path
+from roadie.api import (
+	DRIVE_FILE_NOTIFICATIONS,
+	DRIVE_NOTIFICATION,
+	DRIVE_ROLE,
+	SEARCH_DOCTYPES,
+	drive_document_paths,
+	suite_document_path,
+)
 from roadie.mentions import record_path
 
 # The relay keys its Firebase credentials by project, so this must match the project registered there.
@@ -31,6 +38,34 @@ def queue_push(notification_log, method=None):
 			enqueue_after_commit=True,
 			notification_log=notification_log.name,
 		)
+
+
+def queue_drive_push(drive_notification, method=None):
+	"""Drive's own notifications are rows in the panel too, for those who can open Drive."""
+	if (
+		drive_notification.notif_doctype == DRIVE_FILE_NOTIFICATIONS["notif_doctype"]
+		and DRIVE_ROLE in frappe.get_roles(drive_notification.to_user)
+		and is_push_configured()
+	):
+		frappe.enqueue(
+			"roadie.push_notifications.send_drive_push",
+			queue="short",
+			enqueue_after_commit=True,
+			drive_notification=drive_notification.name,
+		)
+
+
+def send_drive_push(drive_notification: str) -> None:
+	notification = frappe.get_doc(DRIVE_NOTIFICATION, drive_notification)
+	file_name = notification.notif_doctype_name
+	PushNotification(PUSH_PROJECT).send_notification_to_user(
+		notification.to_user,
+		title=notification.message,
+		body="",
+		link=get_url(drive_document_paths([file_name]).get(file_name, SPA_ROUTE)),
+		icon=get_url(PUSH_ICON),
+		strip_html=False,
+	)
 
 
 def send_push(notification_log: str) -> None:

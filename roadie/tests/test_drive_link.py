@@ -6,9 +6,11 @@ from frappe.tests import IntegrationTestCase
 from roadie.api import (
 	DRIVE_ROLE,
 	get_members,
+	get_notifications,
 	grant_drive_access,
 	is_drive_installed,
 	is_in_drive,
+	mark_notifications_read,
 	share_drive_link,
 )
 from roadie.roadie.doctype.gig.test_gig import make_member
@@ -24,6 +26,14 @@ MEMBER_WITH_ROLE_PROFILE = "guitarist@example.com"
 def make_drive_member(email, first_name):
 	make_member(email, first_name)
 	frappe.get_doc("User", email).add_roles(DRIVE_ROLE)
+
+
+def share_from_drive(item, user):
+	"""Shares as Drive's share dialog does, then notifies as Drive's after-commit job would."""
+	from suite.drive.api.notifications import notify_share
+
+	item.share(user=user, read=1)
+	notify_share(item.name, frappe.db.get_value("Drive Permission", {"entity": item.name, "user": user}))
 
 
 def member_listing(email):
@@ -197,3 +207,27 @@ class TestDriveLink(IntegrationTestCase):
 
 		self.assertFalse(is_in_drive(stray))
 		self.assertTrue(is_in_drive(make_band_folder("Tech riders")))
+
+	def test_a_drive_share_opens_what_was_shared(self):
+		from suite.drive.utils import create_drive_file, get_root_folder
+
+		frappe.set_user("Administrator")
+		frappe.db.delete("Notification Log", {"for_user": MEMBER})
+		frappe.db.delete("Drive Notification", {"to_user": MEMBER})
+		root = get_root_folder().name
+		document = create_drive_file("Tour plan", root, "Document", "")
+		folder = make_band_folder("Press kit")
+		rider = create_drive_file("Rider.pdf", root, "PDF", "")
+		for item in (document, folder, rider):
+			share_from_drive(item, MEMBER)
+
+		frappe.set_user(MEMBER)
+		notifications = get_notifications()
+		self.assertEqual(
+			{notification.url for notification in notifications},
+			{f"/writer/w/{document.name}", f"/drive/d/{folder.name}", f"/drive/f/{rider.name}"},
+		)
+		self.assertEqual(notifications[0].title, 'Administrator shared a file with you: "Rider.pdf"')
+
+		mark_notifications_read([notifications[0].name])
+		self.assertEqual(sum(not notification.read for notification in get_notifications()), 2)
