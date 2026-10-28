@@ -241,14 +241,21 @@ function step(offset) {
 
 const LINKABLE_DOCTYPES = ["Gig", ...directoryTypes.map((type) => type.doctype)];
 const recordPicker = ref(null);
+const isDirectoryThread = computed(() =>
+	directoryTypes.some((type) => type.doctype === openThread.value?.doctype)
+);
+// The email whose conversation the picker files: a directory entry's thread holds many conversations.
+const communicationToLink = ref(null);
 
-function pickRecord() {
+function pickRecord(communication) {
 	if (hasEditedDraft()) return toast.error(__("Send or discard your email first."));
+	communicationToLink.value = communication;
 	recordPicker.value.open();
 }
 
 async function fileThreadUnder(record) {
-	const communication = openThread.value.name;
+	const communication = communicationToLink.value;
+	const thread = openThread.value;
 	try {
 		await call("roadie.api.link_thread", { communication, doctype: record.doctype, name: record.name });
 	} catch (error) {
@@ -258,7 +265,7 @@ async function fileThreadUnder(record) {
 	toast.success(__("Filed under {0}", [record.title]));
 	mailbox.reload();
 	// The member may have moved on while the thread was being filed.
-	if (openThread.value?.name === communication)
+	if (openThread.value && threadKey(openThread.value) === threadKey(thread))
 		router.replace({ name: route.name, params: { doctype: record.doctype, name: record.name } });
 }
 
@@ -524,7 +531,7 @@ onKey("Escape", close);
 						variant="subtle"
 						icon-left="lucide-link"
 						:label="__('Link to…')"
-						@click="pickRecord"
+						@click="pickRecord(openThread.name)"
 					/>
 					<!-- A task would only open this same thread in its dialog. -->
 					<Button
@@ -542,6 +549,7 @@ onKey("Escape", close);
 						:name="openThread.name"
 						@loaded="onThreadLoaded"
 						@deleted="onEmailDeleted"
+						:on-link="isDirectoryThread ? pickRecord : null"
 						@emptied="close"
 					/>
 				</div>
