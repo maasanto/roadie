@@ -32,6 +32,7 @@ import {
 	feeLabelOf,
 	formatDate,
 	formatFee,
+	gigStatusBadge,
 	isDeadlineClose,
 	pipelineColumns,
 	columnTotals,
@@ -459,7 +460,7 @@ async function moveGig(gig, status) {
 					@deleted="(names) => names.includes(gigPanel?.entryName) && closeGig()"
 				/>
 				<template #cell="{ column, row }">
-					<Badge v-if="column.key === 'status'" :label="__(row.status)" />
+					<Badge v-if="column.key === 'status'" v-bind="gigStatusBadge(row.status)" />
 					<span v-else-if="column.key === 'fee'" class="truncate">
 						{{ row.fee ? formatFee(row.fee) : "" }}
 					</span>
