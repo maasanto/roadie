@@ -3,6 +3,7 @@ from html import unescape
 from urllib.parse import urlsplit
 
 import frappe
+from frappe.frappeclient import FrappeException
 from frappe.push_notification import PushNotification
 from frappe.utils import get_url, strip_html
 
@@ -20,6 +21,8 @@ from roadie.mentions import record_path
 PUSH_PROJECT = "roadie"
 SPA_ROUTE = "/roadie"
 PUSH_ICON = "/assets/roadie/pwa/icon-192.png"
+# How the relay says a user has no device. Matching the message keeps every other relay error loud.
+NOT_SUBSCRIBED = "not subscribed to push notifications"
 # Without a break, the paragraphs of a comment or a reminder run into one another once the tags are gone.
 PARAGRAPH_BREAK = re.compile(r"<br\s*/?>|</(?:p|div|li)>", re.IGNORECASE)
 
@@ -58,7 +61,7 @@ def queue_drive_push(drive_notification, method=None):
 def send_drive_push(drive_notification: str) -> None:
 	notification = frappe.get_doc(DRIVE_NOTIFICATION, drive_notification)
 	file_name = notification.notif_doctype_name
-	PushNotification(PUSH_PROJECT).send_notification_to_user(
+	_send_to_user(
 		notification.to_user,
 		title=notification.message,
 		body="",
@@ -70,7 +73,7 @@ def send_drive_push(drive_notification: str) -> None:
 
 def send_push(notification_log: str) -> None:
 	notification = frappe.get_doc("Notification Log", notification_log)
-	PushNotification(PUSH_PROJECT).send_notification_to_user(
+	_send_to_user(
 		notification.for_user,
 		title=_plain_text(notification.subject),
 		body=_plain_text(notification.email_content),
@@ -79,6 +82,15 @@ def send_push(notification_log: str) -> None:
 		# Already plain: a second pass would delete text like "doors < 18h" that the first one unescaped
 		strip_html=False,
 	)
+
+
+def _send_to_user(user: str, **message) -> None:
+	"""Most members never turn push on, and the relay refuses those as an error: an Error Log per notification."""
+	try:
+		PushNotification(PUSH_PROJECT).send_notification_to_user(user, **message)
+	except FrappeException as error:
+		if NOT_SUBSCRIBED not in str(error):
+			raise
 
 
 def _push_path(notification) -> str:

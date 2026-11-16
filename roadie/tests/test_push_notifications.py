@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import frappe
+from frappe.frappeclient import FrappeException
 from frappe.push_notification import PushNotification
 from frappe.tests import IntegrationTestCase
 from frappe.utils import get_url
@@ -149,6 +150,20 @@ class TestPushNotifications(IntegrationTestCase):
 
 		self.assertEqual(self.send.call_args.args, (MEMBER,))
 		self.assertEqual(self.send.call_args.kwargs["link"], get_url(f"/writer/w/{document.name}"))
+
+	def test_a_member_without_a_device_is_skipped_quietly(self):
+		notification_log = frappe.get_doc(
+			{"doctype": "Notification Log", "for_user": MEMBER, "subject": "Due today: Send the rider"}
+		).insert(ignore_permissions=True)
+		self.send.side_effect = FrappeException(
+			{"message": f"user {MEMBER} not subscribed to push notifications", "status_code": 404}
+		)
+
+		send_push(notification_log.name)
+
+		self.send.side_effect = FrappeException({"message": "invalid credentials", "status_code": 401})
+		with self.assertRaises(FrappeException):
+			send_push(notification_log.name)
 
 	def test_nothing_is_queued_without_the_relay_url(self):
 		# A backup restored elsewhere keeps the settings enabled but not the site config's relay URL.
