@@ -62,7 +62,7 @@ edition's `name`:
 ```bash
 dokos get-list Festival --fields '["name","title","city"]' --filters '[["title","like","%Acme%"]]' --quiet
 dokos get-list "Festival Edition" --fields '["name","year","application_url","application_closes"]' --filters '[["festival","=","<festival name>"],["year","=",2027]]' --quiet
-dokos insert '{"doctype":"Gig","title":"Acme Festival 2027","festival_edition":"<edition name>","status":"Idea","gig_owner":"john@example.com"}' --quiet
+dokos insert '{"doctype":"Gig","title":"Acme Festival 2027","festival_edition":"<edition name>","status":"Idea"}' --quiet
 ```
 
 Add a task and assign it to a member. List the members first; only they can be assigned:

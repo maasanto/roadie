@@ -31,7 +31,7 @@ class TestRecordActivity(IntegrationTestCase):
 	def test_bandmate_reads_who_did_what_on_a_gig_in_order(self):
 		frappe.set_user(MEMBER)
 		venue = frappe.get_doc({"doctype": "Venue", "title": "Acme Hall"}).insert()
-		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Hall 2027"}).insert()
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Hall 2027", "gig_owner": MEMBER}).insert()
 		gig.update(
 			{
 				"status": "Contacted",

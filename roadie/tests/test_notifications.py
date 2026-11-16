@@ -92,7 +92,12 @@ class TestNotifications(IntegrationTestCase):
 		self.enable_in_app(GIG_REMINDER)
 		frappe.set_user(MEMBER)
 		gig = frappe.get_doc(
-			{"doctype": "Gig", "title": "Acme Festival 2027", "application_closes": add_days(today(), 7)}
+			{
+				"doctype": "Gig",
+				"title": "Acme Festival 2027",
+				"gig_owner": MEMBER,
+				"application_closes": add_days(today(), 7),
+			}
 		).insert()
 
 		frappe.set_user("Administrator")
