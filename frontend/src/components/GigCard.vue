@@ -80,7 +80,7 @@ const moveOptions = computed(() =>
 		role="button"
 		tabindex="0"
 		:data-gig="gig.name"
-		class="space-y-1.5 rounded-4 border border-outline-gray-1 bg-surface-elevation-1 p-3 shadow-sm hover:border-outline-gray-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-4"
+		class="relative space-y-1.5 rounded-4 border border-outline-gray-1 bg-surface-elevation-1 p-3 shadow-sm hover:border-outline-gray-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-4"
 		@keydown.enter.self.prevent="$event.currentTarget.click()"
 	>
 		<div class="flex items-start gap-2">

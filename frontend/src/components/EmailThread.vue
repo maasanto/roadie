@@ -145,12 +145,25 @@ function onSent() {
 					<span class="min-w-0 flex-1">
 						<span class="block truncate text-base-medium text-ink-gray-8">
 							{{ email.sender_full_name || email.sender }}
+							<!-- Received mail stores its Reply-To as the sender, which isn't the address it came from. -->
+							<span
+								v-if="
+									email.sent_or_received === 'Sent' &&
+									email.sender_full_name &&
+									email.sender_full_name !== email.sender
+								"
+								class="text-sm text-ink-gray-5"
+							>
+								&lt;{{ email.sender }}&gt;
+							</span>
 						</span>
 						<span
 							v-if="openEmails.has(email.name)"
 							class="block truncate text-sm text-ink-gray-5"
 						>
-							{{ __("to {0}", [email.recipients])
+							<template v-if="email.sent_by && email.sent_by !== email.sender_full_name"
+								>{{ __("sent by {0}", [email.sent_by]) }} · </template
+							>{{ __("to {0}", [email.recipients])
 							}}<template v-if="email.cc"> · {{ __("cc {0}", [email.cc]) }}</template>
 						</span>
 						<span v-else class="block truncate text-sm text-ink-gray-5">

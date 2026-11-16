@@ -4,10 +4,12 @@ from email.utils import parseaddr
 from unittest.mock import patch
 
 import frappe
+from frappe.core.doctype.communication.communication import get_user_email_accounts
 from frappe.core.doctype.communication.email import make
 from frappe.email.doctype.email_account.email_account import EmailAccount
 from frappe.email.receive import InboundMail
 from frappe.tests import IntegrationTestCase
+from frappe.utils import get_fullname
 
 from roadie.api import (
 	EMAIL_DRAFT_FIELD,
@@ -29,6 +31,7 @@ from roadie.www import roadie as roadie_page
 
 MAILBOX = "band@example.com"
 VENUE = "venue@example.com"
+NEWCOMER = "ringo@example.com"
 
 
 def shared_mailbox():
@@ -387,6 +390,45 @@ class TestEmail(IntegrationTestCase):
 			[received.name, reply["name"]],
 		)
 
+	def test_member_who_joins_after_the_mailbox_replies_to_its_mail(self):
+		subject = f"Festival slot {frappe.generate_hash()}"
+		enquiry = incoming_email("Jane Doe <jane.promoter@example.com>", subject, frappe.generate_hash())
+		InboundMail(enquiry.as_string(), self.mailbox).process()
+		received = frappe.get_last_doc("Communication", filters={"subject": subject})
+		if frappe.db.exists("User", NEWCOMER):
+			frappe.get_doc("User", NEWCOMER).remove_roles("Band Member")
+			frappe.db.delete("User Email", {"parent": NEWCOMER})
+		make_member(NEWCOMER, "Ringo")
+
+		frappe.set_user(NEWCOMER)
+		reply = make(
+			doctype="Communication",
+			name=received.name,
+			subject=f"Re: {subject}",
+			content="<p>Count us in.</p>",
+			recipients=["jane.promoter@example.com"],
+			send_email=True,
+		)
+		self.assertEqual(
+			[email.name for email in get_emails("Communication", received.name)],
+			[received.name, reply["name"]],
+		)
+
+	def test_a_mailbox_added_later_reaches_the_members_and_can_be_deleted(self):
+		side_project = frappe.get_doc(
+			{
+				"doctype": "Email Account",
+				"email_account_name": f"Side Project {frappe.generate_hash(length=8)}",
+				"email_id": f"side-{frappe.generate_hash(length=8)}@example.com",
+				"smtp_server": "localhost",
+				"no_smtp_authentication": 1,
+			}
+		).insert(ignore_permissions=True)
+		self.assertIn(side_project.name, get_user_email_accounts(MEMBER))
+
+		side_project.delete(ignore_permissions=True)
+		self.assertNotIn(side_project.name, get_user_email_accounts(MEMBER))
+
 	def test_search_and_a_higher_limit_reach_mail_older_than_the_latest(self):
 		# Unique per run: InboundMail commits, so earlier runs' emails are still on the site.
 		sender, subject = frappe.generate_hash(), frappe.generate_hash()
@@ -594,6 +636,44 @@ class TestEmail(IntegrationTestCase):
 			headers = message_from_string(queued.message)
 			self.assertEqual(parseaddr(headers["From"])[1], MAILBOX)
 			self.assertEqual(parseaddr(headers["Reply-To"])[1], MAILBOX)
+
+	def test_thread_shows_the_from_recipients_saw_and_the_member_who_sent_it(self):
+		for account in frappe.get_all("Email Account", {"default_outgoing": 1}, pluck="name"):
+			frappe.db.set_value("Email Account", account, "default_outgoing", 0)
+			self.addCleanup(frappe.db.set_value, "Email Account", account, "default_outgoing", 1)
+		self.mailbox.db_set({"enable_outgoing": 1, "default_outgoing": 1})
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Le Petit Club residency"}).insert()
+
+		def send_from_the_gig(is_sent_as_account_name):
+			self.mailbox.db_set("always_use_account_name_as_sender_name", is_sent_as_account_name)
+			# Frappe caches the outgoing account per request, so the flag would not reach the From otherwise.
+			frappe.local.outgoing_email_account = {}
+			sent = make(
+				doctype="Gig",
+				name=gig.name,
+				sender=roadie_page.get_context().boot["email_sender"],
+				subject="Residency dates",
+				content="<p>Hi</p>",
+				recipients=[VENUE],
+				send_email=True,
+			)
+			[shown] = [email for email in get_emails("Gig", gig.name) if email.name == sent["name"]]
+			queued = frappe.get_last_doc("Email Queue", filters={"communication": sent["name"]})
+			self.assertEqual(
+				(shown.sender_full_name, shown.sender),
+				parseaddr(message_from_string(queued.message)["From"]),
+			)
+			self.assertEqual(shown.sent_by, get_fullname(MEMBER))
+			return shown.sender_full_name
+
+		self.addCleanup(
+			self.mailbox.db_set,
+			"always_use_account_name_as_sender_name",
+			self.mailbox.always_use_account_name_as_sender_name,
+		)
+		self.assertEqual(send_from_the_gig(1), self.mailbox.name)
+		self.assertEqual(send_from_the_gig(0), get_fullname(MEMBER))
 
 	def test_sent_folder_fills_the_outbox_but_skips_what_frappe_sent(self):
 		frappe.set_user(MEMBER)

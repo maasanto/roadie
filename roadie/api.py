@@ -191,6 +191,7 @@ def get_emails(doctype: str, name: str) -> list[dict]:
 			"content",
 			"email_account.email_id as account_email",
 			"reference_doctype",
+			"owner",
 		],
 	)
 	attachments = frappe.get_all(
@@ -204,7 +205,14 @@ def get_emails(doctype: str, name: str) -> list[dict]:
 	)
 	for email in emails:
 		email.attachments = [file for file in attachments if file.attached_to_name == email.name]
+		email.sent_by = get_fullname(email.owner) if _is_written_here(email) else None
 	return emails
+
+
+def _is_written_here(email):
+	# Mail pulled from the inbox or the Sent folder belongs to whoever pulled it, so only an email a member
+	# wrote in Roadie is theirs; the rest is the sender's doing.
+	return email.sent_or_received == "Sent" and email.owner not in frappe.STANDARD_USERS
 
 
 def _check_readable_thread(doctype, name):
@@ -369,14 +377,11 @@ def _email_activity(doctype, name):
 	)
 	activity = []
 	for email in emails:
-		# Mail pulled from the inbox or the Sent folder belongs to whoever pulled it, so only an email a member
-		# wrote in Roadie is theirs; the rest is the sender's doing.
-		is_written_here = email.sent_or_received == "Sent" and email.owner not in frappe.STANDARD_USERS
 		activity.append(
 			{
 				"type": "emailed",
 				"by": get_fullname(email.owner)
-				if is_written_here
+				if _is_written_here(email)
 				else email.sender_full_name or email.sender,
 				"at": email.communication_date,
 				"text": email.subject,

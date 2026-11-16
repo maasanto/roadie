@@ -38,7 +38,7 @@ const memberOptions = computed(() =>
 );
 const memberOf = (task) => members.data?.find((member) => member.name === task.assignee);
 
-const emptyTask = () => ({ title: "", assignee: window.user, start_date: "", due_date: "" });
+const emptyTask = () => ({ title: "", assignee: "", start_date: "", due_date: "" });
 const newTask = reactive(emptyTask());
 
 async function addTask() {

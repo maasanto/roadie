@@ -175,7 +175,6 @@ class TestFestivalEdition(IntegrationTestCase):
 		self.assertEqual(str(copied.application_opens), "2027-01-10")
 		self.assertEqual(str(copied.application_closes), "2027-02-15")
 		self.assertEqual(str(edited.application_closes), "2027-03-01")
-		self.assertEqual(copied.gig_owner, MEMBER)
 
 	def test_gig_refuses_an_edition_of_another_festival(self):
 		other = frappe.get_doc({"doctype": "Festival", "title": "Acme Nights"}).insert()

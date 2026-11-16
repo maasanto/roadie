@@ -36,18 +36,29 @@ class TestReminders(IntegrationTestCase):
 
 	def test_owner_is_emailed_seven_days_before_the_application_closes(self):
 		closing = frappe.get_doc(
-			{"doctype": "Gig", "title": "Acme Festival 2027", "application_closes": add_days(today(), 7)}
+			{
+				"doctype": "Gig",
+				"title": "Acme Festival 2027",
+				"gig_owner": MEMBER,
+				"application_closes": add_days(today(), 7),
+			}
 		).insert()
 		already_applied = frappe.get_doc(
 			{
 				"doctype": "Gig",
 				"title": "Acme Open Air 2027",
 				"status": "Applied",
+				"gig_owner": MEMBER,
 				"application_closes": add_days(today(), 7),
 			}
 		).insert()
 		later = frappe.get_doc(
-			{"doctype": "Gig", "title": "Acme Winter 2027", "application_closes": add_days(today(), 8)}
+			{
+				"doctype": "Gig",
+				"title": "Acme Winter 2027",
+				"gig_owner": MEMBER,
+				"application_closes": add_days(today(), 8),
+			}
 		).insert()
 
 		frappe.set_user("Administrator")
@@ -68,7 +79,12 @@ class TestReminders(IntegrationTestCase):
 		self.addCleanup(frappe.db.set_value, "Notification", GIG_REMINDER, "days_in_advance", lead_time)
 		frappe.db.set_value("Notification", GIG_REMINDER, "days_in_advance", 3)
 		closing = frappe.get_doc(
-			{"doctype": "Gig", "title": "Acme Festival 2027", "application_closes": add_days(today(), 3)}
+			{
+				"doctype": "Gig",
+				"title": "Acme Festival 2027",
+				"gig_owner": MEMBER,
+				"application_closes": add_days(today(), 3),
+			}
 		).insert()
 
 		frappe.set_user("Administrator")
