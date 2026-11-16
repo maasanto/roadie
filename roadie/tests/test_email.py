@@ -4,6 +4,7 @@ from email.utils import parseaddr
 from unittest.mock import patch
 
 import frappe
+from frappe.core.doctype.communication.communication import get_user_email_accounts
 from frappe.core.doctype.communication.email import make
 from frappe.email.doctype.email_account.email_account import EmailAccount
 from frappe.email.receive import InboundMail
@@ -30,6 +31,7 @@ from roadie.www import roadie as roadie_page
 
 MAILBOX = "band@example.com"
 VENUE = "venue@example.com"
+NEWCOMER = "ringo@example.com"
 
 
 def shared_mailbox():
@@ -387,6 +389,45 @@ class TestEmail(IntegrationTestCase):
 			[email.name for email in get_emails("Communication", received.name)],
 			[received.name, reply["name"]],
 		)
+
+	def test_member_who_joins_after_the_mailbox_replies_to_its_mail(self):
+		subject = f"Festival slot {frappe.generate_hash()}"
+		enquiry = incoming_email("Jane Doe <jane.promoter@example.com>", subject, frappe.generate_hash())
+		InboundMail(enquiry.as_string(), self.mailbox).process()
+		received = frappe.get_last_doc("Communication", filters={"subject": subject})
+		if frappe.db.exists("User", NEWCOMER):
+			frappe.get_doc("User", NEWCOMER).remove_roles("Band Member")
+			frappe.db.delete("User Email", {"parent": NEWCOMER})
+		make_member(NEWCOMER, "Ringo")
+
+		frappe.set_user(NEWCOMER)
+		reply = make(
+			doctype="Communication",
+			name=received.name,
+			subject=f"Re: {subject}",
+			content="<p>Count us in.</p>",
+			recipients=["jane.promoter@example.com"],
+			send_email=True,
+		)
+		self.assertEqual(
+			[email.name for email in get_emails("Communication", received.name)],
+			[received.name, reply["name"]],
+		)
+
+	def test_a_mailbox_added_later_reaches_the_members_and_can_be_deleted(self):
+		side_project = frappe.get_doc(
+			{
+				"doctype": "Email Account",
+				"email_account_name": f"Side Project {frappe.generate_hash(length=8)}",
+				"email_id": f"side-{frappe.generate_hash(length=8)}@example.com",
+				"smtp_server": "localhost",
+				"no_smtp_authentication": 1,
+			}
+		).insert(ignore_permissions=True)
+		self.assertIn(side_project.name, get_user_email_accounts(MEMBER))
+
+		side_project.delete(ignore_permissions=True)
+		self.assertNotIn(side_project.name, get_user_email_accounts(MEMBER))
 
 	def test_search_and_a_higher_limit_reach_mail_older_than_the_latest(self):
 		# Unique per run: InboundMail commits, so earlier runs' emails are still on the site.
