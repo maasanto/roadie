@@ -68,6 +68,35 @@ class TestDirectory(IntegrationTestCase):
 		with self.assertRaises(frappe.ValidationError):
 			get_contacts("User", MEMBER)
 
+	def test_website_typed_without_a_scheme_is_saved_as_https(self):
+		frappe.set_user(MEMBER)
+		festival = frappe.get_doc(
+			{"doctype": "Festival", "title": "Acme Festival", "website": " acme-festival.com "}
+		).insert()
+		self.assertEqual(festival.website, "https://acme-festival.com")
+
+		edition = frappe.get_doc(
+			{
+				"doctype": "Festival Edition",
+				"festival": festival.name,
+				"year": 2027,
+				"website": "http://acme-festival.com/2027",
+				"application_url": "acme-festival.com/apply?next=https://forms.example.com",
+			}
+		).insert()
+		self.assertEqual(edition.website, "http://acme-festival.com/2027")
+		self.assertEqual(
+			edition.application_url, "https://acme-festival.com/apply?next=https://forms.example.com"
+		)
+
+		venue = frappe.get_doc({"doctype": "Venue", "title": "Le Petit Club"}).insert()
+		venue.website = "www.lepetitclub.fr"
+		venue.save()
+		self.assertEqual(venue.website, "https://www.lepetitclub.fr")
+
+		with self.assertRaises(frappe.ValidationError):
+			frappe.get_doc({"doctype": "Band", "title": "Acme Band", "website": "N/A"}).insert()
+
 	def test_band_keeps_several_genres_including_a_list_longer_than_a_data_field(self):
 		frappe.set_user(MEMBER)
 		band = frappe.get_doc(

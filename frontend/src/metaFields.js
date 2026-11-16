@@ -5,6 +5,7 @@ import { translatedOptions } from "./translation.js";
 // Field types a form can edit without a dedicated picker. Anything else, a table or an attachment
 // added in Desk, stays out of the form rather than breaking it.
 const CONTROL_TYPES = {
+	// A URL field too: a URL input would refuse acme.com, which the server completes to https://.
 	Data: "text",
 	"Small Text": "textarea",
 	Text: "textarea",
@@ -21,12 +22,9 @@ const CONTROL_TYPES = {
 // Defaults such as "Today", "__user" or ":Company" are resolved by the server on insert, never by the browser.
 const DYNAMIC_DEFAULT = /^(__|:|eval:)|^(today|now)$/i;
 
-const controlType = ({ fieldtype, options }) =>
-	fieldtype === "Data" && options === "URL" ? "url" : CONTROL_TYPES[fieldtype];
-
 // Members only hold permlevel 0, so a higher level would show a field whose edits the server drops.
 const isFormField = (field, controls) =>
-	!field.permlevel && Boolean(controls[field.fieldname] || controlType(field));
+	!field.permlevel && Boolean(controls[field.fieldname] || CONTROL_TYPES[field.fieldtype]);
 
 // The form's fields as the DocType meta has them, so a field added, renamed or hidden in Desk shows here too.
 // Hidden fields stay in the list, flagged, so the form customiser can bring them back.
@@ -36,7 +34,7 @@ export function fieldsFromMeta(metaFields, controls = {}) {
 		.map((field) => ({
 			fieldname: field.fieldname,
 			label: __(field.label || field.fieldname),
-			type: controlType(field),
+			type: CONTROL_TYPES[field.fieldtype],
 			hidden: Boolean(field.hidden),
 			// A required checkbox would force a tick, while Frappe accepts an unticked one.
 			required: Boolean(field.reqd) && field.fieldtype !== "Check",

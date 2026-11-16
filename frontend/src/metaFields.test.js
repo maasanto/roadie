@@ -45,10 +45,10 @@ test("labels and choices are translated, while stored values stay English", () =
 	assert.deepEqual(usualMonth.options, [{ label: "Mars", value: "March" }]);
 });
 
-test("a URL field gets a URL input and a mandatory field is required", () => {
+test("a URL field takes a site typed without https:// and a mandatory field is required", () => {
 	const [title, website] = fieldsFromMeta(festivalMeta);
 	assert.equal(title.required, true);
-	assert.equal(website.type, "url");
+	assert.equal(website.type, "text");
 });
 
 test("a mandatory checkbox can still be left unticked", () => {
