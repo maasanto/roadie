@@ -242,7 +242,8 @@ function openResult(item) {
 			</header>
 			<div class="flex min-h-0 min-w-0 flex-1 flex-col">
 				<AvailabilityStrip :pending="pendingAvailability" />
-				<main class="min-h-0 flex-1 overflow-auto">
+				<!-- sr-only labels are absolute: without a positioned scroller they escape it and lengthen the page. -->
+				<main class="relative min-h-0 flex-1 overflow-auto">
 					<!-- Keyed so the four directory screens, which share one component, remount on a type change. -->
 					<router-view :key="route.name" />
 				</main>
