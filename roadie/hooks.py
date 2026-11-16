@@ -48,6 +48,11 @@ doc_events = {
 	"Notification Log": {"after_insert": "roadie.push_notifications.queue_push"},
 	# Only fires on sites with Suite, the app that defines it.
 	"Drive Notification": {"after_insert": "roadie.push_notifications.queue_drive_push"},
+	# The forms Roadie edits, so a URL field added in Desk takes acme.com too.
+	**{
+		doctype: {"before_validate": "roadie.urls.imply_https"}
+		for doctype in ("Gig", "Festival Edition", "Festival", "Venue", "Promoter", "Band")
+	},
 }
 
 fixtures = [
