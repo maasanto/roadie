@@ -24,7 +24,7 @@ test("a field added in Desk shows in the form, in the meta's order", () => {
 		fieldsFromMeta(festivalMeta)
 			.filter(({ hidden }) => !hidden)
 			.map(({ fieldname }) => fieldname),
-		["title", "website", "usual_month", "camping", "listed_on"],
+		["title", "website", "usual_month", "camping", "listed_on"]
 	);
 });
 
@@ -95,7 +95,7 @@ test("an edition of another festival or of a cleared one goes when the festival 
 	assert.equal(isStalePick(editionField, { festival: "", festival_edition: "acme-2027" }), true);
 	assert.equal(
 		isStalePick({ ...editionField, dependsOn: undefined }, { festival_edition: "acme-2027" }),
-		false,
+		false
 	);
 });
 
