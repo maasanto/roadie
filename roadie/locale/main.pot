@@ -1361,6 +1361,10 @@ msgstr ""
 msgid "cc {0}"
 msgstr ""
 
+#: frontend/src/components/EmailThread.vue
+msgid "sent by {0}"
+msgstr ""
+
 #: frontend/src/components/EmailThread.vue:46
 msgid "to {0}"
 msgstr ""

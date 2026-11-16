@@ -1,3 +1,5 @@
+from email.header import decode_header, make_header
+from email.utils import formataddr
 from urllib.parse import urlencode
 
 import frappe
@@ -47,12 +49,22 @@ def get_context():
 	)
 
 
-# Frappe sends as the member and sets Reply-To to them, so replies would skip the band's mailbox.
+# Frappe sends as the member and sets Reply-To to them, so replies would skip the band's mailbox. The account's
+# name, when it is always the sender name, is stored here rather than swapped in as Frappe sends: the thread then
+# shows the From recipients saw.
 def get_email_sender():
-	band_email = frappe.db.get_value(
-		"Email Account", {"enable_outgoing": 1, "default_outgoing": 1}, "email_id"
+	account = frappe.db.get_value(
+		"Email Account",
+		{"enable_outgoing": 1, "default_outgoing": 1},
+		["name", "email_id", "always_use_account_name_as_sender_name"],
+		as_dict=True,
 	)
-	return band_email and frappe.utils.get_formatted_email(frappe.session.user, mail=band_email)
+	if not account:
+		return None
+	if not account.always_use_account_name_as_sender_name:
+		return frappe.utils.get_formatted_email(frappe.session.user, mail=account.email_id)
+	# Decoded as get_formatted_email does: the Communication keeps the name as given, MIME-encoded or not.
+	return str(make_header(decode_header(formataddr((account.name, account.email_id)))))
 
 
 # Desk's precedence, from Communication.set_signature_in_email_content: an account signs only when told to, and

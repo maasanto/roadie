@@ -9,6 +9,7 @@ from frappe.core.doctype.communication.email import make
 from frappe.email.doctype.email_account.email_account import EmailAccount
 from frappe.email.receive import InboundMail
 from frappe.tests import IntegrationTestCase
+from frappe.utils import get_fullname
 
 from roadie.api import (
 	EMAIL_DRAFT_FIELD,
@@ -635,6 +636,44 @@ class TestEmail(IntegrationTestCase):
 			headers = message_from_string(queued.message)
 			self.assertEqual(parseaddr(headers["From"])[1], MAILBOX)
 			self.assertEqual(parseaddr(headers["Reply-To"])[1], MAILBOX)
+
+	def test_thread_shows_the_from_recipients_saw_and_the_member_who_sent_it(self):
+		for account in frappe.get_all("Email Account", {"default_outgoing": 1}, pluck="name"):
+			frappe.db.set_value("Email Account", account, "default_outgoing", 0)
+			self.addCleanup(frappe.db.set_value, "Email Account", account, "default_outgoing", 1)
+		self.mailbox.db_set({"enable_outgoing": 1, "default_outgoing": 1})
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Le Petit Club residency"}).insert()
+
+		def send_from_the_gig(is_sent_as_account_name):
+			self.mailbox.db_set("always_use_account_name_as_sender_name", is_sent_as_account_name)
+			# Frappe caches the outgoing account per request, so the flag would not reach the From otherwise.
+			frappe.local.outgoing_email_account = {}
+			sent = make(
+				doctype="Gig",
+				name=gig.name,
+				sender=roadie_page.get_context().boot["email_sender"],
+				subject="Residency dates",
+				content="<p>Hi</p>",
+				recipients=[VENUE],
+				send_email=True,
+			)
+			[shown] = [email for email in get_emails("Gig", gig.name) if email.name == sent["name"]]
+			queued = frappe.get_last_doc("Email Queue", filters={"communication": sent["name"]})
+			self.assertEqual(
+				(shown.sender_full_name, shown.sender),
+				parseaddr(message_from_string(queued.message)["From"]),
+			)
+			self.assertEqual(shown.sent_by, get_fullname(MEMBER))
+			return shown.sender_full_name
+
+		self.addCleanup(
+			self.mailbox.db_set,
+			"always_use_account_name_as_sender_name",
+			self.mailbox.always_use_account_name_as_sender_name,
+		)
+		self.assertEqual(send_from_the_gig(1), self.mailbox.name)
+		self.assertEqual(send_from_the_gig(0), get_fullname(MEMBER))
 
 	def test_sent_folder_fills_the_outbox_but_skips_what_frappe_sent(self):
 		frappe.set_user(MEMBER)

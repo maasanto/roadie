@@ -1243,6 +1243,10 @@ msgstr "Votre carnet d'adresses commence ici"
 msgid "cc {0}"
 msgstr "cc {0}"
 
+#: frontend/src/components/EmailThread.vue
+msgid "sent by {0}"
+msgstr "envoyé par {0}"
+
 #: frontend/src/components/EmailThread.vue:46
 msgid "to {0}"
 msgstr "à {0}"
