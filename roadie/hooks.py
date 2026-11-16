@@ -44,6 +44,8 @@ doc_events = {
 		"before_insert": "roadie.comments.set_author",
 		"after_insert": "roadie.mentions.notify_mentioned_members",
 	},
+	"User": {"validate": "roadie.mailbox_access.link_new_member_to_every_mailbox"},
+	"Email Account": {"after_insert": "roadie.mailbox_access.link_every_member"},
 	"User Invitation": {"before_insert": "roadie.invitations.keep_invitee_in_roadie"},
 	"Notification Log": {"after_insert": "roadie.push_notifications.queue_push"},
 	# Only fires on sites with Suite, the app that defines it.
