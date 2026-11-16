@@ -55,6 +55,12 @@ class TestGig(IntegrationTestCase):
 		self.assertIn(gig.name, [row.name for row in frappe.get_list("Gig")])
 		self.assertEqual(roadie_page.get_context().boot["user"], MEMBER)
 
+	def test_gig_a_member_creates_is_owned_by_nobody(self):
+		frappe.set_user(MEMBER)
+		gig = frappe.get_doc({"doctype": "Gig", "title": "Acme Festival 2027"}).insert()
+
+		self.assertFalse(gig.gig_owner)
+
 	def test_application_window_cannot_close_before_it_opens(self):
 		frappe.set_user(MEMBER)
 		with self.assertRaises(frappe.ValidationError):

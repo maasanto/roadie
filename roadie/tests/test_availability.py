@@ -42,7 +42,12 @@ class TestAvailability(IntegrationTestCase):
 
 		frappe.set_user(BOOKER)
 		self.gig = frappe.get_doc(
-			{"doctype": "Gig", "title": "Acme Festival 2027", "gig_date": add_days(today(), 30)}
+			{
+				"doctype": "Gig",
+				"title": "Acme Festival 2027",
+				"gig_owner": BOOKER,
+				"gig_date": add_days(today(), 30),
+			}
 		).insert()
 
 	def tearDown(self):
