@@ -24,7 +24,7 @@ test("a field added in Desk shows in the form, in the meta's order", () => {
 		fieldsFromMeta(festivalMeta)
 			.filter(({ hidden }) => !hidden)
 			.map(({ fieldname }) => fieldname),
-		["title", "website", "usual_month", "camping", "listed_on"]
+		["title", "website", "usual_month", "camping", "listed_on"],
 	);
 });
 
@@ -45,10 +45,10 @@ test("labels and choices are translated, while stored values stay English", () =
 	assert.deepEqual(usualMonth.options, [{ label: "Mars", value: "March" }]);
 });
 
-test("a URL field gets a URL input and a mandatory field is required", () => {
+test("a URL field takes a site typed without https:// and a mandatory field is required", () => {
 	const [title, website] = fieldsFromMeta(festivalMeta);
 	assert.equal(title.required, true);
-	assert.equal(website.type, "url");
+	assert.equal(website.type, "text");
 });
 
 test("a mandatory checkbox can still be left unticked", () => {
@@ -95,7 +95,7 @@ test("an edition of another festival or of a cleared one goes when the festival 
 	assert.equal(isStalePick(editionField, { festival: "", festival_edition: "acme-2027" }), true);
 	assert.equal(
 		isStalePick({ ...editionField, dependsOn: undefined }, { festival_edition: "acme-2027" }),
-		false
+		false,
 	);
 });
 
